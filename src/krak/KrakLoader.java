@@ -2,11 +2,15 @@ package krak;
 
 import classes.Utils;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 /**
@@ -17,9 +21,12 @@ import java.util.ArrayList;
  *
  * Original author Peter Tiedemann petert@itu.dk; 
  * updates (2014) by Søren Debois, debois@itu.dk
+ * Updated for usefulness by Jakob Lautrup Nysom, jaln@itu.dk (2-3-2014)
  */
 public class KrakLoader {
-
+    
+    protected static final String encoding = "iso8859-1";
+    
     /**
      * Loads a set of edges from a krak-formatted input file and returns them.
      * This throws a RuntimeException if the file cannot be read.
@@ -29,11 +36,10 @@ public class KrakLoader {
     public static EdgeData[] loadEdges(String edgeFilePath) {
         System.out.println("Loading edge data...");
         ArrayList<EdgeData> edges = new ArrayList<>();
-        BufferedReader br;
         try {
-            br = new BufferedReader(new FileReader(Utils.getFile(edgeFilePath)));
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(edgeFilePath)), 
+                    Charset.forName(encoding)));
             br.readLine(); // Again, first line is column names, not data.
-        
             String line;
             while ((line = br.readLine()) != null) {
                 edges.add(new EdgeData(line));
@@ -59,7 +65,8 @@ public class KrakLoader {
         System.out.println("Loading node data...");
         ArrayList<NodeData> nodes = new ArrayList<>();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(Utils.getFile(nodeFilePath)));
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(nodeFilePath)), 
+                    Charset.forName(encoding)));
             br.readLine(); // First line is column names, not data.
 
             String line;

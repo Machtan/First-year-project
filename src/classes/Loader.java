@@ -18,6 +18,8 @@ import krak.KrakLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import krak.DataLine;
 
 /*
@@ -41,10 +43,12 @@ public class Loader {
     public static RoadPart[] loadKrakRoads(String krakFilePath) {
         System.out.println("Loading roads from Krak data...");
         EdgeData[] edges = KrakLoader.loadEdges(krakFilePath);
+        System.out.println("Converting to the internal data types...");
         RoadPart[] roads = new RoadPart[edges.length];
         for (int i = 0; i < edges.length; i++) {
             roads[i] = new RoadPart(edges[i]);
         }
+        System.out.println("Finished converting!");
         System.out.println("Roads loaded! ("+roads.length+" nodes)");
         return roads;
     }
@@ -105,16 +109,23 @@ public class Loader {
         String p = Paths.get(srcdir.toString(), "resources", "roads.txt").toString();
         System.out.println("p: "+p);
         System.out.println("cwd: "+Utils.getcwd());
-        //RoadPart[] roads = loadKrakRoads("krak/kdv_unload.txt");
+        RoadPart[] roads = loadKrakRoads("krak/kdv_unload.txt");
         //Road[] roads = new RoadPart[0];
         //saveRoads(roads, p);
         
-        String line = "2,2,3,4,,";
-        Tokenizer.setLine(line);
-        System.out.println(Tokenizer.getInt()+Tokenizer.getInt()+Tokenizer.getInt()+Tokenizer.getInt()+Tokenizer.getString()+Tokenizer.getString());
+        //RoadPart[] roads = loadRoads("resources/roads.txt");
         
+        Pattern exPattern = Pattern.compile("((?:[a-zâüäæöøåéèA-ZÂÛÆÄØÖÅ:\\-/'´&\\(\\)]+\\s*)+), Den");
+        String name = "Røde sti, Den";
+        if (name.equals("KRATHUS, SKOVALLEEN")) {
+            name = "SKOVALLEEN";
+        }
+        Matcher m = exPattern.matcher(name);
+        if (m.find()) {
+            name = "Den "+m.group(1);
+            System.out.println("Handled the special case '"+name+"'");
+        }
         
-        RoadPart[] roads = loadRoads("resources/roads.txt");
         
         System.out.println("Sampling roads:");
         for (int i=0; i<50; i++) {

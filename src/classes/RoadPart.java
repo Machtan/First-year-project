@@ -1,5 +1,7 @@
 package classes;
 import classes.Utils.Tokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import krak.EdgeData;
 
 /**
@@ -47,6 +49,29 @@ public class RoadPart {
     //String leftParish;
     //String rightParish;
     
+    public static final Pattern exPattern = Pattern.compile("((?:[a-zâüäæöøåéèA-ZÂÛÆÄØÖÅ:\\-/'´&\\(\\)]+\\s*)+), Den");
+    
+    /**
+     * Attempts to convert a name, handling exception cases :i
+     * @param name The name of the road
+     * @return The converted road name .
+     */
+    private static String convertName(String name) {
+        if (name.equals("KRATHUS, SKOVALLEEN")) {
+            name = "SKOVALLEEN";
+        }
+        if (name.contains(",")) {
+            System.out.println("Converting name '"+name+"'");
+            Matcher m = exPattern.matcher(name);
+            if (m.find()) {
+                name = "Den "+m.group(1);
+                System.out.println("Handled the special case '"+name+"'");
+            }
+        }
+        
+        return name;
+    }
+    
     /**
         Constructor taking a revised line of data and parsing it
         @param line The line of data to parse
@@ -57,7 +82,10 @@ public class RoadPart {
         sourceID = Tokenizer.getInt();
         targetID = Tokenizer.getInt();
         type = Tokenizer.getInt();
-        name = Tokenizer.getString();
+        
+        // Special case handling :u
+        name = convertName(Tokenizer.getString());
+        
         sLeftNum = Tokenizer.getInt();
         eLeftNum = Tokenizer.getInt();
         sRightNum = Tokenizer.getInt();
@@ -97,7 +125,9 @@ public class RoadPart {
         speedLimit = data.SPEED;
         driveTime = data.DRIVETIME;
         type = data.TYP;
-        name = data.VEJNAVN;
+        
+        name = convertName(data.VEJNAVN);
+        
         rightZip = data.H_POSTNR;
         leftZip = data.V_POSTNR;
         oneWay = data.ONE_WAY;
