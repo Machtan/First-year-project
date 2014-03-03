@@ -8,16 +8,21 @@ package classes;
 import classes.Utils.Tokenizer;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import krak.EdgeData;
 import krak.KrakLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import krak.DataLine;
@@ -35,6 +40,8 @@ public class Range<T extends Comparable> {
 }*/
 public class Loader {
         
+    protected static final String encoding = "iso8859-1";
+    
     /**
      * Loads roads from a krak file
      * @param krakFilePath
@@ -55,10 +62,12 @@ public class Loader {
     
     public static RoadPart[] loadRoads(String roadFilePath) {
         System.out.println("Loading road data...");
+        long t1 = System.nanoTime();
         ArrayList<RoadPart> list = new ArrayList<>();
         BufferedReader br;
         try {
-            br = new BufferedReader(new FileReader(Utils.getFile(roadFilePath)));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(roadFilePath)), 
+                Charset.forName(encoding)));
             br.readLine(); // Again, first line is column names, not data.
         
             String line;
@@ -72,6 +81,8 @@ public class Loader {
         DataLine.resetInterner();
         System.gc();
         System.out.println("Road data loaded!");
+        double elapsed = (System.nanoTime() - t1)/(1000000000.0);
+        System.out.printf("Loaded the roads in %.3f seconds\n", elapsed);
         return list.toArray(new RoadPart[0]);
     }
 
@@ -82,50 +93,29 @@ public class Loader {
      */
     public static void saveRoads(RoadPart[] roads, String path) {
         System.out.println("Saving road data...");
-        File file = new File(path);
-        try { file.createNewFile(); }// Ensure that the path exists
-        catch (IOException ex) {
-            throw new RuntimeException("Error at file.createNewFile()");
-        }
-        try {   
-            FileWriter writer = new FileWriter(file);
-            for (RoadPart road : roads) {
-                writer.write(road+"\n");
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException("Error at the fileWriter");
-        }
-        System.out.println("Road data saved! ("+roads.length+" nodes)");
+        Utils.save(roads, path);
+        System.out.println("Road data saved! ("+roads.length+" parts)");
     }
     
+    /**
+     * Saves a list of intersections to a file in the new format
+     * @param intersections The intersections
+     * @param path The 
+     */
+    public static void saveIntersections(Intersection[] intersections, String path) {
+        System.out.println("Saving intersection data...");
+        Utils.save(intersections, path);
+        System.out.println("Intersection data saved! ("+intersections.length+" locations)");
+    }
+    
+
+    
     public static void main(String[] args) {
-        /*
-        IMPORTANT
-        changed "KRATHUS, SKOVALLEEN" in the roads.txt file to SKOVALLEEN
-        */
         System.out.println("Testing...");
-        
-        Path srcdir = Paths.get(Paths.get(Utils.getcwd()).getParent().getParent()+"","src");
-        String p = Paths.get(srcdir.toString(), "resources", "roads.txt").toString();
-        System.out.println("p: "+p);
-        System.out.println("cwd: "+Utils.getcwd());
-        RoadPart[] roads = loadKrakRoads("krak/kdv_unload.txt");
-        //Road[] roads = new RoadPart[0];
-        //saveRoads(roads, p);
-        
-        //RoadPart[] roads = loadRoads("resources/roads.txt");
-        
-        Pattern exPattern = Pattern.compile("((?:[a-zâüäæöøåéèA-ZÂÛÆÄØÖÅ:\\-/'´&\\(\\)]+\\s*)+), Den");
-        String name = "Røde sti, Den";
-        if (name.equals("KRATHUS, SKOVALLEEN")) {
-            name = "SKOVALLEEN";
-        }
-        Matcher m = exPattern.matcher(name);
-        if (m.find()) {
-            name = "Den "+m.group(1);
-            System.out.println("Handled the special case '"+name+"'");
-        }
-        
+
+        //RoadPart[] roads = loadKrakRoads("krak/kdv_unload.txt"); // 234MB heap ~2x size
+        //saveRoads(roads, p);       
+        RoadPart[] roads = loadRoads("resources/roads.txt"); // ~100MB heap ~2x size
         
         System.out.println("Sampling roads:");
         for (int i=0; i<50; i++) {

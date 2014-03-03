@@ -1,10 +1,15 @@
 package classes;
 
+import static classes.Loader.encoding;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.Arrays;
+import krak.DataLine;
 
 /**
  * The Utils class <More docs goes here>
@@ -77,34 +82,34 @@ public class Utils {
      * A simple tokenizer for naïvely tokenizing comma-separated values
      */
     public static class Tokenizer {
-        private static String[] tokens;
-        private static int index;
-        public static void setLine(String line) {
-            // Split the line at comma (smartly so :i )
-            ArrayList<String> l = new ArrayList<>();
-            int c = line.indexOf(",");
-            int i = 0;
-            while (c > -1) {
-                l.add(line.substring(i, c));
-                i = c+1;
-                c = line.indexOf(",", c+1);
-            }
-            l.add(line.substring(i));
-            tokens = l.toArray(new String[0]);
-            index = 0;
+        private static DataLine line;
+        public static void setLine(String text) {
+            line = new DataLine(text);
         }
-        private static String next() {
-            if (index == tokens.length) {
-                System.out.println("No index "+index+" in "+joinStrings(tokens, ","));
-                throw new RuntimeException("Tokenizer length exceeded!");
-            } else {
-                return tokens[index++];
-            }
-        }
-        public static boolean getBool()   { return Boolean.parseBoolean(next()); }
-        public static int     getInt()    { return Integer.parseInt(next()); }
-        public static double  getDouble() { return Double.parseDouble(next()); }
-        public static String  getString() { return next(); }
+        public static String getString() { return line.getString(); }
+        public static int getInt() { return line.getInt(); }
+        public static double getDouble() { return line.getDouble(); }
     }
     
+     /**
+     * A method to easily save stuff to a file :)
+     * The file will be created in the given folder of the project
+     * @param <T> An object implementing CharSequence (like Strings)
+     * @param data The list of CharSequence-implementing objects
+     * @param filepath The path to the file eg: resources/roads.txt
+     */
+    public static <T extends CharSequence> void save(T[] data, String filepath) {
+        Path srcdir = Paths.get(Paths.get(getcwd()).getParent().getParent()+"","src");
+        String path = Paths.get(srcdir.toString(), filepath).toString();
+        File file = new File(path);
+        try { file.createNewFile(); }// Ensure that the path exists
+        catch (IOException ex) {
+            throw new RuntimeException("Error at file.createNewFile()");
+        }
+        try {
+            Files.write(file.toPath(), Arrays.asList(data), Charset.forName(encoding));
+        } catch (IOException ex) {
+            throw new RuntimeException("Error while saving data to '"+path+"'");
+        }
+    }
 }

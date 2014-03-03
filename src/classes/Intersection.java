@@ -8,7 +8,7 @@ import krak.NodeData;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 25-Feb-2014
  */
-public class Intersection {
+public class Intersection implements CharSequence {
     
     public final int id;
     public final double x;
@@ -39,5 +39,20 @@ public class Intersection {
             y
         }, 
         ",");
+    }
+
+    @Override
+    public int length() {
+        return toString().length();
+    }
+
+    @Override
+    public char charAt(int index) {
+        return toString().charAt(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        return toString().subSequence(start, end);
     }
 }

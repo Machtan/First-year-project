@@ -134,8 +134,8 @@ public class AddressParsing {
      * @return A list of strings denoting the following address fields
      * ['road', 'roadnumber', 'floor', 'postal code', 'city' ]
      * If nothing is recognised for a field, its position will contain ""
-     * @throws bfst.exercises.AddressParsing.IllegalCharacterException
-     * @throws bfst.exercises.AddressParsing.NoMatchException
+     * @throws classes.AddressParsing.IllegalCharacterException
+     * @throws classes.AddressParsing.NoMatchException
      */
     public static String[] parseAddress(String address) throws IllegalCharacterException, NoMatchException {
         if (!hasPattern) {

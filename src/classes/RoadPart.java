@@ -1,5 +1,6 @@
 package classes;
 import classes.Utils.Tokenizer;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import krak.EdgeData;
@@ -9,7 +10,7 @@ import krak.EdgeData;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 25-Feb-2014
  */
-public class RoadPart {
+public class RoadPart implements CharSequence {
     final int sourceID; // The ID of one of the road's ending intersections
     final int targetID; // The ID of one of the road's ending intersections
     final int type; // The road type
@@ -50,6 +51,22 @@ public class RoadPart {
     //String rightParish;
     
     public static final Pattern exPattern = Pattern.compile("((?:[a-zâüäæöøåéèA-ZÂÛÆÄØÖÅ:\\-/'´&\\(\\)]+\\s*)+), Den");
+    public static final HashMap<String, String> rep = new HashMap<>();
+    public static boolean initialized = false;
+    /**
+     * Initializes the static string replacement map
+     */
+    public static void createReplacementMap() {
+        if (initialized) { return; }
+        rep.put("Brøndby Haveby Afd. 6, Rosen", "Brøndby Haveby Afd. 6");
+        rep.put(", P.PLADS", "");
+        rep.put(",P.PLADS","");
+        rep.put(",HAVESELAB"," Haveselskab");
+        rep.put(",HAVEFORENING", " HAVEFORENING");
+        rep.put(",HAVEF"," HAVEFORENING");
+        rep.put("KRATHUS, SKOVALLEEN", "SKOVALLEEN");
+        initialized = true;
+    }
     
     /**
      * Attempts to convert a name, handling exception cases :i
@@ -57,16 +74,17 @@ public class RoadPart {
      * @return The converted road name .
      */
     private static String convertName(String name) {
-        if (name.equals("KRATHUS, SKOVALLEEN")) {
-            name = "SKOVALLEEN";
-        }
+        if (!initialized) { createReplacementMap(); }
         if (name.contains(",")) {
-            System.out.println("Converting name '"+name+"'");
+            //System.out.println("Converting name '"+name+"'");
+            for (String r : rep.keySet()) {
+                name = name.replace(r, rep.get(r));
+            }
             Matcher m = exPattern.matcher(name);
             if (m.find()) {
                 name = "Den "+m.group(1);
-                System.out.println("Handled the special case '"+name+"'");
             }
+            System.out.println("Converted to '"+name+"'");
         }
         
         return name;
@@ -165,5 +183,20 @@ public class RoadPart {
             fTurn,
             tTurn
         }, ",");
+    }
+
+    @Override
+    public int length() {
+        return toString().length();
+    }
+
+    @Override
+    public char charAt(int index) {
+        return toString().charAt(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        return toString().subSequence(start, end);
     }
 }
