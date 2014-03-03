@@ -4,11 +4,11 @@ package krak;
  * An object storing the raw node data from the krak data file.
  */
 public class NodeData {
-	final int ARC;
-	final int KDV;
-	final int KDV_ID;
-	final double X_COORD;
-	final double Y_COORD;
+	public final int ARC;
+	public final int KDV;
+	public final int KDV_ID;
+	public final double X_COORD;
+	public final double Y_COORD;
 
 	/**
 	 * Parses node data from line, throws an IOException

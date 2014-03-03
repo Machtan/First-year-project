@@ -7,5 +7,5 @@ package classes;
  */
 public interface Structure {
     void addIntersection(Intersection intersection);
-    void addRoad(Road road);
+    void addRoad(RoadPart road);
 }

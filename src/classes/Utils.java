@@ -2,6 +2,9 @@ package classes;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 
 /**
  * The Utils class <More docs goes here>
@@ -61,4 +64,47 @@ public class Utils {
     public static String getcwd() {
         return Utils.class.getProtectionDomain().getCodeSource().getLocation().getPath();
     }
+    
+    /**
+     * Returns a path to the source folder of the project
+     * @return 
+     */
+    public static Path getSourceDir() {
+        return Paths.get(Paths.get(getcwd()).getParent().getParent()+"","src");
+    }
+    
+    /**
+     * A simple tokenizer for naïvely tokenizing comma-separated values
+     */
+    public static class Tokenizer {
+        private static String[] tokens;
+        private static int index;
+        public static void setLine(String line) {
+            // Split the line at comma (smartly so :i )
+            ArrayList<String> l = new ArrayList<>();
+            int c = line.indexOf(",");
+            int i = 0;
+            while (c > -1) {
+                l.add(line.substring(i, c));
+                i = c+1;
+                c = line.indexOf(",", c+1);
+            }
+            l.add(line.substring(i));
+            tokens = l.toArray(new String[0]);
+            index = 0;
+        }
+        private static String next() {
+            if (index == tokens.length) {
+                System.out.println("No index "+index+" in "+joinStrings(tokens, ","));
+                throw new RuntimeException("Tokenizer length exceeded!");
+            } else {
+                return tokens[index++];
+            }
+        }
+        public static boolean getBool()   { return Boolean.parseBoolean(next()); }
+        public static int     getInt()    { return Integer.parseInt(next()); }
+        public static double  getDouble() { return Double.parseDouble(next()); }
+        public static String  getString() { return next(); }
+    }
+    
 }

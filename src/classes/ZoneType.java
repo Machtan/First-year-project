@@ -12,4 +12,13 @@ public enum ZoneType {
     ZoneType(int value) {
         this.value = value;
     }
+    
+    public static ZoneType fromValue(int value) {
+        for (ZoneType type : ZoneType.values()) {
+            if (type.value == value) {
+                return type;
+            }
+        }
+        throw new RuntimeException("Could not load a zone type from the value '"+value+"'");
+    }
 }

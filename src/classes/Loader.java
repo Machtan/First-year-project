@@ -5,16 +5,20 @@ package classes;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 25-Feb-2014
  */
+import classes.Utils.Tokenizer;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import krak.EdgeData;
 import krak.KrakLoader;
-import krak.NodeData;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import krak.DataLine;
 
 /*
 // This might be a better idea for the road numbering stuff :i
@@ -28,47 +32,43 @@ public class Range<T extends Comparable> {
     }
 }*/
 public class Loader {
-    
-    // This looks too much like the model. Scrap and make the model instead :)
-    public static class RoadStructure implements Structure {
-        private final int limit = 100;
-        private int count;
         
-        
-        
-        public RoadStructure(Road[] roads, Intersection[] intersections) {
-            count = 0;
-        }
-
-        @Override
-        public void addIntersection(Intersection intersection) {
-            throw new UnsupportedOperationException("classes.Loader.RoadStructure.addIntersection is not supported yet.");
-        }
-
-        @Override
-        public void addRoad(Road road) {
-            System.out.println("Road: "+road.toString());
-            if (count++ == limit) {
-                // Throw an exception to stop the program...
-                throw new RuntimeException("Ending...");
-            }
-        }
-        
-        
-    }
-    
     /**
      * Loads roads from a krak file
      * @param krakFilePath
      * @return 
      */
-    public static Road[] loadKrakRoads(String krakFilePath) {
+    public static RoadPart[] loadKrakRoads(String krakFilePath) {
+        System.out.println("Loading roads from Krak data...");
         EdgeData[] edges = KrakLoader.loadEdges(krakFilePath);
-        Road[] roads = new Road[edges.length];
+        RoadPart[] roads = new RoadPart[edges.length];
         for (int i = 0; i < edges.length; i++) {
-            roads[i] = new Road(edges[i]);
+            roads[i] = new RoadPart(edges[i]);
         }
+        System.out.println("Roads loaded! ("+roads.length+" nodes)");
         return roads;
+    }
+    
+    public static RoadPart[] loadRoads(String roadFilePath) {
+        System.out.println("Loading road data...");
+        ArrayList<RoadPart> list = new ArrayList<>();
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new FileReader(Utils.getFile(roadFilePath)));
+            br.readLine(); // Again, first line is column names, not data.
+        
+            String line;
+            while ((line = br.readLine()) != null) {
+                list.add(new RoadPart(line));
+            }
+            br.close();
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not load road data from '"+roadFilePath+"'");
+        }
+        DataLine.resetInterner();
+        System.gc();
+        System.out.println("Road data loaded!");
+        return list.toArray(new RoadPart[0]);
     }
 
     /**
@@ -76,7 +76,7 @@ public class Loader {
      * @param roads The roads to save
      * @param path The path to save them to (the directory should exist)
      */
-    public static void saveRoads(Road[] roads, String path) {
+    public static void saveRoads(RoadPart[] roads, String path) {
         System.out.println("Saving road data...");
         File file = new File(path);
         try { file.createNewFile(); }// Ensure that the path exists
@@ -85,26 +85,44 @@ public class Loader {
         }
         try {   
             FileWriter writer = new FileWriter(file);
-            for (Road road : roads) {
+            for (RoadPart road : roads) {
                 writer.write(road+"\n");
             }
         } catch (IOException ex) {
             throw new RuntimeException("Error at the fileWriter");
         }
-        System.out.println("Road data saved!");
+        System.out.println("Road data saved! ("+roads.length+" nodes)");
     }
     
     public static void main(String[] args) {
-        Path path = FileSystems.getDefault().getPath("resources","roads.txt");
-        Path srcdir = Utils.getcwd().getParent();
-        String p = srcdir.toString()+"roads.txt";
-        System.out.println("p: "+p);
-        System.out.println("Path: "+path);
+        /*
+        IMPORTANT
+        changed "KRATHUS, SKOVALLEEN" in the roads.txt file to SKOVALLEEN
+        */
         System.out.println("Testing...");
-        System.out.println("cwd: "+Utils.getcwd());
-        //Road[] roads = loadKrakRoads("krak/kdv_unload.txt");
-        Road[] roads = new Road[0];
-        saveRoads(roads, "resources/roads.txt"); // Not working yet!
         
+        Path srcdir = Paths.get(Paths.get(Utils.getcwd()).getParent().getParent()+"","src");
+        String p = Paths.get(srcdir.toString(), "resources", "roads.txt").toString();
+        System.out.println("p: "+p);
+        System.out.println("cwd: "+Utils.getcwd());
+        //RoadPart[] roads = loadKrakRoads("krak/kdv_unload.txt");
+        //Road[] roads = new RoadPart[0];
+        //saveRoads(roads, p);
+        
+        String line = "2,2,3,4,,";
+        Tokenizer.setLine(line);
+        System.out.println(Tokenizer.getInt()+Tokenizer.getInt()+Tokenizer.getInt()+Tokenizer.getInt()+Tokenizer.getString()+Tokenizer.getString());
+        
+        
+        RoadPart[] roads = loadRoads("resources/roads.txt");
+        
+        System.out.println("Sampling roads:");
+        for (int i=0; i<50; i++) {
+            System.out.println(i+1+": '"+roads[i]+"'");
+        }
+        
+        MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
+        System.out.printf("Heap memory usage: %d MB%n",
+                mxbean.getHeapMemoryUsage().getUsed() / (1000000));
     }
 }
