@@ -3,14 +3,11 @@ package krak;
 import classes.Utils;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.ArrayList;
 
 /**

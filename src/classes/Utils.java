@@ -84,6 +84,7 @@ public class Utils {
     public static class Tokenizer {
         private static DataLine line;
         public static void setLine(String text) {
+            DataLine.resetInterner();
             line = new DataLine(text);
         }
         public static String getString() { return line.getString(); }

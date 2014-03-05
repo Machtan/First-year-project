@@ -5,27 +5,17 @@ package classes;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 25-Feb-2014
  */
-import classes.Utils.Tokenizer;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import krak.EdgeData;
 import krak.KrakLoader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import krak.DataLine;
+import krak.NodeData;
 
 /*
 // This might be a better idea for the road numbering stuff :i
@@ -60,10 +50,16 @@ public class Loader {
         return roads;
     }
     
+    /**
+     * Loads a list of reformatted RoadPart data from a file
+     * @param roadFilePath The path to the file
+     * @return An array of RoadPart elements
+     */
     public static RoadPart[] loadRoads(String roadFilePath) {
         System.out.println("Loading road data...");
         long t1 = System.nanoTime();
         ArrayList<RoadPart> list = new ArrayList<>();
+        
         BufferedReader br;
         try {
             br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(roadFilePath)), 
@@ -78,12 +74,56 @@ public class Loader {
         } catch (IOException ex) {
             throw new RuntimeException("Could not load road data from '"+roadFilePath+"'");
         }
-        DataLine.resetInterner();
         System.gc();
         System.out.println("Road data loaded!");
         double elapsed = (System.nanoTime() - t1)/(1000000000.0);
         System.out.printf("Loaded the roads in %.3f seconds\n", elapsed);
         return list.toArray(new RoadPart[0]);
+    }
+    
+    /**
+     * Loads a list of intersections in the new format from a file
+     * @param intersectionFilePath
+     * @return 
+     */
+    public static Intersection[] loadIntersections(String intersectionFilePath) {
+        System.out.println("Loading intersection data...");
+        long t1 = System.nanoTime();
+        ArrayList<Intersection> list = new ArrayList<>();
+        
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(intersectionFilePath)), 
+                Charset.forName(encoding)));
+            br.readLine(); // Again, first line is column names, not data.
+        
+            String line;
+            while ((line = br.readLine()) != null) {
+                list.add(new Intersection(line));
+            }
+            br.close();
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not load intersection data from '"+intersectionFilePath+"'");
+        }
+        System.gc();
+        System.out.println("Intersection data loaded!");
+        double elapsed = (System.nanoTime() - t1)/(1000000000.0);
+        System.out.printf("Loaded the intersections in %.3f seconds\n", elapsed);
+        return list.toArray(new Intersection[0]);
+    }
+    
+    public static Intersection[] loadKrakIntersections(String nodeFilePath) {
+        System.out.println("Loading intersection data...");
+        long t1 = System.nanoTime();
+        NodeData[] nodes = KrakLoader.loadNodes(nodeFilePath);
+        Intersection[] intersections = new Intersection[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            intersections[i] = new Intersection(nodes[i]);
+        }
+        System.out.println("Intersection data loaded!");
+        double elapsed = (System.nanoTime() - t1)/(1000000000.0);
+        System.out.printf("Loaded the intersections in %.3f seconds\n", elapsed);
+        return intersections;
     }
 
     /**
@@ -115,12 +155,15 @@ public class Loader {
 
         //RoadPart[] roads = loadKrakRoads("krak/kdv_unload.txt"); // 234MB heap ~2x size
         //saveRoads(roads, p);       
-        RoadPart[] roads = loadRoads("resources/roads.txt"); // ~100MB heap ~2x size
+        /*RoadPart[] roads = loadRoads("resources/roads.txt"); // ~100MB heap ~2x size //now 220 :d
         
         System.out.println("Sampling roads:");
         for (int i=0; i<50; i++) {
             System.out.println(i+1+": '"+roads[i]+"'");
-        }
+        }*/
+        //Intersection[] intersections = loadKrakIntersections("krak/kdv_node_unload.txt");
+        //saveIntersections(intersections, "resources/intersections.txt");
+        loadIntersections("resources/intersections.txt"); // ~30MB
         
         MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
         System.out.printf("Heap memory usage: %d MB%n",
