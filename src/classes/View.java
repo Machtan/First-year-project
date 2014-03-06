@@ -26,25 +26,21 @@ public class View extends JPanel {
 
     public static void main(String[] args) {
         View view = new View();
-        Line[] lineArr = new Line[10];
         JFrame frame = new JFrame();
         //canvas = new Canvas();
         //graphic = new Graphics();
         //canvas.setSize(400, 400);
         frame.setPreferredSize(new Dimension(400, 400));
         frame.add(new MainPanel(), BorderLayout.CENTER);
-        JLabel labelBot = new JLabel("Address information here...");
-        frame.add(labelBot, BorderLayout.SOUTH);
+        JLabel infoLabel = new JLabel("Address information here...");
+        frame.add(infoLabel, BorderLayout.SOUTH);
         frame.pack();
         frame.setVisible(true);
     }
-}
-
-class MainPanel extends JPanel {
     
     private Line[] drawnLines;
     
-    MainPanel() {
+    public View() {
         drawnLines = makeLineArr();
     }
 
@@ -81,5 +77,6 @@ class MainPanel extends JPanel {
         }
         System.out.println("3");
     }
-
+    
 }
+

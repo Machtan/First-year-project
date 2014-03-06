@@ -11,14 +11,14 @@ package classes;
  */
 public class Controller {
 
-    private Model model;
-    private View view;
-    private Loader loader;
+    private final Model model;
+    private final View view;
 
     public Controller() {
         model = new Model(Loader.loadIntersections("resources/intersections.txt"),
                 Loader.loadRoads("resources/roads.txt"));
         view = new View();
+        view.setLines(model.getLines());
         
 
     }
