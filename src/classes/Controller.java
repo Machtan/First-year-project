@@ -3,6 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package classes;
 
 /**
@@ -10,23 +11,26 @@ package classes;
  * @author Isabella
  */
 public class Controller {
+    private Model model;
+    private View view;
+    private Loader loader;
 
-    private final Model model;
-    private final View view;
-
-    public Controller() {
-        model = new Model(Loader.loadIntersections("resources/intersections.txt"),
-                Loader.loadRoads("resources/roads.txt"));
-        view = new View();
-        view.setLines(model.getLines());
-        
-
+    public Controller(){
+       model = new Model(Loader.loadIntersections("resources/intersections.txt"), 
+               Loader.loadRoads("resources/roads.txt"));
+       view = new View();
+       view.setLines(model.getLines());
+       
     }
-
-    public static void main(String[] args) {
+       
+    public static void main(String[] args){
         //Run program
         Controller controller = new Controller();
-
+        
+        
+        
+        
     }
-
+    
+    
 }

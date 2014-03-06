@@ -21,9 +21,9 @@ public class Model {
     public Model(Intersection[] intersecArr, RoadPart[] roadPartArr) {
         this.roadPartArr = roadPartArr;
         lineArr = new Line[roadPartArr.length];
-        intersecMap = new HashMap();
-           for (int i = 0; i < intersecArr.length ; i++){
-           intersecMap.put(intersecArr[i].id , intersecArr[i]);
+        intersecMap = new HashMap<>();
+        for (Intersection intersecArr1 : intersecArr) {
+            intersecMap.put(intersecArr1.id, intersecArr1);
         }
     }
     
@@ -32,7 +32,7 @@ public class Model {
             lineArr[i] = new Line(
                     intersecMap.get(roadPartArr[i].sourceID).x, 
                     intersecMap.get(roadPartArr[i].sourceID).y,
-                    intersecMap.get(roadPartArr[i].targetID).x, 
+                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
                     intersecMap.get(roadPartArr[i].targetID).y);
         }
         return lineArr;

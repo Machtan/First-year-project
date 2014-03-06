@@ -64,7 +64,6 @@ public class Loader {
         try {
             br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(roadFilePath)), 
                 Charset.forName(encoding)));
-            br.readLine(); // Again, first line is column names, not data.
         
             String line;
             while ((line = br.readLine()) != null) {
@@ -95,7 +94,6 @@ public class Loader {
         try {
             br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(intersectionFilePath)), 
                 Charset.forName(encoding)));
-            br.readLine(); // Again, first line is column names, not data.
         
             String line;
             while ((line = br.readLine()) != null) {
@@ -155,15 +153,28 @@ public class Loader {
 
         //RoadPart[] roads = loadKrakRoads("krak/kdv_unload.txt"); // 234MB heap ~2x size
         //saveRoads(roads, p);       
-        /*RoadPart[] roads = loadRoads("resources/roads.txt"); // ~100MB heap ~2x size //now 220 :d
-        
-        System.out.println("Sampling roads:");
-        for (int i=0; i<50; i++) {
-            System.out.println(i+1+": '"+roads[i]+"'");
-        }*/
+        //RoadPart[] roads = loadRoads("resources/roads.txt"); // ~100MB heap ~2x size //now 220 :d
         //Intersection[] intersections = loadKrakIntersections("krak/kdv_node_unload.txt");
         //saveIntersections(intersections, "resources/intersections.txt");
-        loadIntersections("resources/intersections.txt"); // ~30MB
+        Intersection[] ints = loadIntersections("resources/intersections.txt"); // ~30MB
+        double minX = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxY = Double.MIN_VALUE;
+        
+        for (Intersection i : ints) {
+            if (i.x < minX) {
+                minX = i.x;
+            } 
+            if (i.x > maxX) {
+                maxX = i.x;
+            }
+            if (i.y < minY) { minY = i.y; }
+            if (i.y > maxY) { maxY = i.y; }
+        }
+        
+        System.out.println("X ranges from "+minX+" to "+maxX+" ("+(maxX-minX)+")");
+        System.out.println("Y ranges from "+minY+" to "+maxY+" ("+(maxY-minY)+")");
         
         MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
         System.out.printf("Heap memory usage: %d MB%n",
