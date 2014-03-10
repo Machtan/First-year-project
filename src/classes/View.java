@@ -40,7 +40,6 @@ public class View extends JPanel {
         frame.setPreferredSize(new Dimension(800, 600));
         frame.pack();
         frame.setVisible(true);
-        paintComponent(this.getGraphics());
     }
     
     public void setLines(Line[] lines) {
@@ -65,20 +64,9 @@ public class View extends JPanel {
         return lineArr;
     }
     
-    public int getScreenX(double x) {
-        return (int)((x-442254.35659) * (getHeight() / 352136.5527900001));
-    }
-    public int getScreenY(double y) {
-        return (int)(getHeight() - ((y-6049914.43018) * (getHeight() / 352136.5527900001)));
-    }
-    
     public void draw(Line[] lineArr, Graphics g) {
         for (Line line : lineArr) {
-            //System.out.println((int)lineArr[i].x1 + "+"+ (int)lineArr[i].y1+"+" +(int)lineArr[i].x2+"+"+ (int)lineArr[i].y2);
-            g.drawLine(getScreenX(line.x1), 
-                    getScreenY(line.y1), 
-                    getScreenX(line.x2), 
-                    getScreenY(line.y2));
+            g.drawLine(line.x1, line.y1, line.x2, line.y2);
         }
         System.out.println("3");
     }
