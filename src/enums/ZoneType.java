@@ -1,4 +1,4 @@
-package classes;
+package enums;
 
 /**
  * The ZoneType class <More docs goes here>

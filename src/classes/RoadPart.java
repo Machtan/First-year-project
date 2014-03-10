@@ -1,4 +1,5 @@
 package classes;
+import enums.ZoneType;
 import classes.Utils.Tokenizer;
 import java.util.HashMap;
 import java.util.regex.Matcher;
