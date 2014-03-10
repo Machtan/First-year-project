@@ -68,6 +68,6 @@ public class View extends JPanel {
         for (Line line : lineArr) {
             g.drawLine(line.x1, line.y1, line.x2, line.y2);
         }
-        System.out.println("3");
+        System.out.println("Redrawing...");
     }
 }

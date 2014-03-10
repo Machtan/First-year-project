@@ -20,13 +20,21 @@ public class Controller implements KeyListener {
 
     private Rect activeArea;
 
+    
+    /*
+    x = 442254.35659
+    y = 6049914.43018
+    width = 352136.5527900001
+    height = 352136.5527900001
+    */
+    
+    
     public Controller() {
         
         model = new Model(Loader.loadIntersections("resources/intersections.txt"), 
         Loader.loadRoads("resources/roads.txt"));
         
         view = new View();
-        view.paintComponent(view.getGraphics());
 
         System.out.println("View height: " + view.getHeight());
 
@@ -34,9 +42,18 @@ public class Controller implements KeyListener {
         view.setFocusTraversalKeysEnabled(false);
         view.setFocusable(true);
 
-        view.setLines(model.getLines(view));
-        //activeArea = model.getBoundingArea();
+        activeArea = model.getBoundingArea();
+        refresh();
+        
 
+    }
+    
+    /**
+     * Refreshes the view according to the active area
+     */
+    public void refresh() {
+        view.setLines(model.getLines(activeArea, view));
+        view.paintComponent(view.getGraphics());
     }
 
     public static void main(String[] args) {
@@ -46,18 +63,23 @@ public class Controller implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
-
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_LEFT: {
-
+                // The focus area goes left, meaning the map will go right
+                activeArea = new Rect(activeArea.x - activeArea.width/30,
+                    activeArea.y, activeArea.width, activeArea.height);
+                refresh();
                 break;
             }
             case KeyEvent.VK_RIGHT: {
-
+                // The focus area goes right, meaning the map will go left
+                activeArea = new Rect(activeArea.x + activeArea.width/30,
+                    activeArea.y, activeArea.width, activeArea.height);
+                refresh();
                 break;
             }
             case KeyEvent.VK_UP: {
@@ -70,11 +92,20 @@ public class Controller implements KeyListener {
                 break;
             }
         }
+        
+        if (e.getKeyChar() == '+') {
+            System.out.println("PLUS!");
+            activeArea = new Rect(activeArea.x, activeArea.y, 
+                    activeArea.width * 0.9, 
+                    activeArea.height * 0.9);
+            refresh();
+        }
+        
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        System.out.println("Key released!");
+        //System.out.println("Key released!");
     }
 
 }
