@@ -6,8 +6,8 @@
 
 package classes;
 
-import java.awt.Dimension;
 import enums.RoadType;
+import java.awt.Dimension;
 import java.awt.Color;
 import java.util.HashMap;
 import javax.swing.JComponent;
@@ -73,16 +73,17 @@ public class Model {
      * size of the given viewer component
      * @param area The area to find roads inside and constrain the rendering to
      * @param target The area of the view the coordinates should be mapped to
+     * @param instructions The instructions for coloring/rendering of the lines
      * @return A list of lines converted to local coordinates for the view
      */
+    public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
         for(int i = 0; i<roadPartArr.length; i++) {
-            if(roadPartArr[i].type == 1) {
             lineArr[i] = new Line(
                     getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, target), 
                     getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, target),
                     getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, target),
-                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, target));
-        }
+                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, target),
+                    instructions.getColor(RoadType.fromValue(roadPartArr[i].type%4))); // TODO TEMPORARY
         }
         return lineArr;
     }

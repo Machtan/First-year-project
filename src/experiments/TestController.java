@@ -4,6 +4,8 @@ import classes.Line;
 import classes.Loader;
 import classes.Model;
 import classes.Rect;
+import classes.RenderInstructions;
+import classes.View;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,6 +41,7 @@ public class TestController extends JFrame implements KeyListener, ActionListene
     private int vx = 0;
     private int vy = 0;
     private Rect activeArea;
+    private RenderInstructions ins = View.defaultInstructions;
     
     /**
      * Constructor for the TestController class
@@ -55,7 +58,8 @@ public class TestController extends JFrame implements KeyListener, ActionListene
         
         activeArea = model.getBoundingArea();
         view.addKeyListener(this);
-        view.createImage(model.getLines(activeArea, new Rect(0, 0, view.getWidth(), view.getHeight())));
+        view.createImage(model.getLines(activeArea, 
+                new Rect(0, 0, view.getWidth(), view.getHeight()), ins));
         
         keyDown = new HashMap<>();
         keyDown.put(KeyEvent.VK_LEFT, false);
@@ -71,7 +75,8 @@ public class TestController extends JFrame implements KeyListener, ActionListene
      * Tells the model to redraw based on the activeArea
      */
     private void redraw() {
-        view.createImage(model.getLines(activeArea, new Rect(0, 0, view.getWidth(), view.getHeight())));
+        view.createImage(model.getLines(activeArea, new Rect(0, 0, 
+                view.getWidth(), view.getHeight()), ins));
     }
     
     @Override
@@ -194,16 +199,16 @@ public class TestController extends JFrame implements KeyListener, ActionListene
             // Request the lines for the areas to be redrawn
             Line[] lines = new Line[0];
             if (verArea != null && horArea != null) {
-                Line[] verLines = model.getLines(verArea, verTarget);
-                Line[] horLines = model.getLines(horArea, horTarget);
+                Line[] verLines = model.getLines(verArea, verTarget, ins);
+                Line[] horLines = model.getLines(horArea, horTarget, ins);
                 lines = Arrays.copyOf(verLines, verLines.length + horLines.length);
                 for (int i = 0; i < horLines.length; i++) {
                     lines[verLines.length+i] = horLines[i];
                 }
             } else if (verArea != null) {
-                lines = model.getLines(verArea, verTarget);
+                lines = model.getLines(verArea, verTarget, ins);
             } else if (horArea != null) {
-                lines = model.getLines(horArea, horTarget);
+                lines = model.getLines(horArea, horTarget, ins);
             }
             
             // Finalize the change to the active area
