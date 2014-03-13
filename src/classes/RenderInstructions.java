@@ -22,6 +22,13 @@ public class RenderInstructions {
     public RenderInstructions () {
         defaultColor = new Color(0,0,0);
         voidColor = new Color(10,10,10);
+        colorMap = new HashMap<>();
+    
+    
+    }
+    
+    public void setColor(RoadType type, Color color) {
+        //Does nothing so far..
     }
     
     public Color getVoidColor() {
@@ -34,6 +41,8 @@ public class RenderInstructions {
      * @return 
      */
     public Color getColor(RoadType type) {
+        
+        
         if (colorMap.containsKey(type)) {
             return colorMap.get(type);
         } else {
@@ -47,6 +56,7 @@ public class RenderInstructions {
      * @param type The type of road
      */
     public void addMapping(Color color, RoadType type) {
+        
         colorMap.put(type, color);
     }
     

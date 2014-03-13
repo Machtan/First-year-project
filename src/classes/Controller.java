@@ -6,6 +6,9 @@
 
 package classes;
 
+import enums.RoadType;
+import java.awt.Color;
+
 /**
  *
  * @author Isabella
@@ -14,16 +17,22 @@ public class Controller {
     private Model model;
     private View view;
     private Loader loader;
+    
 
-    public Controller(){
-       model = new Model(Loader.loadIntersections("resources/intersections.txt"), 
-               Loader.loadRoads("resources/roads.txt"));
+    public Controller() {
+        Intersection[] intersecArr = Loader.loadIntersections("resources/intersections.txt");
+            RoadPart[] roadPartArr = Loader.loadRoads("resources/roads.txt");
+       model = new Model(intersecArr, roadPartArr);
        view = new View();
-       view.setLines(model.getLines());
+       
+       
+       
+       view.setLines(model.getLines(View.colorStuff));
        
     }
        
     public static void main(String[] args){
+        
         //Run program
         Controller controller = new Controller();
         

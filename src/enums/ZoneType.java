@@ -6,7 +6,8 @@ package enums;
  * @version 25-Feb-2014
  */
 public enum ZoneType {
-    TEMP(0);
+    TEMP(0), TEEMP(1);
+    
     
     public final int value;
     ZoneType(int value) {

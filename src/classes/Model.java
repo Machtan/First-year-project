@@ -6,6 +6,8 @@
 
 package classes;
 
+import enums.RoadType;
+import java.awt.Color;
 import java.util.HashMap;
 
 /**
@@ -15,6 +17,7 @@ import java.util.HashMap;
 public class Model {
     private Model model;
     private HashMap<Integer, Intersection> intersecMap;
+    private HashMap<Color, Line[]> colorMap;
     private RoadPart[] roadPartArr;
     private Line[] lineArr;
 
@@ -27,13 +30,24 @@ public class Model {
         }
     }
     
-    public Line[] getLines(){
+    public Line[] getLines(RenderInstructions instructions){
         for(int i = 0; i<roadPartArr.length; i++) {
+            if(i%2 == 1) {
             lineArr[i] = new Line(
                     intersecMap.get(roadPartArr[i].sourceID).x, 
                     intersecMap.get(roadPartArr[i].sourceID).y,
                     intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
-                    intersecMap.get(roadPartArr[i].targetID).y);
+                    intersecMap.get(roadPartArr[i].targetID).y,
+                    instructions.getColor(RoadType.TEMP));
+            } else if(i%2 == 0) {
+                lineArr[i] = new Line(
+                    intersecMap.get(roadPartArr[i].sourceID).x, 
+                    intersecMap.get(roadPartArr[i].sourceID).y,
+                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
+                    intersecMap.get(roadPartArr[i].targetID).y,
+                    instructions.getColor(RoadType.TEEMP));
+            }
+            
         }
         return lineArr;
     }

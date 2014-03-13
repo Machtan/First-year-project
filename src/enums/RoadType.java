@@ -6,7 +6,8 @@ package enums;
  * @version 10-Mar-2014
  */
 public enum RoadType {
-    TEMP(0);
+    TEMP(0), TEEMP(1);
+    
     
     private final int value;
     /**
