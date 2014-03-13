@@ -32,24 +32,38 @@ public class Model {
     
     public Line[] getLines(RenderInstructions instructions){
         for(int i = 0; i<roadPartArr.length; i++) {
-            if(i%2 == 1) {
+            if(roadPartArr[i].type == 1) {
             lineArr[i] = new Line(
                     intersecMap.get(roadPartArr[i].sourceID).x, 
                     intersecMap.get(roadPartArr[i].sourceID).y,
                     intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
                     intersecMap.get(roadPartArr[i].targetID).y,
                     instructions.getColor(RoadType.TEMP));
-            } else if(i%2 == 0) {
+                
+            } else if(roadPartArr[i].type == 2) {
                 lineArr[i] = new Line(
                     intersecMap.get(roadPartArr[i].sourceID).x, 
                     intersecMap.get(roadPartArr[i].sourceID).y,
                     intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
                     intersecMap.get(roadPartArr[i].targetID).y,
                     instructions.getColor(RoadType.TEEMP));
-            }
-            
+            } else if(roadPartArr[i].type == 3) {
+                lineArr[i] = new Line(
+                    intersecMap.get(roadPartArr[i].sourceID).x, 
+                    intersecMap.get(roadPartArr[i].sourceID).y,
+                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
+                    intersecMap.get(roadPartArr[i].targetID).y,
+                    instructions.getColor(RoadType.TEEEMP));
+            } else {
+                lineArr[i] = new Line(
+                    intersecMap.get(roadPartArr[i].sourceID).x, 
+                    intersecMap.get(roadPartArr[i].sourceID).y,
+                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
+                    intersecMap.get(roadPartArr[i].targetID).y,
+                    instructions.getColor(RoadType.TEEEEMP));
+        }
         }
         return lineArr;
     }
-   
 }
+

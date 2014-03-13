@@ -52,6 +52,8 @@ public class View extends JPanel {
     public static void setColors() {
         colorStuff.addMapping(Color.red, RoadType.TEMP);
         colorStuff.addMapping(Color.blue, RoadType.TEEMP);
+        colorStuff.addMapping(Color.black, RoadType.TEEEMP);
+        colorStuff.addMapping(Color.green, RoadType.TEEEEMP);
     }
     
     
@@ -90,22 +92,34 @@ public class View extends JPanel {
     
     public void draw(Line[] lineArr, Graphics g) {
         for (Line line : lineArr) {
-            //System.out.println((int)lineArr[i].x1 + "+"+ (int)lineArr[i].y1+"+" +(int)lineArr[i].x2+"+"+ (int)lineArr[i].y2);
+
             if(line.color == Color.red) {
                 g.setColor(Color.red);
                 g.drawLine(getScreenX(line.x1), 
-                    getScreenY(line.y1), 
-                    getScreenX(line.x2), 
-                    getScreenY(line.y2));
+                getScreenY(line.y1), 
+                getScreenX(line.x2), 
+                getScreenY(line.y2));
             } else if(line.color == Color.blue) {
-            g.setColor(Color.blue);
-            
-            g.drawLine(getScreenX(line.x1), 
-                    getScreenY(line.y1), 
-                    getScreenX(line.x2), 
-                    getScreenY(line.y2));
+                g.setColor(Color.blue);
+                g.drawLine(getScreenX(line.x1), 
+                getScreenY(line.y1), 
+                getScreenX(line.x2), 
+                getScreenY(line.y2));
+            } else if(line.color == Color.black) {
+                g.setColor(Color.black);
+                g.drawLine(getScreenX(line.x1), 
+                getScreenY(line.y1), 
+                getScreenX(line.x2), 
+                getScreenY(line.y2));
+            } else if(line.color == Color.green) {
+                g.setColor(Color.green);
+                g.drawLine(getScreenX(line.x1), 
+                getScreenY(line.y1), 
+                getScreenX(line.x2), 
+                getScreenY(line.y2));
             }
+            
+           
         }
-        System.out.println("3");
     }
 }
