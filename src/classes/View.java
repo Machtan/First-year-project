@@ -45,7 +45,6 @@ public class View extends JPanel {
         frame.setPreferredSize(new Dimension(800, 600));
         frame.pack();
         frame.setVisible(true);
-        paintComponent(this.getGraphics());
     }
     
     //Add colors to the map in RenderInstr.
@@ -81,13 +80,6 @@ public class View extends JPanel {
            
         }
         return lineArr;
-    }
-    
-    public int getScreenX(double x) {
-        return (int)((x-442254.35659) * (getHeight() / 352136.5527900001));
-    }
-    public int getScreenY(double y) {
-        return (int)(getHeight() - ((y-6049914.43018) * (getHeight() / 352136.5527900001)));
     }
     
     public void draw(Line[] lineArr, Graphics g) {
