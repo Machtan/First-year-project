@@ -3,8 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package classes;
 
+import enums.RoadType;
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -17,7 +20,7 @@ public class Controller implements KeyListener {
     private Model model;
     private View view;
     private Loader loader;
-
+    
     private Rect activeArea;
 
     
@@ -30,9 +33,9 @@ public class Controller implements KeyListener {
     
     
     public Controller() {
-        
-        model = new Model(Loader.loadIntersections("resources/intersections.txt"), 
-        Loader.loadRoads("resources/roads.txt"));
+        Intersection[] intersecArr = Loader.loadIntersections("resources/intersections.txt");
+            RoadPart[] roadPartArr = Loader.loadRoads("resources/roads.txt");
+       model = new Model(intersecArr, roadPartArr);
         
         view = new View();
 
@@ -45,18 +48,18 @@ public class Controller implements KeyListener {
         activeArea = model.getBoundingArea();
         refresh();
         
-
     }
     
     /**
      * Refreshes the view according to the active area
      */
     public void refresh() {
-        view.setLines(model.getLines(activeArea, view));
+        view.setLines(model.getLines(activeArea, view, View.colorStuff));
         view.paintComponent(view.getGraphics());
     }
 
     public static void main(String[] args) {
+        
         //Run program
         Controller controller = new Controller();
     }

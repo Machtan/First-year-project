@@ -5,6 +5,7 @@
  */
 package classes;
 
+import enums.RoadType;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -18,9 +19,11 @@ import javax.swing.*;
 public class View extends JPanel {
     
     private static Graphics g;
+
     private JLabel statusLabel;
     private Line[] lines;
     private JFrame frame;
+    public static RenderInstructions colorStuff;
     
     /*
     X ranges from 442254.35659 to 892658.21706 (450403.8604700001)
@@ -28,7 +31,9 @@ public class View extends JPanel {
     */
     
     public View() {
-        lines = View.makeLineArr();
+        colorStuff = new RenderInstructions();
+        View.setColors();
+        lines = View.makeLineArr(colorStuff);
         
         frame = new JFrame();
         frame.setLocationRelativeTo(null);
@@ -42,6 +47,15 @@ public class View extends JPanel {
         frame.setVisible(true);
     }
     
+    //Add colors to the map in RenderInstr.
+    public static void setColors() {
+        colorStuff.addMapping(Color.red, RoadType.TEMP);
+        colorStuff.addMapping(Color.blue, RoadType.TEEMP);
+        colorStuff.addMapping(Color.black, RoadType.TEEEMP);
+        colorStuff.addMapping(Color.green, RoadType.TEEEEMP);
+    }
+    
+    
     public void setLines(Line[] lines) {
         this.lines = lines;
     }
@@ -49,25 +63,55 @@ public class View extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.BLACK);
         draw(lines, g);
+            
+        
     }
     
-    private static Line[] makeLineArr() {
+    private static Line[] makeLineArr(RenderInstructions instr) {
+        
         Line[] lineArr = new Line[10];
         int x = 1;
         
         for (int i = 0; i < lineArr.length; i++) {
-            lineArr[i] = new Line(10, x+(10*x), 30 * x, x+(10*x));
+            
+            lineArr[i] = new Line(10, x+(10*x), 30 * x, x+(10*x), colorStuff.getColor(RoadType.TEMP));
             x++;
+           
         }
         return lineArr;
     }
     
     public void draw(Line[] lineArr, Graphics g) {
         for (Line line : lineArr) {
-            g.drawLine(line.x1, line.y1, line.x2, line.y2);
+
+            if(line.color == Color.red) {
+                g.setColor(Color.red);
+                g.drawLine(getScreenX(line.x1), 
+                getScreenY(line.y1), 
+                getScreenX(line.x2), 
+                getScreenY(line.y2));
+            } else if(line.color == Color.blue) {
+                g.setColor(Color.blue);
+                g.drawLine(getScreenX(line.x1), 
+                getScreenY(line.y1), 
+                getScreenX(line.x2), 
+                getScreenY(line.y2));
+            } else if(line.color == Color.black) {
+                g.setColor(Color.black);
+                g.drawLine(getScreenX(line.x1), 
+                getScreenY(line.y1), 
+                getScreenX(line.x2), 
+                getScreenY(line.y2));
+            } else if(line.color == Color.green) {
+                g.setColor(Color.green);
+                g.drawLine(getScreenX(line.x1), 
+                getScreenY(line.y1), 
+                getScreenX(line.x2), 
+                getScreenY(line.y2));
+            }
+            
+           
         }
-        System.out.println("Redrawing...");
     }
 }

@@ -6,7 +6,8 @@ package enums;
  * @version 10-Mar-2014
  */
 public enum RoadType {
-    TEMP(0);
+    TEMP(0), TEEMP(1), TEEEMP(2), TEEEEMP(3);
+    
     
     private final int value;
     /**
@@ -15,6 +16,7 @@ public enum RoadType {
     RoadType (int value) {
         this.value = value;
     }
+    
     
     public static RoadType fromValue(int value) {
         for (RoadType type : RoadType.values()) {

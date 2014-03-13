@@ -7,6 +7,8 @@
 package classes;
 
 import java.awt.Dimension;
+import enums.RoadType;
+import java.awt.Color;
 import java.util.HashMap;
 import javax.swing.JComponent;
 
@@ -17,6 +19,7 @@ import javax.swing.JComponent;
 public class Model {
     private Model model;
     private HashMap<Integer, Intersection> intersecMap;
+    private HashMap<Color, Line[]> colorMap;
     private RoadPart[] roadPartArr;
     private Line[] lineArr;
     private Rect boundingArea; // The area the model encloses
@@ -72,15 +75,16 @@ public class Model {
      * @param target The area of the view the coordinates should be mapped to
      * @return A list of lines converted to local coordinates for the view
      */
-    public Line[] getLines(Rect area, Rect target){
         for(int i = 0; i<roadPartArr.length; i++) {
+            if(roadPartArr[i].type == 1) {
             lineArr[i] = new Line(
                     getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, target), 
                     getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, target),
                     getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, target),
                     getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, target));
         }
+        }
         return lineArr;
     }
-   
 }
+
