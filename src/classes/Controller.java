@@ -47,8 +47,6 @@ public class Controller implements KeyListener {
 
         activeArea = model.getBoundingArea();
         refresh();
-
-         view.setLines(model.getLines(View.colorStuff));
         
     }
     
@@ -56,7 +54,7 @@ public class Controller implements KeyListener {
      * Refreshes the view according to the active area
      */
     public void refresh() {
-        view.setLines(model.getLines(activeArea, view));
+        view.setLines(model.getLines(activeArea, view, View.colorStuff));
         view.paintComponent(view.getGraphics());
     }
 

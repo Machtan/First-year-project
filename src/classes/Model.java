@@ -73,7 +73,7 @@ public class Model {
      * @param view The object which needs to render the lines
      * @return A list of lines converted to local coordinates for the view
      */
-    public Line[] getLines(Rect area, JComponent view){
+    public Line[] getLines(Rect area, JComponent view, RenderInstructions instructions){
         for(int i = 0; i<roadPartArr.length; i++) {
             if(roadPartArr[i].type == 1) {
             lineArr[i] = new Line(
