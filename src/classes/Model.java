@@ -6,6 +6,7 @@
 
 package classes;
 
+import java.awt.Dimension;
 import java.util.HashMap;
 import javax.swing.JComponent;
 
@@ -47,12 +48,13 @@ public class Model {
         
     }
     
-    public int getScreenX(double x, Rect activeArea, JComponent target) {
-        return (int)((x-activeArea.x) * (target.getHeight() / activeArea.height));
+    public int getScreenX(double x, Rect area, Rect target) {
+        int screenX = (int)(target.x + (x-area.x) * (target.height / area.height));
+        return screenX;
     }
         
-    public int getScreenY(double y, Rect activeArea, JComponent target) {
-        return (int)(target.getHeight() - ((y-activeArea.y) * (target.getHeight() / activeArea.height)));
+    public int getScreenY(double y, Rect area, Rect target) {
+        return (int)(target.height - (target.y + (y-area.y) * (target.height / area.height)));
     }
     
     /**
@@ -67,16 +69,16 @@ public class Model {
      * Returns the lines of the model from the given area, prepared for the 
      * size of the given viewer component
      * @param area The area to find roads inside and constrain the rendering to
-     * @param view The object which needs to render the lines
+     * @param target The area of the view the coordinates should be mapped to
      * @return A list of lines converted to local coordinates for the view
      */
-    public Line[] getLines(Rect area, JComponent view){
+    public Line[] getLines(Rect area, Rect target){
         for(int i = 0; i<roadPartArr.length; i++) {
             lineArr[i] = new Line(
-                    getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, view), 
-                    getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, view),
-                    getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, view),
-                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, view));
+                    getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, target), 
+                    getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, target),
+                    getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, target),
+                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, target));
         }
         return lineArr;
     }
