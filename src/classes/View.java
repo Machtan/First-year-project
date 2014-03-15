@@ -23,17 +23,27 @@ public class View extends JPanel {
     private JLabel statusLabel;
     private Line[] lines;
     private JFrame frame;
-    public static RenderInstructions colorStuff;
+    public static RenderInstructions defaultInstructions = new RenderInstructions();
+    private static boolean initialized = false;
     
-    /*
-    X ranges from 442254.35659 to 892658.21706 (450403.8604700001)
-    Y ranges from 6049914.43018 to 6402050.98297 (352136.5527900001)
-    */
+    /**
+     * Initializes the static variables
+     */
+    public static void initializeStaticVars() {
+        if (initialized) { return; }
+        // Create the default render instructions :p
+        defaultInstructions.addMapping(Color.red, RoadType.TEMP);
+        defaultInstructions.addMapping(Color.blue, RoadType.TEEMP);
+        defaultInstructions.addMapping(Color.black, RoadType.TEEEMP);
+        defaultInstructions.addMapping(Color.green, RoadType.TEEEEMP);
+        System.out.println("Initialized the default render instructions!");
+        initialized = true;
+    }
+    
     
     public View() {
-        colorStuff = new RenderInstructions();
-        View.setColors();
-        lines = View.makeLineArr(colorStuff);
+        View.initializeStaticVars();
+        lines = View.makeLineArr(defaultInstructions);
         
         frame = new JFrame();
         frame.setLocationRelativeTo(null);
@@ -45,17 +55,11 @@ public class View extends JPanel {
         frame.setPreferredSize(new Dimension(800, 600));
         frame.pack();
         frame.setVisible(true);
-    }
+    }    
     
-    //Add colors to the map in RenderInstr.
-    public static void setColors() {
-        colorStuff.addMapping(Color.red, RoadType.TEMP);
         colorStuff.addMapping(Color.green, RoadType.TEEMP);
         colorStuff.addMapping(Color.blue, RoadType.TEEEMP);
         colorStuff.addMapping(Color.black, RoadType.TEEEEMP);
-    }
-    
-    
     public void setLines(Line[] lines) {
         this.lines = lines;
     }
@@ -76,7 +80,7 @@ public class View extends JPanel {
         
         for (int i = 0; i < lineArr.length; i++) {
             
-            lineArr[i] = new Line(10, x+(10*x), 30 * x, x+(10*x), colorStuff.getColor(RoadType.TEMP));
+            lineArr[i] = new Line(10, x+(10*x), 30 * x, x+(10*x), defaultInstructions.getColor(RoadType.TEMP));
             x++;
            
         }
@@ -84,7 +88,6 @@ public class View extends JPanel {
     }
     
     public void draw(Line[] lineArr, Graphics g) {
-        
         for (Line line : lineArr) {
             g.setColor(line.color);
             g.drawLine(line.x1, line.y1, line.x2, line.y2);

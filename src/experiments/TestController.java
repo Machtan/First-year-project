@@ -4,11 +4,16 @@ import classes.Line;
 import classes.Loader;
 import classes.Model;
 import classes.Rect;
+import classes.RenderInstructions;
+import classes.View;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import static java.lang.Math.abs;
+import static java.lang.Math.round;
+import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.JFrame;
 import javax.swing.Timer;
@@ -24,12 +29,19 @@ public class TestController extends JFrame implements KeyListener, ActionListene
     private final OptimizedView view;
     private final Model model;
     private final HashMap<Integer, Boolean> keyDown;
-    private final double scrollPerFrame = 6;
     private final Timer timer;
+    public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
+    
+    // Tweakable configuration values
+    private final double scrollPerFrame = 6;
     private final double fps = 30;
+    private final double zoomFactor = 0.9;
+    
+    // Dynamic fields
     private int vx = 0;
     private int vy = 0;
     private Rect activeArea;
+    private RenderInstructions ins = View.defaultInstructions;
     
     /**
      * Constructor for the TestController class
@@ -46,7 +58,8 @@ public class TestController extends JFrame implements KeyListener, ActionListene
         
         activeArea = model.getBoundingArea();
         view.addKeyListener(this);
-        view.createImage(model.getLines(activeArea, view));
+        view.createImage(model.getLines(activeArea, 
+                new Rect(0, 0, view.getWidth(), view.getHeight()), ins));
         
         keyDown = new HashMap<>();
         keyDown.put(KeyEvent.VK_LEFT, false);
@@ -62,7 +75,8 @@ public class TestController extends JFrame implements KeyListener, ActionListene
      * Tells the model to redraw based on the activeArea
      */
     private void redraw() {
-        view.createImage(model.getLines(activeArea, view));
+        view.createImage(model.getLines(activeArea, new Rect(0, 0, 
+                view.getWidth(), view.getHeight()), ins));
     }
     
     @Override
@@ -96,8 +110,8 @@ public class TestController extends JFrame implements KeyListener, ActionListene
             }
         }
         
+        // Handle simple zoom
         if (e.getKeyChar() == '+') {
-            double zoomFactor = 0.9;
             double newWidth = activeArea.width*zoomFactor;
             double newHeight = activeArea.height*zoomFactor;
             double newX = activeArea.x + (activeArea.width-newWidth)/2;
@@ -153,25 +167,64 @@ public class TestController extends JFrame implements KeyListener, ActionListene
             double ppu = view.getHeight()/activeArea.height;
             double upp = 1.0 / ppu;
             
-            activeArea = new Rect(activeArea.x-vx*upp, activeArea.y-vy*upp, 
-                    activeArea.width, activeArea.height);
-            view.offsetImage(vx, vy, model.getLines(activeArea, view));
+            // Prepare the visual changes
+            Rect verArea = null;
+            Rect horArea = null;
+            Rect a = activeArea;
+            // Create the new active rect
+            Rect na = new Rect(activeArea.x-vx*upp, activeArea.y-vy*upp, 
+                    activeArea.width, activeArea.height); 
+            
+            // Calculate the 'actual' width of the map based on the ratio
+            double screenWidth = view.getHeight()*wperh;
+            
+            Rect verTarget = null;
+            Rect horTarget = null;
+            // Find out which parts of the map should be redrawn
+            if (vx > 0) { // (render)Left pressed -> map goes right 
+                verArea = new Rect(na.left, na.bottom, a.width, a.height);
+                verTarget = new Rect(0, 0, screenWidth, view.getHeight());
+            } else if (vx < 0) { // (render)Right pressed -> map goes left
+                verArea = new Rect(a.right, na.bottom, a.width, a.height);
+                verTarget = new Rect(screenWidth-abs(vx), 0, screenWidth, view.getHeight());
+            }
+            if (vy > 0) { // (render)Down -> map up
+                horArea = new Rect(na.left, na.bottom, a.width, a.height);
+                horTarget = new Rect(0, 0, view.getWidth(), view.getHeight());
+            } else if (vy < 0) { // (render)Up -> map down
+                horArea = new Rect(na.left, a.top, a.width, a.height);
+                horTarget = new Rect(0, view.getHeight()-abs(vy), view.getWidth(), view.getHeight());
+            }
+            
+            // Request the lines for the areas to be redrawn
+            Line[] lines = new Line[0];
+            if (verArea != null && horArea != null) {
+                Line[] verLines = model.getLines(verArea, verTarget, ins);
+                Line[] horLines = model.getLines(horArea, horTarget, ins);
+                lines = Arrays.copyOf(verLines, verLines.length + horLines.length);
+                for (int i = 0; i < horLines.length; i++) {
+                    lines[verLines.length+i] = horLines[i];
+                }
+            } else if (verArea != null) {
+                lines = model.getLines(verArea, verTarget, ins);
+            } else if (horArea != null) {
+                lines = model.getLines(horArea, horTarget, ins);
+            }
+            
+            // Finalize the change to the active area
+            activeArea = na;
+            
+            // Update the view's image
+            view.offsetImage(vx, vy, lines);
         }
     }
     
     public static void main(String[] args) {
-        
-        // Next level: Cached images from QuadTrees ?
-        
-        
-        
-        
         OptimizedView view = new OptimizedView(new Dimension(600,400));
         Model model = new Model(Loader.loadIntersections("resources/intersections.txt"),
             Loader.loadRoads("resources/roads.txt"));
         
         TestController controller = new TestController(view, model);
-        
         controller.setVisible(true);
     }
     

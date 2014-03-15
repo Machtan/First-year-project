@@ -43,4 +43,9 @@ public class Rect {
         return this.right > other.left && this.left < other.right && this.top > other.bottom && this.bottom < other.top;
     }
     
+    @Override
+    public String toString() {
+        return "Rect("+x+", "+y+", "+width+", "+height+")";
+    }
+    
 }

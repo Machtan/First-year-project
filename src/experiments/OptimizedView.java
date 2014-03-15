@@ -2,6 +2,7 @@ package experiments;
 
 import classes.Line;
 import classes.Rect;
+import classes.View;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -9,8 +10,6 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import javax.swing.JPanel;
 
 /**
@@ -19,7 +18,6 @@ import javax.swing.JPanel;
  * @version 10-Mar-2014
  */
 public class OptimizedView extends JPanel {
-    
     private BufferedImage image;
     public Color clearColor = Color.WHITE;
     GraphicsConfiguration gfx_config = GraphicsEnvironment.
@@ -31,31 +29,10 @@ public class OptimizedView extends JPanel {
      * @param dimension
      */
     public OptimizedView (Dimension dimension) {
+        View.initializeStaticVars();
         setPreferredSize(dimension);
         setFocusTraversalKeysEnabled(false);
         setFocusable(true);
-    }
-    
-    @Deprecated
-    public static Rect getBoundingRect(Line[] lines) {
-        
-                double minX = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE;
-        double minY = Double.MAX_VALUE;
-        double maxY = Double.MIN_VALUE;
-        
-        for (Line line : lines) {  
-            minX = min(minX, line.x1);
-            minX = min(minX, line.x2);
-            maxX = max(maxX, line.x1);
-            maxX = max(maxX, line.x2);
-            minY = min(minY, line.y1);
-            minY = min(minY, line.y2);
-            maxY = max(maxY, line.y1);
-            maxY = max(maxY, line.y2);
-        }
-        return new Rect(minX, minY, maxX-minX, maxY-minY);
-        
     }
     
     /**
@@ -78,9 +55,9 @@ public class OptimizedView extends JPanel {
         BufferedImage newImage = gfx_config.createCompatibleImage(getWidth(), getHeight());
         Graphics2D g2d = newImage.createGraphics();
         clear(g2d); // Clear the whole image
-        g2d.setColor(Color.BLACK);
         g2d.drawImage(image, x, -y, this); // Draw the old image offset
         for (Line line : newLines) {
+            g2d.setColor(line.color);
             g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
         }
         System.out.println("Offsetting by "+x+", "+y+" ("+newLines.length+" lines)");
@@ -96,8 +73,8 @@ public class OptimizedView extends JPanel {
         image = gfx_config.createCompatibleImage(getWidth(), getHeight());
         Graphics2D g2d = image.createGraphics();
         clear(g2d);
-        g2d.setColor(Color.BLACK);
         for (Line line : lineArr) {
+            g2d.setColor(line.color);
             g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
         }
         repaint();

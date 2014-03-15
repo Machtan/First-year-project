@@ -7,6 +7,7 @@
 package classes;
 
 import enums.RoadType;
+import java.awt.Dimension;
 import java.awt.Color;
 import java.util.HashMap;
 import javax.swing.JComponent;
@@ -48,12 +49,13 @@ public class Model {
         
     }
     
-    public int getScreenX(double x, Rect activeArea, JComponent target) {
-        return (int)((x-activeArea.x) * (target.getHeight() / activeArea.height));
+    public int getScreenX(double x, Rect area, Rect target) {
+        int screenX = (int)(target.x + (x-area.x) * (target.height / area.height));
+        return screenX;
     }
         
-    public int getScreenY(double y, Rect activeArea, JComponent target) {
-        return (int)(target.getHeight() - ((y-activeArea.y) * (target.getHeight() / activeArea.height)));
+    public int getScreenY(double y, Rect area, Rect target) {
+        return (int)(target.height - (target.y + (y-area.y) * (target.height / area.height)));
     }
     
     /**
@@ -68,10 +70,11 @@ public class Model {
      * Returns the lines of the model from the given area, prepared for the 
      * size of the given viewer component
      * @param area The area to find roads inside and constrain the rendering to
-     * @param view The object which needs to render the lines
+     * @param target The area of the view the coordinates should be mapped to
+     * @param instructions The instructions for coloring/rendering of the lines
      * @return A list of lines converted to local coordinates for the view
      */
-    public Line[] getLines(Rect area, JComponent view, RenderInstructions instructions){
+    public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
         Line[] lineArr = new Line[roadPartArr.length];
         for(int i = 0; i<roadPartArr.length; i++) {
             lineArr[i] = new Line(
@@ -80,6 +83,8 @@ public class Model {
                     getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, view),
                     getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, view),
                     instructions.getColor(RoadType.fromValue(roadPartArr[i].type%4)));
+
+                   
         }
         return lineArr;
     }

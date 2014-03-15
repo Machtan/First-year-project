@@ -7,6 +7,7 @@
 package classes;
 
 import enums.RoadType;
+import java.awt.Dimension;
 import java.awt.Color;
 import java.util.HashMap;
 import javax.swing.JComponent;
@@ -20,12 +21,10 @@ public class Model {
     private HashMap<Integer, Intersection> intersecMap;
     private HashMap<Color, Line[]> colorMap;
     private RoadPart[] roadPartArr;
-    private Line[] lineArr;
     private Rect boundingArea; // The area the model encloses
     
     public Model(Intersection[] intersecArr, RoadPart[] roadPartArr) {
         this.roadPartArr = roadPartArr;
-        lineArr = new Line[roadPartArr.length];
         intersecMap = new HashMap<>();
         
         double minX = Double.MAX_VALUE;
@@ -50,12 +49,13 @@ public class Model {
         
     }
     
-    public int getScreenX(double x, Rect activeArea, JComponent target) {
-        return (int)((x-activeArea.x) * (target.getHeight() / activeArea.height));
+    public int getScreenX(double x, Rect area, Rect target) {
+        int screenX = (int)(target.x + (x-area.x) * (target.height / area.height));
+        return screenX;
     }
         
-    public int getScreenY(double y, Rect activeArea, JComponent target) {
-        return (int)(target.getHeight() - ((y-activeArea.y) * (target.getHeight() / activeArea.height)));
+    public int getScreenY(double y, Rect area, Rect target) {
+        return (int)(target.height - (target.y + (y-area.y) * (target.height / area.height)));
     }
     
     /**
@@ -66,56 +66,34 @@ public class Model {
         return boundingArea;
     }
     
-<<<<<<< HEAD
-    public Line[] getLines(RenderInstructions instructions){
-=======
     /**
      * Returns the lines of the model from the given area, prepared for the 
      * size of the given viewer component
      * @param area The area to find roads inside and constrain the rendering to
-     * @param view The object which needs to render the lines
+     * @param target The area of the view the coordinates should be mapped to
+     * @param instructions The instructions for coloring/rendering of the lines
      * @return A list of lines converted to local coordinates for the view
      */
-    public Line[] getLines(Rect area, JComponent view){
->>>>>>> 2511ec104b796aa182364be33874a9f9d492a099
-        for(int i = 0; i<roadPartArr.length; i++) {
-            if(roadPartArr[i].type == 1) {
-            lineArr[i] = new Line(
 <<<<<<< HEAD
-                    intersecMap.get(roadPartArr[i].sourceID).x, 
-                    intersecMap.get(roadPartArr[i].sourceID).y,
-                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
-                    intersecMap.get(roadPartArr[i].targetID).y,
-                    instructions.getColor(RoadType.TEMP));
-                
-            } else if(roadPartArr[i].type == 2) {
-                lineArr[i] = new Line(
-                    intersecMap.get(roadPartArr[i].sourceID).x, 
-                    intersecMap.get(roadPartArr[i].sourceID).y,
-                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
-                    intersecMap.get(roadPartArr[i].targetID).y,
-                    instructions.getColor(RoadType.TEEMP));
-            } else if(roadPartArr[i].type == 3) {
-                lineArr[i] = new Line(
-                    intersecMap.get(roadPartArr[i].sourceID).x, 
-                    intersecMap.get(roadPartArr[i].sourceID).y,
-                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
-                    intersecMap.get(roadPartArr[i].targetID).y,
-                    instructions.getColor(RoadType.TEEEMP));
-            } else {
-                lineArr[i] = new Line(
-                    intersecMap.get(roadPartArr[i].sourceID).x, 
-                    intersecMap.get(roadPartArr[i].sourceID).y,
-                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
-                    intersecMap.get(roadPartArr[i].targetID).y,
-                    instructions.getColor(RoadType.TEEEEMP));
-        }
-=======
+    public Line[] getLines(Rect area, JComponent view, RenderInstructions instructions){
+        Line[] lineArr = new Line[roadPartArr.length];
+        for(int i = 0; i<roadPartArr.length; i++) {
+            lineArr[i] = new Line(
                     getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, view), 
                     getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, view),
                     getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, view),
-                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, view));
->>>>>>> 2511ec104b796aa182364be33874a9f9d492a099
+                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, view),
+                    instructions.getColor(RoadType.fromValue(roadPartArr[i].type%4)));
+=======
+    public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
+        for(int i = 0; i<roadPartArr.length; i++) {
+            lineArr[i] = new Line(
+                    getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, target), 
+                    getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, target),
+                    getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, target),
+                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, target),
+                    instructions.getColor(RoadType.fromValue(roadPartArr[i].type%4))); // TODO TEMPORARY
+>>>>>>> d6a2baffc7d482dd26e1cd0666d5bb2f20f825be
         }
         return lineArr;
     }
