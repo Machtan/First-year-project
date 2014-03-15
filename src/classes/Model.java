@@ -78,10 +78,10 @@ public class Model {
         Line[] lineArr = new Line[roadPartArr.length];
         for(int i = 0; i<roadPartArr.length; i++) {
             lineArr[i] = new Line(
-                    getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, view), 
-                    getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, view),
-                    getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, view),
-                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, view),
+                    getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, target), 
+                    getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, target),
+                    getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, target),
+                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, target),
                     instructions.getColor(RoadType.fromValue(roadPartArr[i].type%4)));
 
                    

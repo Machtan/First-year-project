@@ -57,9 +57,9 @@ public class View extends JPanel {
         frame.setVisible(true);
     }    
     
-        colorStuff.addMapping(Color.green, RoadType.TEEMP);
-        colorStuff.addMapping(Color.blue, RoadType.TEEEMP);
-        colorStuff.addMapping(Color.black, RoadType.TEEEEMP);
+ 
+        
+        
     public void setLines(Line[] lines) {
         this.lines = lines;
     }
