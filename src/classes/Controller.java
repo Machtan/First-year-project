@@ -8,8 +8,11 @@ package classes;
 
 import enums.RoadType;
 import java.awt.Color;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowListener;
 
 /**
  *
@@ -38,6 +41,7 @@ public class Controller implements KeyListener {
        model = new Model(intersecArr, roadPartArr);
         
         view = new View();
+        view.addComponentListener(new ResizeHandler());
 
         System.out.println("View height: " + view.getHeight());
 
@@ -50,12 +54,36 @@ public class Controller implements KeyListener {
         
     }
     
+    private class ResizeHandler implements ComponentListener {
+
+        @Override
+        public void componentResized(ComponentEvent e) {
+            refresh();
+        }
+
+        @Override
+        public void componentMoved(ComponentEvent e) {
+            
+        }
+
+        @Override
+        public void componentShown(ComponentEvent e) {
+            
+        }
+
+        @Override
+        public void componentHidden(ComponentEvent e) {
+            
+        }
+        
+    }
+    
     /**
      * Refreshes the view according to the active area
      */
     public void refresh() {
         view.setLines(model.getLines(activeArea, view, View.colorStuff));
-        view.paintComponent(view.getGraphics());
+        view.repaint();
     }
 
     public static void main(String[] args) {

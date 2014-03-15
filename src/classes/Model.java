@@ -20,12 +20,10 @@ public class Model {
     private HashMap<Integer, Intersection> intersecMap;
     private HashMap<Color, Line[]> colorMap;
     private RoadPart[] roadPartArr;
-    private Line[] lineArr;
     private Rect boundingArea; // The area the model encloses
     
     public Model(Intersection[] intersecArr, RoadPart[] roadPartArr) {
         this.roadPartArr = roadPartArr;
-        lineArr = new Line[roadPartArr.length];
         intersecMap = new HashMap<>();
         
         double minX = Double.MAX_VALUE;
@@ -74,37 +72,14 @@ public class Model {
      * @return A list of lines converted to local coordinates for the view
      */
     public Line[] getLines(Rect area, JComponent view, RenderInstructions instructions){
+        Line[] lineArr = new Line[roadPartArr.length];
         for(int i = 0; i<roadPartArr.length; i++) {
-            if(roadPartArr[i].type == 1) {
             lineArr[i] = new Line(
                     getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, view), 
                     getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, view),
                     getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, view),
-                    intersecMap.get(roadPartArr[i].targetID).y,
-                    instructions.getColor(RoadType.TEMP));
-                
-            } else if(roadPartArr[i].type == 2) {
-                lineArr[i] = new Line(
-                    intersecMap.get(roadPartArr[i].sourceID).x, 
-                    intersecMap.get(roadPartArr[i].sourceID).y,
-                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
-                    intersecMap.get(roadPartArr[i].targetID).y,
-                    instructions.getColor(RoadType.TEEMP));
-            } else if(roadPartArr[i].type == 3) {
-                lineArr[i] = new Line(
-                    intersecMap.get(roadPartArr[i].sourceID).x, 
-                    intersecMap.get(roadPartArr[i].sourceID).y,
-                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
-                    intersecMap.get(roadPartArr[i].targetID).y,
-                    instructions.getColor(RoadType.TEEEMP));
-            } else {
-                lineArr[i] = new Line(
-                    intersecMap.get(roadPartArr[i].sourceID).x, 
-                    intersecMap.get(roadPartArr[i].sourceID).y,
-                    intersecMap.get(roadPartArr[i].targetID).x, // Error here s5,t7
-                    intersecMap.get(roadPartArr[i].targetID).y,
-                    instructions.getColor(RoadType.TEEEEMP));
-        }
+                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, view),
+                    instructions.getColor(RoadType.fromValue(roadPartArr[i].type%4)));
         }
         return lineArr;
     }

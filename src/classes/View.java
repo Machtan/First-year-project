@@ -50,9 +50,9 @@ public class View extends JPanel {
     //Add colors to the map in RenderInstr.
     public static void setColors() {
         colorStuff.addMapping(Color.red, RoadType.TEMP);
-        colorStuff.addMapping(Color.blue, RoadType.TEEMP);
-        colorStuff.addMapping(Color.black, RoadType.TEEEMP);
-        colorStuff.addMapping(Color.green, RoadType.TEEEEMP);
+        colorStuff.addMapping(Color.green, RoadType.TEEMP);
+        colorStuff.addMapping(Color.blue, RoadType.TEEEMP);
+        colorStuff.addMapping(Color.black, RoadType.TEEEEMP);
     }
     
     
@@ -64,6 +64,7 @@ public class View extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         draw(lines, g);
+        
             
         
     }
@@ -83,33 +84,10 @@ public class View extends JPanel {
     }
     
     public void draw(Line[] lineArr, Graphics g) {
+        
         for (Line line : lineArr) {
-
-            if(line.color == Color.red) {
-                g.setColor(Color.red);
-                g.drawLine(getScreenX(line.x1), 
-                getScreenY(line.y1), 
-                getScreenX(line.x2), 
-                getScreenY(line.y2));
-            } else if(line.color == Color.blue) {
-                g.setColor(Color.blue);
-                g.drawLine(getScreenX(line.x1), 
-                getScreenY(line.y1), 
-                getScreenX(line.x2), 
-                getScreenY(line.y2));
-            } else if(line.color == Color.black) {
-                g.setColor(Color.black);
-                g.drawLine(getScreenX(line.x1), 
-                getScreenY(line.y1), 
-                getScreenX(line.x2), 
-                getScreenY(line.y2));
-            } else if(line.color == Color.green) {
-                g.setColor(Color.green);
-                g.drawLine(getScreenX(line.x1), 
-                getScreenY(line.y1), 
-                getScreenX(line.x2), 
-                getScreenY(line.y2));
-            }
+            g.setColor(line.color);
+            g.drawLine(line.x1, line.y1, line.x2, line.y2);
             
            
         }
