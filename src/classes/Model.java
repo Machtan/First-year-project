@@ -79,11 +79,16 @@ public class Model {
         tree = new QuadTree<>(boundingArea, 400, 15);
         
         // Fill the quad tree
+        System.out.println("Populating the Quad Tree...");
+        long t1 = System.nanoTime();
         for (RoadPart part : roadPartArr) {
             Rect rect = getRect(intersecMap.get(part.sourceID), intersecMap.get(part.targetID));
             part.setRect(rect);
             tree.add(part);
         }
+        double secs = (System.nanoTime()-t1)/1000000000.0;
+        System.out.println("Finished!");
+        System.out.println("Populating the tree took "+secs+" seconds");
     }
     
     public int getScreenX(double x, Rect area, Rect target) {
@@ -92,7 +97,20 @@ public class Model {
     }
         
     public int getScreenY(double y, Rect area, Rect target) {
-        return (int)(target.height - (target.y + (y-area.y) * (target.height / area.height)));
+        return getScreenY(y, area, target, target.height);
+    }
+    
+    /**
+     * Returns y from the slice of a target
+     * @param y
+     * @param area
+     * @param target
+     * @param windowheight
+     * @return 
+     */
+    public int getScreenY(double y, Rect area, Rect target, double windowheight) {
+        int sy = (int) (windowheight - (target.y + (y-area.y)*(target.height/area.height)));
+        return sy;
     }
     
     /**
@@ -108,11 +126,12 @@ public class Model {
      * size of the given viewer component
      * @param area The area to find roads inside and constrain the rendering to
      * @param target The area of the view the coordinates should be mapped to
+     * @param windowHeight The height of the target window
      * @param instructions The instructions for coloring/rendering of the lines
      * @return A list of lines converted to local coordinates for the view
      */
-    public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
-        HashSet<RoadPart> roads = tree.getIn(area);
+    public Line[] getLines(Rect area, Rect target, double windowHeight, RenderInstructions instructions) {
+        HashSet<RoadPart> roads = tree.getIn(area); // TODO THIS IS THE WEAK LINK!!!
         Line[] lines = new Line[roads.size()];
         
         System.out.println("Returning "+lines.length+" lines from the area "+area);
@@ -121,13 +140,17 @@ public class Model {
         for(RoadPart part: roads) {
             lines[i++] = new Line(
                     getScreenX(intersecMap.get(part.sourceID).x, area, target), 
-                    getScreenY(intersecMap.get(part.sourceID).y, area, target),
+                    getScreenY(intersecMap.get(part.sourceID).y, area, target, windowHeight),
                     getScreenX(intersecMap.get(part.targetID).x, area, target),
-                    getScreenY(intersecMap.get(part.targetID).y, area, target),
+                    getScreenY(intersecMap.get(part.targetID).y, area, target, windowHeight),
                     instructions.getColor(part.type)
             );
         }
         return lines;
+    }
+    
+    public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
+        return getLines(area, target, target.height, instructions);
     }
 }
 

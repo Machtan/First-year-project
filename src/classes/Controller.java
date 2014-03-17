@@ -192,7 +192,7 @@ public class Controller extends MouseAdapter implements KeyListener {
         }
         
         if (e.getKeyChar() == '+') {
-            double zoomFactor = 0.9;
+            double zoomFactor = 0.7;
             System.out.println("PLUS!");
             activeArea = new Rect(activeArea.x + 0.5*activeArea.width*(1-zoomFactor), 
                     activeArea.y + 0.5*activeArea.height*(1 - zoomFactor), 

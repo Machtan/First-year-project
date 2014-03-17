@@ -56,6 +56,18 @@ public class Quad<Item extends QuadNode> {
         }
     }
     
+    public void getIn(Rect rect, HashSet<Item> set) { // Fills the given set
+        if (bottom == true) {
+            set.addAll(nodes);
+        } else {
+            for (Quad subquad : subquads) {
+                if (subquad.area.collidesWith(rect)) {
+                    subquad.getIn(rect, set);
+                }
+            }
+        }
+    }
+    
     public void add(Item node) {
         if (bottom) {
             //System.out.println("Adding "+node+" to "+this);

@@ -2,17 +2,12 @@ package experiments;
 
 import classes.Line;
 import classes.Rect;
-import classes.View;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
@@ -55,16 +50,24 @@ public class OptimizedView extends JPanel  {
      * @param y The Nortward offset 
      * @param newLines The new lines to patch up 
      */
-    public void offsetImage(int x, int y, Line[] newLines) {
+    public void offsetImage(int x, int y, Line[] newLines) { // Takes roughly 0.0016 secs at worst
+        long t1 = System.nanoTime();
         BufferedImage newImage = gfx_config.createCompatibleImage(getWidth(), getHeight());
         Graphics2D g2d = newImage.createGraphics();
         clear(g2d); // Clear the whole image
         g2d.drawImage(image, x, -y, this); // Draw the old image offset
+        long t2 = System.nanoTime();
         for (Line line : newLines) {
             g2d.setColor(line.color);
             g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
         }
         System.out.println("Offsetting by "+x+", "+y+" ("+newLines.length+" lines)");
+        long t3 = System.nanoTime();
+        double nFac = 1000000000.0;
+        double stampTime = (t2-t1)/nFac;
+        double drawTime = (t3-t2)/nFac;
+        double total = (t3-t1)/nFac;
+        System.out.println("Offsetting took "+total+" secs (image: "+stampTime+" secs, lines: "+drawTime+" secs)");
         image = newImage;
         repaint();
     }
@@ -96,7 +99,10 @@ public class OptimizedView extends JPanel  {
     public void paintComponent(Graphics g) {
         if (image != null) {
             //clear(g);
+            long t1 = System.nanoTime();
             g.drawImage(image, 0, 0, this);
+            double delay = (System.nanoTime()-t1)/1000000000.0;
+            System.out.println("Drawing the Optimized View took "+delay+" secs");
             if (markerRect != null) {
                 g.setColor(Color.MAGENTA);
                 g.fillRect((int)markerRect.x, (int)(markerRect.y-markerRect.height), 

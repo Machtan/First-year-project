@@ -10,6 +10,8 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -39,14 +41,14 @@ public class TestController extends JFrame implements KeyListener,
     
     // Tweakable configuration values
     private final double scrollPerFrame = 6;
-    private final double fps = 30;
-    private final double zoomFactor = 0.9;
+    private final double fps = 60;
+    private final double zoomFactor = 0.7;
     
     // Dynamic fields
     private int vx = 0;
     private int vy = 0;
     private Rect activeArea;
-    private RenderInstructions ins = new RenderInstructions();
+    private RenderInstructions ins = Model.defaultInstructions;
     
     /**
      * Constructor for the TestController class
@@ -56,6 +58,7 @@ public class TestController extends JFrame implements KeyListener,
     public TestController (OptimizedView view, Model model) {
         super();
         this.view = view;
+        view.addComponentListener(new ResizeHandler());
         view.addMouseListener(this);
         view.addMouseMotionListener(this);
         this.model = model;
@@ -82,8 +85,11 @@ public class TestController extends JFrame implements KeyListener,
      * Tells the model to redraw based on the activeArea
      */
     private void redraw() {
+        long t1 = System.nanoTime();
+        System.out.println("Preparing the image...");
         view.createImage(model.getLines(activeArea, new Rect(0, 0, 
                 view.getWidth(), view.getHeight()), ins));
+        System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
     }
     
     @Override
@@ -189,33 +195,33 @@ public class TestController extends JFrame implements KeyListener,
             Rect horTarget = null;
             // Find out which parts of the map should be redrawn
             if (vx > 0) { // (render)Left pressed -> map goes right 
-                verArea = new Rect(na.left, na.bottom, a.width, a.height);
+                verArea = new Rect(na.left, na.bottom, Math.abs(vx*upp), a.height); // <-- not working
                 verTarget = new Rect(0, 0, screenWidth, view.getHeight());
             } else if (vx < 0) { // (render)Right pressed -> map goes left
-                verArea = new Rect(a.right, na.bottom, a.width, a.height);
+                verArea = new Rect(a.right, na.bottom, Math.abs(vx*upp), a.height);
                 verTarget = new Rect(screenWidth-abs(vx), 0, screenWidth, view.getHeight());
             }
             if (vy > 0) { // (render)Down -> map up
-                horArea = new Rect(na.left, na.bottom, a.width, a.height);
-                horTarget = new Rect(0, 0, view.getWidth(), view.getHeight());
+                horArea = new Rect(na.left, na.bottom, a.width, Math.abs(vy*upp)); // <-- not working
+                horTarget = new Rect(0, 0, screenWidth, abs(vy)); // 
             } else if (vy < 0) { // (render)Up -> map down
-                horArea = new Rect(na.left, a.top, a.width, a.height);
-                horTarget = new Rect(0, view.getHeight()-abs(vy), view.getWidth(), view.getHeight());
+                horArea = new Rect(na.left, a.top, a.width, Math.abs(vy*upp));
+                horTarget = new Rect(0, view.getHeight()-abs(vy), screenWidth, abs(vy)); // 
             }
             
             // Request the lines for the areas to be redrawn
             Line[] lines = new Line[0];
             if (verArea != null && horArea != null) {
-                Line[] verLines = model.getLines(verArea, verTarget, ins);
-                Line[] horLines = model.getLines(horArea, horTarget, ins);
+                Line[] verLines = model.getLines(verArea, verTarget, view.getHeight(), ins);
+                Line[] horLines = model.getLines(horArea, horTarget, view.getHeight(), ins);
                 lines = Arrays.copyOf(verLines, verLines.length + horLines.length);
                 for (int i = 0; i < horLines.length; i++) {
                     lines[verLines.length+i] = horLines[i];
                 }
             } else if (verArea != null) {
-                lines = model.getLines(verArea, verTarget, ins);
+                lines = model.getLines(verArea, verTarget, view.getHeight(), ins);
             } else if (horArea != null) {
-                lines = model.getLines(horArea, horTarget, ins);
+                lines = model.getLines(horArea, horTarget, view.getHeight(), ins);
             }
             
             // Finalize the change to the active area
@@ -282,4 +288,18 @@ public class TestController extends JFrame implements KeyListener,
         controller.setVisible(true);
     }
     
+     private class ResizeHandler implements ComponentListener {
+
+        @Override
+        public void componentResized(ComponentEvent e) {
+            redraw();
+        }
+
+        @Override
+        public void componentMoved(ComponentEvent e) {}
+        @Override
+        public void componentShown(ComponentEvent e) {}
+        @Override
+        public void componentHidden(ComponentEvent e) {}
+    }
 }
