@@ -4,11 +4,14 @@
  */
 package classes;
 
+import interfaces.QuadNode;
+
 /**
  *
  * @author Alekxander
+ * @param <Item>
  */
-public class QuadTree extends Quad {
+public class QuadTree<Item extends QuadNode> extends Quad {
     public QuadTree(Rect area, int maxNodes, int maxDepth) {
         super(area, maxNodes, maxDepth, 1);
     }

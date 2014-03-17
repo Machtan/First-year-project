@@ -9,7 +9,9 @@ package classes;
 import enums.RoadType;
 import java.awt.Dimension;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import javax.swing.JComponent;
 
 /**
@@ -19,22 +21,49 @@ import javax.swing.JComponent;
 public class Model {
     private Model model;
     private HashMap<Integer, Intersection> intersecMap;
-    private HashMap<Color, Line[]> colorMap;
-    private RoadPart[] roadPartArr;
+    //private RoadPart[] roadPartArr;
     private Rect boundingArea; // The area the model encloses
+    private final QuadTree<RoadPart> tree;
+    
+    public static final RenderInstructions defaultInstructions = new RenderInstructions();
+    /**
+     * Initializes the static variables
+     */
+    static {
+        // Create the default render instructions :
+        defaultInstructions.addMapping(Color.red, RoadType.Motorvej);
+        defaultInstructions.addMapping(Color.red, RoadType.Motorvejsafkorsel);
+        defaultInstructions.addMapping(new Color(51,51,255), RoadType.PrimaerRute);
+        defaultInstructions.addMapping(new Color(0,255,25), RoadType.Sti);
+        defaultInstructions.addMapping(Color.black, RoadType.Other);
+        
+        System.out.println("Initialized the default render instructions!");
+    }
+    
+    /**
+     * Returns the smallest rectangle bounding two intersections
+     * @param one The first intersection
+     * @param two The second intersection
+     * @return 
+     */
+    private Rect getRect(Intersection one, Intersection two) {
+        double x = Math.min(one.x, two.x);
+        double y = Math.min(one.y, two.y);
+        double width = Math.abs(one.x - two.x);
+        double height = Math.abs(one.y - two.y);
+        return new Rect(x,y,width,height);
+    }
     
     public Model(Intersection[] intersecArr, RoadPart[] roadPartArr) {
-        this.roadPartArr = roadPartArr;
-        intersecMap = new HashMap<>();
-        
+        // Find the bounding area of the intersections
         double minX = Double.MAX_VALUE;
         double maxX = Double.MIN_VALUE;
         double minY = Double.MAX_VALUE;
         double maxY = Double.MIN_VALUE;
         
+        intersecMap = new HashMap<>();
         for (Intersection i : intersecArr) {
-            intersecMap.put(i.id, i);
-            
+            intersecMap.put(i.id, i); // Add intersections to the map
             if (i.x < minX) {
                 minX = i.x;
             } 
@@ -45,8 +74,16 @@ public class Model {
             if (i.y > maxY) { maxY = i.y; }
         }
         
+        // Create the quad tree
         boundingArea = new Rect(minX, minY, maxX-minX, maxY-minY);
+        tree = new QuadTree<>(boundingArea, 400, 15);
         
+        // Fill the quad tree
+        for (RoadPart part : roadPartArr) {
+            Rect rect = getRect(intersecMap.get(part.sourceID), intersecMap.get(part.targetID));
+            part.setRect(rect);
+            tree.add(part);
+        }
     }
     
     public int getScreenX(double x, Rect area, Rect target) {
@@ -75,31 +112,22 @@ public class Model {
      * @return A list of lines converted to local coordinates for the view
      */
     public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
-        Line[] lineArr = new Line[roadPartArr.length];
-        for(int i = 0; i<roadPartArr.length; i++) {
-            if(roadPartArr[i].type == 1 || roadPartArr[i].type == 3 || roadPartArr[i].type == 8 
-                    || roadPartArr[i].type == 31) {
-            lineArr[i] = new Line(
-                    getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, target), 
-                    getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, target),
-                    getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, target),
-                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, target),
-                    instructions.getColor(RoadType.fromValue(roadPartArr[i].type)));
-            } else {
-                lineArr[i] = new Line(
-                    getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, target), 
-                    getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, target),
-                    getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, target),
-                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, target),
-                    instructions.getColor(RoadType.Other));
-            }
-            
-            
-            }
-
-                   
+        HashSet<RoadPart> roads = tree.getIn(area);
+        Line[] lines = new Line[roads.size()];
         
-        return lineArr;
+        System.out.println("Returning "+lines.length+" lines from the area "+area);
+        
+        int i = 0;
+        for(RoadPart part: roads) {
+            lines[i++] = new Line(
+                    getScreenX(intersecMap.get(part.sourceID).x, area, target), 
+                    getScreenY(intersecMap.get(part.sourceID).y, area, target),
+                    getScreenX(intersecMap.get(part.targetID).x, area, target),
+                    getScreenY(intersecMap.get(part.targetID).y, area, target),
+                    instructions.getColor(part.type)
+            );
+        }
+        return lines;
     }
 }
 

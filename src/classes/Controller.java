@@ -106,12 +106,12 @@ public class Controller extends MouseAdapter implements KeyListener {
         
         double unitsPerPixel = activeArea.width / screenWidth;
         
-        Rect temp = new Rect( (markerRect.x)*unitsPerPixel , 
+        /*Rect temp = new Rect( (markerRect.x)*unitsPerPixel , 
                 ( markerRect.y) *unitsPerPixel, 
                 ( markerRect.width) *unitsPerPixel, 
                 (markerRect.height) *unitsPerPixel );
         activeArea = temp;
-        view.setMarkerRect(null);
+        view.setMarkerRect(null);*/
         refresh();
     }
     
@@ -147,7 +147,7 @@ public class Controller extends MouseAdapter implements KeyListener {
      */
     public void refresh() {
         view.setLines(model.getLines(activeArea, 
-                new Rect(0,0,view.getWidth(),view.getHeight()), View.defaultInstructions));
+                new Rect(0,0,view.getWidth(),view.getHeight()), model.defaultInstructions));
         view.paintComponent(view.getGraphics());
     }
 
@@ -166,6 +166,7 @@ public class Controller extends MouseAdapter implements KeyListener {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_LEFT: {
                 // The focus area goes left, meaning the map will go right
+                System.out.println("LEFT!");
                 activeArea = new Rect(activeArea.x - activeArea.width/30,
                     activeArea.y, activeArea.width, activeArea.height);
                 refresh();
@@ -173,6 +174,7 @@ public class Controller extends MouseAdapter implements KeyListener {
             }
             case KeyEvent.VK_RIGHT: {
                 // The focus area goes right, meaning the map will go left
+                System.out.println("RIGHT!");
                 activeArea = new Rect(activeArea.x + activeArea.width/30,
                     activeArea.y, activeArea.width, activeArea.height);
                 refresh();
@@ -190,10 +192,12 @@ public class Controller extends MouseAdapter implements KeyListener {
         }
         
         if (e.getKeyChar() == '+') {
+            double zoomFactor = 0.9;
             System.out.println("PLUS!");
-            activeArea = new Rect(activeArea.x, activeArea.y, 
-                    activeArea.width * 0.9, 
-                    activeArea.height * 0.9);
+            activeArea = new Rect(activeArea.x + 0.5*activeArea.width*(1-zoomFactor), 
+                    activeArea.y + 0.5*activeArea.height*(1 - zoomFactor), 
+                    activeArea.width * zoomFactor, 
+                    activeArea.height * zoomFactor);
             refresh();
         }
         

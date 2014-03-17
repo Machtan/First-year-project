@@ -1,6 +1,8 @@
 package classes;
 import enums.ZoneType;
 import classes.Utils.Tokenizer;
+import enums.RoadType;
+import interfaces.QuadNode;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,10 +13,10 @@ import krak.EdgeData;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 25-Feb-2014
  */
-public class RoadPart implements CharSequence {
+public class RoadPart implements CharSequence, QuadNode {
     final int sourceID; // The ID of one of the road's ending intersections
     final int targetID; // The ID of one of the road's ending intersections
-    final int type; // The road type
+    final RoadType type; // The road type
     final String name; // The name of the road
     
     // Address numbering on sides of the road
@@ -47,6 +49,9 @@ public class RoadPart implements CharSequence {
     final String fTurn;
     final String tTurn;
     
+    // The area this road is in
+    private Rect area;
+    
     // Probably unneeded
     //String leftParish;
     //String rightParish;
@@ -67,6 +72,17 @@ public class RoadPart implements CharSequence {
         rep.put(",HAVEF"," HAVEFORENING");
         rep.put("KRATHUS, SKOVALLEEN", "SKOVALLEEN");
         initialized = true;
+    }
+    
+    public void setRect(Rect rect) {
+        this.area = rect;
+    }
+    public Rect getRect() {
+        if (this.area == null) {
+            throw new RuntimeException("RoadPart rect requested before being set");
+        } else {
+            return area;
+        }
     }
     
     /**
@@ -100,7 +116,7 @@ public class RoadPart implements CharSequence {
         Tokenizer.setLine(line);
         sourceID = Tokenizer.getInt();
         targetID = Tokenizer.getInt();
-        type = Tokenizer.getInt();
+        type = RoadType.fromValue(Tokenizer.getInt());
         
         // Special case handling :u
         name = convertName(Tokenizer.getString());
@@ -143,7 +159,7 @@ public class RoadPart implements CharSequence {
         zone = ZoneType.TEMP; // TODO permananent fix
         speedLimit = data.SPEED;
         driveTime = data.DRIVETIME;
-        type = data.TYP;
+        type = RoadType.fromValue(data.TYP);
         
         name = convertName(data.VEJNAVN);
         

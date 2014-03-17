@@ -33,6 +33,7 @@ public class Quad<Item extends QuadNode> {
         this.maxNodes = maxNodes;
         this.maxDepth = maxDepth;
         this.depth = depth;
+        nodes = new HashSet<>();
         bottom = true;
     }
 
@@ -41,24 +42,33 @@ public class Quad<Item extends QuadNode> {
      * brug for det?
      */
     public HashSet<Item> getIn(Rect rect) {        
-        
-        HashSet<Item> hSet = new HashSet<>();
         if (bottom == true) {
             return (HashSet<Item>) nodes.clone();
         } else {
+            //System.out.println("Getting in rect "+rect+" from "+this+" at "+depth);
+            HashSet<Item> hSet = new HashSet<>();
             for (Quad subquad : subquads) {
                 if (subquad.area.collidesWith(rect)) {
-                    hSet.addAll(getIn(rect));
+                    hSet.addAll(subquad.getIn(rect));
                 }
             }
+            return hSet;
         }
-        return hSet;
     }
     
     public void add(Item node) {
-        nodes.add(node);
-        if (nodes.size() > maxNodes && depth < maxDepth) {
-            split();
+        if (bottom) {
+            //System.out.println("Adding "+node+" to "+this);
+            nodes.add(node);
+            if (nodes.size() > maxNodes && depth < maxDepth) {
+                split();
+            }
+        } else {
+            for (Quad subquad : subquads) {
+                if (subquad.area.collidesWith(node.getRect())) {
+                    subquad.add(node);
+                }
+            }
         }
     }
 
@@ -66,7 +76,7 @@ public class Quad<Item extends QuadNode> {
      * Hvor stor skal maxDepth være?
      */
     public void split() {
-        if (bottom == true && maxDepth > depth) {
+        if (bottom == true && depth < maxDepth) {
             double hw = 0.5 * area.width; // Half width
             double hh = 0.5 * area.height; // Half height
             Rect swRect = new Rect(area.x, area.y, hw, hh);
@@ -81,6 +91,7 @@ public class Quad<Item extends QuadNode> {
             Rect neRect = new Rect(area.x + 0.5 * area.width, area.y + hh, hw, hh);
             Quad ne = new Quad(neRect, maxNodes, maxDepth, this.depth+1);
             
+            subquads = new Quad[4];
             subquads[0] = sw;
             subquads[1] = nw;
             subquads[2] = se;
@@ -89,9 +100,8 @@ public class Quad<Item extends QuadNode> {
             bottom = false;
 
             // nu skal vi indele nodes fra vores Quad til at være i de mindre subquads
-            
-            for (Quad subquad : subquads) {
-                for (Item i : nodes) {
+            for (Item i : nodes) {
+                for (Quad subquad : subquads) {
                     if (i.getRect().collidesWith(subquad.area)) {
                         subquad.add(i);
                     }

@@ -46,7 +46,7 @@ public class TestController extends JFrame implements KeyListener,
     private int vx = 0;
     private int vy = 0;
     private Rect activeArea;
-    private RenderInstructions ins = View.defaultInstructions;
+    private RenderInstructions ins = new RenderInstructions();
     
     /**
      * Constructor for the TestController class

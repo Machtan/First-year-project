@@ -25,7 +25,8 @@ public enum RoadType {
                 return type;
             }
         }
-        throw new RuntimeException("Could not load a zone type from the value '"+value+"'");
+        return Other; //TODO create types for everything :)
+        //throw new RuntimeException("Could not load a zone type from the value '"+value+"'");
     }
     
 }
