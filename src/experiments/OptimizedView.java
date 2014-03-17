@@ -9,6 +9,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
@@ -17,12 +21,13 @@ import javax.swing.JPanel;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 10-Mar-2014
  */
-public class OptimizedView extends JPanel {
+public class OptimizedView extends JPanel  {
     private BufferedImage image;
     public Color clearColor = Color.WHITE;
     GraphicsConfiguration gfx_config = GraphicsEnvironment.
 		getLocalGraphicsEnvironment().getDefaultScreenDevice().
 		getDefaultConfiguration(); // Voodoo
+    Rect markerRect = null;
     
     /**
      * Constructor for the OptimizedView class
@@ -79,6 +84,10 @@ public class OptimizedView extends JPanel {
         repaint();
     }
     
+    public void setMarkerRect(Rect rect) {
+        markerRect = rect;
+    }
+    
     /**
      * What happens at the default render (on resize etc.)
      * @param g 
@@ -88,9 +97,15 @@ public class OptimizedView extends JPanel {
         if (image != null) {
             //clear(g);
             g.drawImage(image, 0, 0, this);
+            if (markerRect != null) {
+                g.setColor(Color.MAGENTA);
+                g.fillRect((int)markerRect.x, (int)(markerRect.y-markerRect.height), 
+                        (int)markerRect.width, (int)markerRect.height);
+            }
+            
         } else {
             System.out.println("No image set yet, so nothing to draw...");
             clear(g);
         }
-    }
+    } 
 }

@@ -7,10 +7,14 @@ import classes.Rect;
 import classes.RenderInstructions;
 import classes.View;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
 import java.util.Arrays;
@@ -24,7 +28,8 @@ import javax.swing.WindowConstants;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 10-Mar-2014
  */
-public class TestController extends JFrame implements KeyListener, ActionListener {
+public class TestController extends JFrame implements KeyListener, 
+            ActionListener, MouseListener, MouseMotionListener {
     
     private final OptimizedView view;
     private final Model model;
@@ -51,6 +56,8 @@ public class TestController extends JFrame implements KeyListener, ActionListene
     public TestController (OptimizedView view, Model model) {
         super();
         this.view = view;
+        view.addMouseListener(this);
+        view.addMouseMotionListener(this);
         this.model = model;
         add(view);
         pack();
@@ -218,6 +225,53 @@ public class TestController extends JFrame implements KeyListener, ActionListene
             view.offsetImage(vx, vy, lines);
         }
     }
+    
+       // Mouse handling 
+    private Point startPos = null;
+    private Point endPos = null;
+    @Override
+    public void mousePressed(MouseEvent e) {
+        System.out.println("CLICK");
+        startPos = e.getLocationOnScreen();
+        System.out.println("Standard startPos: "+startPos);
+        startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+        System.out.println("Translated:        "+startPos);
+        System.out.println("Event location:  "+e.getLocationOnScreen());
+        System.out.println("Window location: "+view.getLocationOnScreen());
+    }
+    
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if (startPos == null) { return; }
+        System.out.println("DRAG");
+        endPos = e.getLocationOnScreen();
+        endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+        
+        int width = Math.abs(startPos.x - endPos.x);
+        int height = Math.abs(startPos.y - endPos.y);
+        int x = Math.min(startPos.x, endPos.x);
+        int y = Math.max(startPos.y, endPos.y);
+        Rect rect = new Rect(x, y, width, height);
+        System.out.println("Rect Y: ("+y+"), Rect: ("+rect+")");
+        view.setMarkerRect(rect);
+        view.repaint();
+    }
+    
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        System.out.println("RELEASE");
+        view.setMarkerRect(null);
+        view.repaint();
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {}
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+    @Override
+    public void mouseExited(MouseEvent e) {}
+    @Override
+    public void mouseMoved(MouseEvent e) {}
     
     public static void main(String[] args) {
         OptimizedView view = new OptimizedView(new Dimension(600,400));

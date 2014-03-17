@@ -19,7 +19,7 @@ import javax.swing.*;
 public class View extends JPanel {
     
     private static Graphics g;
-
+    private Rect markerRect;
     private JLabel statusLabel;
     private Line[] lines;
     private final JFrame frame;
@@ -53,7 +53,13 @@ public class View extends JPanel {
     }    
     
  
-        
+    /**
+     * Tells the view that a new marker rect needs to be drawn
+     * @param rect 
+     */
+    public void setMarkerRect(Rect rect) {
+        markerRect = rect;
+    }
         
     public void setLines(Line[] lines) {
         this.lines = lines;
@@ -63,9 +69,12 @@ public class View extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         draw(lines, g);
-        
-            
-        
+        // Draw the marker rect
+        if (markerRect != null) {
+            g.setColor(Color.MAGENTA);
+            g.fillRect((int)markerRect.x, (int)(markerRect.y-markerRect.height), 
+                    (int)markerRect.width, (int)markerRect.height);
+        }
     }
     
     private static Line[] makeLineArr(RenderInstructions instr) {
