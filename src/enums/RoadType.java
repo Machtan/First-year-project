@@ -6,7 +6,8 @@ package enums;
  * @version 10-Mar-2014
  */
 public enum RoadType {
-    TEMP(0), TEEMP(1), TEEEMP(2), TEEEEMP(3);
+     Motorvej(1), PrimaerRute(3), Sti(8), Motorvejsafkorsel(31), Other(0);
+      
     
     
     private final int value;

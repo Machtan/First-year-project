@@ -197,7 +197,7 @@ public class Controller extends MouseAdapter implements KeyListener {
             refresh();
         }
         
-    }
+    } 
 
     @Override
     public void keyReleased(KeyEvent e) {
