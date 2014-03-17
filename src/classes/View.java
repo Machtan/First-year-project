@@ -28,18 +28,24 @@ public class View extends JPanel {
     /**
      * Initializes the static variables
      */
-    static {
-        // Create the default render instructions :p
-        defaultInstructions.addMapping(Color.blue, RoadType.TEMP);
+    static void InitDefRenderInstr() {
+        // Create the default render instructions :
+        defaultInstructions.addMapping(Color.red, RoadType.Motorvej);
+        defaultInstructions.addMapping(Color.red, RoadType.Motorvejsafkorsel);
+        defaultInstructions.addMapping(new Color(51,51,255), RoadType.PrimaerRute);
+        defaultInstructions.addMapping(new Color(0,255,25), RoadType.Sti);
+        defaultInstructions.addMapping(Color.black, RoadType.Other);
         
-        defaultInstructions.addMapping(Color.green, RoadType.TEEMP);
-        defaultInstructions.addMapping(Color.red, RoadType.TEEEMP);
-        defaultInstructions.addMapping(Color.orange, RoadType.TEEEEMP);
         System.out.println("Initialized the default render instructions!");
     }  
     
+    
+  
+   
+    
     public View() {
         lines = View.makeLineArr(defaultInstructions);
+        View.InitDefRenderInstr();
         
         frame = new JFrame();
         frame.setLocationRelativeTo(null);
@@ -76,7 +82,7 @@ public class View extends JPanel {
         
         for (int i = 0; i < lineArr.length; i++) {
             
-            lineArr[i] = new Line(10, x+(10*x), 30 * x, x+(10*x), defaultInstructions.getColor(RoadType.TEMP));
+            lineArr[i] = new Line(10, x+(10*x), 30 * x, x+(10*x), defaultInstructions.getColor(RoadType.fromValue(i%1)));
             x++;
            
         }

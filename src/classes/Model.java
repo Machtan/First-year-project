@@ -77,16 +77,28 @@ public class Model {
     public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
         Line[] lineArr = new Line[roadPartArr.length];
         for(int i = 0; i<roadPartArr.length; i++) {
-            System.out.println(roadPartArr[i].type);
+            if(roadPartArr[i].type == 1 || roadPartArr[i].type == 3 || roadPartArr[i].type == 8 
+                    || roadPartArr[i].type == 31) {
             lineArr[i] = new Line(
                     getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, target), 
                     getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, target),
                     getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, target),
                     getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, target),
-                    instructions.getColor(RoadType.fromValue(roadPartArr[i].type%4)));
+                    instructions.getColor(RoadType.fromValue(roadPartArr[i].type)));
+            } else {
+                lineArr[i] = new Line(
+                    getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, target), 
+                    getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, target),
+                    getScreenX(intersecMap.get(roadPartArr[i].targetID).x, area, target),
+                    getScreenY(intersecMap.get(roadPartArr[i].targetID).y, area, target),
+                    instructions.getColor(RoadType.Other));
+            }
+            
+            
+            }
 
                    
-        }
+        
         return lineArr;
     }
 }
