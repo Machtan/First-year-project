@@ -133,7 +133,7 @@ public class Controller implements KeyListener {
             refresh();
         }
         
-    }
+    } 
 
     @Override
     public void keyReleased(KeyEvent e) {

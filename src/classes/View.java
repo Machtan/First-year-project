@@ -32,10 +32,10 @@ public class View extends JPanel {
     public static void initializeStaticVars() {
         if (initialized) { return; }
         // Create the default render instructions :p
-        defaultInstructions.addMapping(Color.red, RoadType.TEMP);
-        defaultInstructions.addMapping(Color.blue, RoadType.TEEMP);
-        defaultInstructions.addMapping(Color.black, RoadType.TEEEMP);
-        defaultInstructions.addMapping(Color.green, RoadType.TEEEEMP);
+        defaultInstructions.addMapping(Color.blue, RoadType.TEMP);
+        defaultInstructions.addMapping(Color.green, RoadType.TEEMP);
+        defaultInstructions.addMapping(Color.red, RoadType.TEEEMP);
+        defaultInstructions.addMapping(Color.orange, RoadType.TEEEEMP);
         System.out.println("Initialized the default render instructions!");
         initialized = true;
     }
