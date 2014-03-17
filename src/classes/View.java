@@ -33,6 +33,7 @@ public class View extends JPanel {
         if (initialized) { return; }
         // Create the default render instructions :p
         defaultInstructions.addMapping(Color.blue, RoadType.TEMP);
+        
         defaultInstructions.addMapping(Color.green, RoadType.TEEMP);
         defaultInstructions.addMapping(Color.red, RoadType.TEEEMP);
         defaultInstructions.addMapping(Color.orange, RoadType.TEEEEMP);

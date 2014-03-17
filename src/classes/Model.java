@@ -77,6 +77,7 @@ public class Model {
     public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
         Line[] lineArr = new Line[roadPartArr.length];
         for(int i = 0; i<roadPartArr.length; i++) {
+            System.out.println(roadPartArr[i].type);
             lineArr[i] = new Line(
                     getScreenX(intersecMap.get(roadPartArr[i].sourceID).x, area, target), 
                     getScreenY(intersecMap.get(roadPartArr[i].sourceID).y, area, target),
