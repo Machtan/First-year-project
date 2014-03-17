@@ -22,15 +22,13 @@ public class View extends JPanel {
 
     private JLabel statusLabel;
     private Line[] lines;
-    private JFrame frame;
-    public static RenderInstructions defaultInstructions = new RenderInstructions();
-    private static boolean initialized = false;
+    private final JFrame frame;
+    public static final RenderInstructions defaultInstructions = new RenderInstructions();
     
     /**
      * Initializes the static variables
      */
-    public static void initializeStaticVars() {
-        if (initialized) { return; }
+    static {
         // Create the default render instructions :p
         defaultInstructions.addMapping(Color.blue, RoadType.TEMP);
         
@@ -38,12 +36,9 @@ public class View extends JPanel {
         defaultInstructions.addMapping(Color.red, RoadType.TEEEMP);
         defaultInstructions.addMapping(Color.orange, RoadType.TEEEEMP);
         System.out.println("Initialized the default render instructions!");
-        initialized = true;
-    }
-    
+    }  
     
     public View() {
-        View.initializeStaticVars();
         lines = View.makeLineArr(defaultInstructions);
         
         frame = new JFrame();

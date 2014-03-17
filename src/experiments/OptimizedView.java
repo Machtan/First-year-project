@@ -29,7 +29,6 @@ public class OptimizedView extends JPanel {
      * @param dimension
      */
     public OptimizedView (Dimension dimension) {
-        View.initializeStaticVars();
         setPreferredSize(dimension);
         setFocusTraversalKeysEnabled(false);
         setFocusable(true);
