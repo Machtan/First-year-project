@@ -105,8 +105,8 @@ public class OptimizedView extends JPanel  {
             System.out.println("Drawing the Optimized View took "+delay+" secs");
             if (markerRect != null) {
                 g.setColor(Color.MAGENTA);
-                g.fillRect((int)markerRect.x, (int)(markerRect.y-markerRect.height), 
-                        (int)markerRect.width, (int)markerRect.height);
+                g.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
+                        (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
             }
             
         } else {

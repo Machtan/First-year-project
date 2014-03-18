@@ -5,7 +5,6 @@ import classes.Loader;
 import classes.Model;
 import classes.Rect;
 import classes.RenderInstructions;
-import classes.View;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -18,7 +17,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import static java.lang.Math.abs;
-import static java.lang.Math.round;
 import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.JFrame;
@@ -135,6 +133,17 @@ public class TestController extends JFrame implements KeyListener,
             System.out.println("Zoomed!");
         }
         
+        if (e.getKeyChar() == '-') {
+            double zOutFactor = 1/zoomFactor;
+            double newWidth = activeArea.width*zOutFactor;
+            double newHeight = activeArea.height*zOutFactor;
+            double newX = activeArea.x - (newWidth-activeArea.width)/2;
+            double newY = activeArea.y - (newHeight-activeArea.height)/2;
+            activeArea = new Rect(newX, newY, newWidth, newHeight);
+            System.out.println("Zooming out!");
+            redraw();
+        }
+        
         // Track keypresses
         if (keyDown.containsKey(e.getKeyCode())) {
             keyDown.put(e.getKeyCode(), true);
@@ -232,9 +241,10 @@ public class TestController extends JFrame implements KeyListener,
         }
     }
     
-       // Mouse handling 
+    // Mouse handling 
     private Point startPos = null;
     private Point endPos = null;
+    private Rect markRect = null;
     @Override
     public void mousePressed(MouseEvent e) {
         System.out.println("CLICK");
@@ -253,21 +263,69 @@ public class TestController extends JFrame implements KeyListener,
         endPos = e.getLocationOnScreen();
         endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
         
-        int width = Math.abs(startPos.x - endPos.x);
-        int height = Math.abs(startPos.y - endPos.y);
-        int x = Math.min(startPos.x, endPos.x);
-        int y = Math.max(startPos.y, endPos.y);
-        Rect rect = new Rect(x, y, width, height);
-        System.out.println("Rect Y: ("+y+"), Rect: ("+rect+")");
-        view.setMarkerRect(rect);
+        double width = Math.abs(startPos.x - endPos.x);
+        double height = Math.abs(startPos.y - endPos.y);
+        
+        // Restrict the ratio
+        if (width < height*wperh) { // Height is larger
+            height = width/wperh; // The smaller is used
+            //width = height*wperh; // The bigger is used
+        } else {
+            width = height*wperh; // The smaller is used
+            //height = width/wperh; // The bigger is used
+        }
+        
+        double x;
+        if (endPos.x < startPos.x) {
+            x = startPos.x-width;
+        } else {
+            x = startPos.x;
+        }
+        double y;
+        if (endPos.y < startPos.y) {
+            y = startPos.y;
+        } else {
+            y = startPos.y + height;
+        }
+        
+        markRect = new Rect(x, y, width, height);
+        System.out.println("Rect Y: ("+y+"), Rect: ("+markRect+")");
+        view.setMarkerRect(markRect);
         view.repaint();
     }
     
     @Override
     public void mouseReleased(MouseEvent e) {
         System.out.println("RELEASE");
+        
+        // create a new active rect from the marker rect
+        double sHeight = view.getHeight();
+        double sWidth = sHeight*wperh;
+        double relx = markRect.x / sWidth;
+        double rely = 1 - (markRect.y / sHeight); // Invert y
+        double relh = markRect.height / sHeight;
+        double relw = relh; // same aspect
+        
+        System.out.println("Relative size: "+new Rect(relx, rely, relw, relh));
+        
+        double x = activeArea.x + (relx * activeArea.width);
+        double y = activeArea.y + (rely * activeArea.height);
+        double width = relw * activeArea.width;
+        System.out.println("Width: "+relw+" * "+activeArea.width+" = "+width);
+        double height = relh * activeArea.height;
+        
+        System.out.println("Old active area: "+activeArea);
+        Rect newArea = new Rect(x, y, width, height);
+        System.out.println("New active area: "+newArea);
+        /*
+        Relative size: Rect(0.9245068930795949, 0.8475, 0.13499999999999998, 0.135)
+        Old active area: Rect(442254.35659, 6049914.43018, 450403.8604700001, 352136.5527900001)
+        New active area: Rect(858655.8302641751, 6348350.158669525, 60804.52116345, 47538.434626650014)
+        */
+        
         view.setMarkerRect(null);
-        view.repaint();
+        activeArea = newArea;
+        redraw();
     }
 
     @Override
