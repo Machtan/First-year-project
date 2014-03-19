@@ -7,12 +7,9 @@
 package classes;
 
 import enums.RoadType;
-import java.awt.Dimension;
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import javax.swing.JComponent;
 
 /**
  *
