@@ -2,6 +2,7 @@ package experiments;
 
 import classes.Line;
 import classes.Rect;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -98,14 +99,20 @@ public class OptimizedView extends JPanel  {
     @Override
     public void paintComponent(Graphics g) {
         if (image != null) {
-            //clear(g);
             long t1 = System.nanoTime();
             g.drawImage(image, 0, 0, this);
             double delay = (System.nanoTime()-t1)/1000000000.0;
             System.out.println("Drawing the Optimized View took "+delay+" secs");
-            if (markerRect != null) {
-                g.setColor(Color.MAGENTA);
-                g.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
+            if (markerRect != null) { // Draw the rect used for marking 
+                BasicStroke str = new BasicStroke(2, BasicStroke.CAP_BUTT, 
+                        BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);
+                Graphics2D g2d = (Graphics2D)g;
+                g2d.setColor(new Color(200,200,255,90));
+                g2d.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
+                        (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
+                g2d.setColor(Color.BLUE);
+                g2d.setStroke(str);
+                g2d.drawRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
                         (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
             }
             

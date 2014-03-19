@@ -247,19 +247,13 @@ public class TestController extends JFrame implements KeyListener,
     private Rect markRect = null;
     @Override
     public void mousePressed(MouseEvent e) {
-        System.out.println("CLICK");
         startPos = e.getLocationOnScreen();
-        System.out.println("Standard startPos: "+startPos);
         startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-        System.out.println("Translated:        "+startPos);
-        System.out.println("Event location:  "+e.getLocationOnScreen());
-        System.out.println("Window location: "+view.getLocationOnScreen());
     }
     
     @Override
     public void mouseDragged(MouseEvent e) {
         if (startPos == null) { return; }
-        System.out.println("DRAG");
         endPos = e.getLocationOnScreen();
         endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
         
@@ -289,14 +283,13 @@ public class TestController extends JFrame implements KeyListener,
         }
         
         markRect = new Rect(x, y, width, height);
-        System.out.println("Rect Y: ("+y+"), Rect: ("+markRect+")");
         view.setMarkerRect(markRect);
         view.repaint();
     }
     
     @Override
     public void mouseReleased(MouseEvent e) {
-        System.out.println("RELEASE");
+        if (markRect == null) { return; }
         
         // create a new active rect from the marker rect
         double sHeight = view.getHeight();
