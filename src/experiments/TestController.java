@@ -5,8 +5,10 @@ import classes.Loader;
 import classes.Model;
 import classes.Rect;
 import classes.RenderInstructions;
+import classes.Utils;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -35,12 +37,14 @@ public class TestController extends JFrame implements KeyListener,
     private final Model model;
     private final HashMap<Integer, Boolean> keyDown;
     private final Timer timer;
+    private final Timer resizeTimer;
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
     
     // Tweakable configuration values
-    private final double scrollPerFrame = 6;
-    private final double fps = 60;
-    private final double zoomFactor = 0.7;
+    private final static double scrollPerFrame = 12;
+    private final static double fps = 15;
+    private final static double zoomFactor = 0.7;
+    private final static int resizeDelay = 400; // milliseconds
     
     // Dynamic fields
     private int vx = 0;
@@ -55,20 +59,35 @@ public class TestController extends JFrame implements KeyListener,
      */
     public TestController (OptimizedView view, Model model) {
         super();
+        this.model = model;
+        activeArea = model.getBoundingArea();
+        
         this.view = view;
-        view.addComponentListener(new ResizeHandler());
+        ResizeHandler resizeHandler = new ResizeHandler();
+        view.addComponentListener(resizeHandler);
         view.addMouseListener(this);
         view.addMouseMotionListener(this);
-        this.model = model;
+        view.addKeyListener(this);
         add(view);
+        
+        // Prepare scaling for the view
+        Dimension screenSize = Utils.convertDimension(Toolkit.getDefaultToolkit().getScreenSize());
+        Rect rect = new Rect(0,0, screenSize.width, screenSize.height);
+        view.createScaleSource(model.getLines(activeArea, rect, ins), screenSize);
+        
+        // Prepare resize handling :)
+        resizeTimer = new Timer(resizeDelay, resizeHandler);
+        resizeTimer.setRepeats(false);
+        
+        // Pack the window
         pack();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         
-        activeArea = model.getBoundingArea();
-        view.addKeyListener(this);
-        view.createImage(model.getLines(activeArea, 
+        // Set the image of the view
+        view.renewImage(model.getLines(activeArea, 
                 new Rect(0, 0, view.getWidth(), view.getHeight()), ins));
         
+        // Connect input
         keyDown = new HashMap<>();
         keyDown.put(KeyEvent.VK_LEFT, false);
         keyDown.put(KeyEvent.VK_RIGHT, false);
@@ -76,7 +95,6 @@ public class TestController extends JFrame implements KeyListener,
         keyDown.put(KeyEvent.VK_DOWN, false);
         timer = new Timer((int)(1000/fps), this);
         timer.start();
-        
     }
     
     /**
@@ -85,7 +103,7 @@ public class TestController extends JFrame implements KeyListener,
     private void redraw() {
         long t1 = System.nanoTime();
         System.out.println("Preparing the image...");
-        view.createImage(model.getLines(activeArea, new Rect(0, 0, 
+        view.renewImage(model.getLines(activeArea, new Rect(0, 0, 
                 view.getWidth(), view.getHeight()), ins));
         System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
     }
@@ -299,22 +317,12 @@ public class TestController extends JFrame implements KeyListener,
         double relh = markRect.height / sHeight;
         double relw = relh; // same aspect
         
-        System.out.println("Relative size: "+new Rect(relx, rely, relw, relh));
-        
         double x = activeArea.x + (relx * activeArea.width);
         double y = activeArea.y + (rely * activeArea.height);
         double width = relw * activeArea.width;
-        System.out.println("Width: "+relw+" * "+activeArea.width+" = "+width);
         double height = relh * activeArea.height;
         
-        System.out.println("Old active area: "+activeArea);
         Rect newArea = new Rect(x, y, width, height);
-        System.out.println("New active area: "+newArea);
-        /*
-        Relative size: Rect(0.9245068930795949, 0.8475, 0.13499999999999998, 0.135)
-        Old active area: Rect(442254.35659, 6049914.43018, 450403.8604700001, 352136.5527900001)
-        New active area: Rect(858655.8302641751, 6348350.158669525, 60804.52116345, 47538.434626650014)
-        */
         
         view.setMarkerRect(null);
         activeArea = newArea;
@@ -339,10 +347,25 @@ public class TestController extends JFrame implements KeyListener,
         controller.setVisible(true);
     }
     
-     private class ResizeHandler implements ComponentListener {
+     private class ResizeHandler implements ComponentListener, ActionListener {
 
         @Override
         public void componentResized(ComponentEvent e) {
+            Dimension newSize = view.getSize();
+            if (newSize.height == 0 || newSize.width == 0) { return; } // This cannot be resized ;)
+            System.out.println("Resizing view to "+newSize);
+            view.resizeMap(newSize);
+            if (!resizeTimer.isRunning()) {
+                resizeTimer.start();
+            } else {
+                System.out.println("Interrupt!");
+                resizeTimer.restart();
+            }
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) { // Once the user has finished redrawing
+            System.out.println("Redrawing after resizing...");
             redraw();
         }
 

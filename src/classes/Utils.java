@@ -1,6 +1,7 @@
 package classes;
 
 import static classes.Loader.encoding;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -17,6 +18,13 @@ import krak.DataLine;
  * @version 14-Feb-2014
  */
 public class Utils {
+    
+    /**
+     * The amount of width unit for each height unit of the map = the ratio for 
+     * the map.
+     */
+    public final static double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
+    
     /**
      * Joins an array of strings with a given separator
      * @param strings The strings
@@ -112,5 +120,26 @@ public class Utils {
         } catch (IOException ex) {
             throw new RuntimeException("Error while saving data to '"+path+"'");
         }
+    }
+    
+    /**
+     * Returns a version of the given conversion restricted to keep the right 
+     * ratio for the map. This method returns the biggest contained dimension of
+     * the source dimension that has the right ratio between width height.
+     * @param dimension The source dimension
+     * @return The converted dimension (always smaller than the source)
+     */
+    public static Dimension convertDimension(Dimension dimension) {
+        int width, height;
+        if (dimension.width < dimension.height * wperh) { // height is larger
+            height = (int)Math.round(dimension.width/wperh);
+            width = dimension.width;
+            System.out.println("Height: "+dimension.height+" -> "+height);
+        } else { // width is larger
+            width = (int)Math.round(dimension.height*wperh);
+            height = dimension.height;
+            System.out.println("Width:  "+dimension.width+" -> "+width);
+        }
+        return new Dimension(width, height);
     }
 }
