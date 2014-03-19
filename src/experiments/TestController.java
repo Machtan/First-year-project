@@ -5,7 +5,6 @@ import classes.Loader;
 import classes.Model;
 import classes.Rect;
 import classes.RenderInstructions;
-import classes.Utils;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -37,22 +36,26 @@ public class TestController extends JFrame {
     private final HashMap<Integer, Boolean> keyDown;
     private final Timer timer;
     private final Timer resizeTimer;
+    private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
     private Point startPos = null;
     private Point endPos = null;
     private Rect markRect = null;
-    
+    private Dimension prevSize;
+    private Dimension startResizeSize; // The size when a resize is started
     
     // Tweakable configuration values
     private final static double scrollPerFrame = 12;
     private final static double fps = 15;
     private final static double zoomFactor = 0.7;
     private final static int resizeDelay = 400; // milliseconds
+    private final static int margin = 40; // The amount of pixels to load to the right when resizing
     
     // Dynamic fields
     private int vx = 0;
     private int vy = 0;
     private Rect activeArea;
+    private Rect lastArea;
     private RenderInstructions ins = Model.defaultInstructions;
     
     /**
@@ -75,11 +78,6 @@ public class TestController extends JFrame {
         view.addKeyListener(keyHandler);
         add(view);
         
-        // Prepare scaling for the view
-        Dimension screenSize = Utils.convertDimension(Toolkit.getDefaultToolkit().getScreenSize());
-        Rect rect = new Rect(0,0, screenSize.width, screenSize.height);
-        view.createScaleSource(model.getLines(activeArea, rect, ins), screenSize);
-        
         // Prepare resize handling :)
         resizeTimer = new Timer(resizeDelay, resizeHandler);
         resizeTimer.setRepeats(false);
@@ -87,6 +85,8 @@ public class TestController extends JFrame {
         // Pack the window
         pack();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        resizeActiveArea(view.getSize());
+        prevSize = view.getSize(); // prepare for scaling
         
         // Set the image of the view
         view.renewImage(model.getLines(activeArea, 
@@ -102,14 +102,23 @@ public class TestController extends JFrame {
         timer.start();
     }
     
+    public void resizeActiveArea(Dimension dim) {
+        double height = activeArea.height;
+        double width = (dim.width/(double)dim.height) * height;
+        Rect newArea = new Rect(activeArea.x, activeArea.y, width, height);
+        System.out.println("Resizing active area from "+activeArea+" to "+newArea);
+        activeArea = newArea;
+    }
+    
     /**
      * Tells the model to redraw based on the activeArea
      */
     private void redraw() {
         long t1 = System.nanoTime();
         
-        // 
-        
+        // Change the active Rect so that it fits the screen
+        resizeActiveArea(view.getSize());
+        lastArea = activeArea;
         
         System.out.println("Preparing the image...");
         view.renewImage(model.getLines(activeArea, new Rect(0, 0, 
@@ -225,25 +234,22 @@ public class TestController extends JFrame {
                Rect na = new Rect(activeArea.x-vx*upp, activeArea.y-vy*upp, 
                        activeArea.width, activeArea.height); 
 
-               // Calculate the 'actual' width of the map based on the ratio
-               double screenWidth = view.getHeight()*wperh;
-
                Rect verTarget = null;
                Rect horTarget = null;
                // Find out which parts of the map should be redrawn
                if (vx > 0) { // (render)Left pressed -> map goes right 
                    verArea = new Rect(na.left, na.bottom, Math.abs(vx*upp), a.height); // <-- not working
-                   verTarget = new Rect(0, 0, screenWidth, view.getHeight());
+                   verTarget = new Rect(0, 0, view.getWidth(), view.getHeight());
                } else if (vx < 0) { // (render)Right pressed -> map goes left
                    verArea = new Rect(a.right, na.bottom, Math.abs(vx*upp), a.height);
-                   verTarget = new Rect(screenWidth-abs(vx), 0, screenWidth, view.getHeight());
+                   verTarget = new Rect(view.getWidth()-abs(vx), 0, view.getWidth(), view.getHeight());
                }
                if (vy > 0) { // (render)Down -> map up
                    horArea = new Rect(na.left, na.bottom, a.width, Math.abs(vy*upp)); // <-- not working
-                   horTarget = new Rect(0, 0, screenWidth, abs(vy)); // 
+                   horTarget = new Rect(0, 0, view.getWidth(), abs(vy)); // 
                } else if (vy < 0) { // (render)Up -> map down
                    horArea = new Rect(na.left, a.top, a.width, Math.abs(vy*upp));
-                   horTarget = new Rect(0, view.getHeight()-abs(vy), screenWidth, abs(vy)); // 
+                   horTarget = new Rect(0, view.getHeight()-abs(vy), view.getWidth(), abs(vy)); // 
                }
 
                // Request the lines for the areas to be redrawn
@@ -274,6 +280,7 @@ public class TestController extends JFrame {
         public void mousePressed(MouseEvent e) {
             startPos = e.getLocationOnScreen();
             startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+            markRect = new Rect(startPos.x, startPos.y, 0, 0);
         }
 
         @Override
@@ -314,15 +321,22 @@ public class TestController extends JFrame {
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            if (markRect == null) { return; }
-
+            double rHeight = markRect.height;
+            double rWidth = markRect.width;
+            double rX = markRect.x;
+            double rY = markRect.y;
+            if (rHeight < 15) { // Default zoom-ish
+                rHeight = 120;
+                rWidth = rHeight*wperh;
+                rX = markRect.x - (rWidth - (markRect.width))/2;
+                rY = markRect.y + (rHeight - (markRect.height))/2;
+            } 
+            
             // create a new active rect from the marker rect
-            double sHeight = view.getHeight();
-            double sWidth = sHeight*wperh;
-            double relx = markRect.x / sWidth;
-            double rely = 1 - (markRect.y / sHeight); // Invert y
-            double relh = markRect.height / sHeight;
-            double relw = relh; // same aspect
+            double relx = rX      / view.getWidth();
+            double rely = 1 - (rY / view.getHeight()); // Invert y
+            double relh = rHeight / view.getHeight();
+            double relw = rWidth  / view.getWidth(); // same aspect
 
             double x = activeArea.x + (relx * activeArea.width);
             double y = activeArea.y + (rely * activeArea.height);
@@ -349,22 +363,54 @@ public class TestController extends JFrame {
 
         @Override
         public void componentResized(ComponentEvent e) {
+            if (prevSize == null) { return; } // You're too fast ;)
+            if (!view.initialized()) { return; } // You're still too fast ;)
             Dimension newSize = view.getSize();
             if (newSize.height == 0 || newSize.width == 0) { return; } // This cannot be resized ;)
-            System.out.println("Resizing view to "+newSize);
-            view.resizeMap(newSize);
+            if (newSize.height != prevSize.height) {
+                view.resizeMap(newSize);
+                prevSize = newSize;
+            } else if (newSize.width > Math.min(view.getSourceWidth()-margin, screenSize.width)) { // The windows is wider now
+                int prevRightLimit = view.getSourceWidth();
+                int newRightLimit = Math.max(prevRightLimit+margin, view.getWidth()+margin);
+
+                System.out.println("Moving the right limit to "+newRightLimit);
+                resizeActiveArea(newSize);
+
+                double sx = lastArea.right;
+                double sy = lastArea.y;
+                double sw = (newRightLimit-prevRightLimit) * (activeArea.width / view.getWidth());
+                double sh = lastArea.height;
+                Rect source = new Rect(sx, sy, sw, sh);
+                //System.out.println("-> Source: "+source);
+
+                double tx = prevRightLimit;
+                double ty = 0;
+                double tw = newRightLimit;
+                double th = newSize.height;
+                Rect target = new Rect(tx, ty, tw, th);
+                //System.out.println("-> Target: "+target);
+
+                // Update the image to show the new content ;)
+                view.offsetImage(0, 0, model.getLines(source, target, ins), 
+                        new Dimension(newRightLimit, view.getHeight()));
+                lastArea = source;
+            }
             if (!resizeTimer.isRunning()) {
+                startResizeSize = view.getSize();
                 resizeTimer.start();
             } else {
-                System.out.println("Interrupt!");
                 resizeTimer.restart();
             }
         }
         
         @Override
         public void actionPerformed(ActionEvent e) { // Once the user has finished redrawing
-            System.out.println("Redrawing after resizing...");
-            redraw();
+            // Only redraw if it is needed, plx
+            if (view.getHeight() != startResizeSize.height) {
+                System.out.println("Redrawing after resizing...");
+                redraw();
+            }
         }
 
         @Override

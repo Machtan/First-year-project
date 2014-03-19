@@ -50,17 +50,26 @@ public class OptimizedView extends JPanel  {
     }
     
     /**
+     * Returns the width of the view's scale source
+     * @return The width of the view's scale source
+     */
+    public int getSourceWidth() {
+        return scaleSource.getWidth();
+    }
+    
+    /**
      * Moves the current image based on the offset, then draws the given array
      * of lines. Used for panning.
      * @param x The Eastward offset 
      * @param y The Nortward offset 
      * @param newLines The new lines to patch up 
+     * @param newSize The new dimension of the image
      */
-    public void offsetImage(int x, int y, Line[] newLines) { // Takes roughly 0.0016 secs at worst
+    public void offsetImage(int x, int y, Line[] newLines, Dimension newSize) { // Takes roughly 0.0016 secs at worst
         long t1 = System.nanoTime();
-        BufferedImage newImage = gfx_config.createCompatibleImage(getWidth(), getHeight());
-        clear(newImage); // Clear the whole image
-        Graphics2D g2d = newImage.createGraphics();
+        scaleSource = gfx_config.createCompatibleImage(newSize.width, newSize.height);
+        clear(scaleSource); // Clear the whole image
+        Graphics2D g2d = scaleSource.createGraphics();
         g2d.drawImage(image, x, -y, this); // Draw the old image offset
         long t2 = System.nanoTime();
         for (Line line : newLines) {
@@ -68,6 +77,7 @@ public class OptimizedView extends JPanel  {
             g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
         }
         g2d.dispose();
+        /*
         System.out.println("Offsetting by "+x+", "+y+" ("+newLines.length+" lines)");
         long t3 = System.nanoTime();
         double nFac = 1000000000.0;
@@ -75,20 +85,22 @@ public class OptimizedView extends JPanel  {
         double drawTime = (t3-t2)/nFac;
         double total = (t3-t1)/nFac;
         System.out.println("Offsetting took "+total+" secs (image: "+stampTime+" secs, lines: "+drawTime+" secs)");
-        image = newImage;
+        */
+        image = scaleSource;
         repaint();
     }
     
     /**
-     * Creates a scaling source for the view from the given lines
-     * @param lines The lines to draw on the scale source
-     * @param dim How big the source should be in pixels
+     * Moves the current image based on the offset, then draws the given array
+     * of lines. Used for panning.
+     * @param x The Eastward offset 
+     * @param y The Nortward offset 
+     * @param newLines The new lines to patch up 
      */
-    public void createScaleSource(Line[] lines, Dimension dim) {
-        System.out.println("Creating a scale source with the size "+dim+" from "+lines.length+" lines");
-        scaleSource = createImage(lines, dim);
+    public void offsetImage(int x, int y, Line[] newLines) {
+        offsetImage(x, y, newLines, getSize());
     }
-    
+        
     /**
      * Resizes the map somewhat naïvely
      * @param newSize 
@@ -96,7 +108,8 @@ public class OptimizedView extends JPanel  {
     public void resizeMap(Dimension newSize) {
         if (scaleSource != null) {
             // Calculate the dimensions of the new image
-            Dimension size = Utils.convertDimension(newSize);
+            double ratio = newSize.height / (double)scaleSource.getHeight();
+            Dimension size = new Dimension((int)Math.round(scaleSource.getWidth()*ratio), newSize.height);
             System.out.println("Resizing to "+size);
             int width = size.width; int height = size.height;
             Image scaledImage = scaleSource.getScaledInstance(width, height, Image.SCALE_FAST);
@@ -114,6 +127,7 @@ public class OptimizedView extends JPanel  {
      * @return A buffered image containing the drawn lines
      */
     private BufferedImage createImage(Line[] lineArr, Dimension dim) {
+        System.out.println("Creating an image with the size "+dim);
         BufferedImage img = gfx_config.createCompatibleImage(dim.width, dim.height);
         clear(img);
         Graphics2D g2d = img.createGraphics();
@@ -125,9 +139,18 @@ public class OptimizedView extends JPanel  {
         return img;
     }
     
-    public void renewImage(Line[] lineArr) {
-        image = createImage(lineArr, getSize());
+    public void renewImage(Line[] lines) {
+        scaleSource = createImage(lines, getSize());
+        image = scaleSource;
         repaint();
+    }
+    
+    /**
+     * Returns whether the view is initialized and can be used
+     * @return True if the view is initialized
+     */
+    public boolean initialized() {
+        return image != null;
     }
     
     /**
