@@ -32,9 +32,7 @@ public class Model {
         defaultInstructions.addMapping(Color.red, RoadType.Motorvejsafkorsel);
         defaultInstructions.addMapping(new Color(51,51,255), RoadType.PrimaerRute);
         defaultInstructions.addMapping(new Color(0,255,25), RoadType.Sti);
-        defaultInstructions.addMapping(Color.black, RoadType.Other);
-        
-        System.out.println("Initialized the default render instructions!");
+        defaultInstructions.addMapping(new Color(200,200,255), RoadType.Other);
     }
     
     /**
