@@ -48,4 +48,23 @@ public class Rect {
         return "Rect("+x+", "+y+", "+width+", "+height+")";
     }
     
+    /**
+     * Shifts the rect by the given amounts
+     * @param x
+     * @param y
+     * @return A new rect shifted by the given amount
+     */
+    public Rect shift(double x, double y) {
+        return new Rect(this.x+x, this.y+y, this.width, this.height);
+    }
+    
+    /**
+     * Returns the rect moved to the new position
+     * @param x
+     * @param y
+     * @return 
+     */
+    public Rect shiftTo(double x, double y) {
+        return new Rect(x, y, width, height);
+    }
 }

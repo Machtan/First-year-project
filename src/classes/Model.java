@@ -8,6 +8,7 @@ package classes;
 
 import enums.RoadType;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -30,11 +31,9 @@ public class Model {
         // Create the default render instructions :
         defaultInstructions.addMapping(Color.red, RoadType.Highway);
         defaultInstructions.addMapping(Color.red, RoadType.HighwayExit);
-        defaultInstructions.addMapping(new Color(51,51,255), RoadType.PrimeRoute);
-        defaultInstructions.addMapping(new Color(0,255,25), RoadType.Path);
-        defaultInstructions.addMapping(Color.black, RoadType.Other);
-        
-        System.out.println("Initialized the default render instructions!");
+        defaultInstructions.addMapping(new Color(255,170,100), RoadType.PrimeRoute);
+        defaultInstructions.addMapping(new Color(0,255,25,200), RoadType.Path);
+        defaultInstructions.addMapping(new Color(200,200,255), RoadType.Other);
     }
     
     /**
@@ -125,29 +124,67 @@ public class Model {
      * @param target The area of the view the coordinates should be mapped to
      * @param windowHeight The height of the target window
      * @param instructions The instructions for coloring/rendering of the lines
+     * @param prioritized A list of roads to be prioritized, from highest to lowest
      * @return A list of lines converted to local coordinates for the view
      */
-    public Line[] getLines(Rect area, Rect target, double windowHeight, RenderInstructions instructions) {
+    public ArrayList<Line> getLines(Rect area, Rect target, double windowHeight, 
+            RenderInstructions instructions, ArrayList<RoadType> prioritized) {
         HashSet<RoadPart> roads = tree.getIn(area); // TODO THIS IS THE WEAK LINK!!!
-        Line[] lines = new Line[roads.size()];
+        ArrayList<Line> lines = new ArrayList<>(roads.size());
         
-        System.out.println("Returning "+lines.length+" lines from the area "+area);
-        
-        int i = 0;
-        for(RoadPart part: roads) {
-            lines[i++] = new Line(
-                    getScreenX(intersecMap.get(part.sourceID).x, area, target), 
-                    getScreenY(intersecMap.get(part.sourceID).y, area, target, windowHeight),
-                    getScreenX(intersecMap.get(part.targetID).x, area, target),
-                    getScreenY(intersecMap.get(part.targetID).y, area, target, windowHeight),
-                    instructions.getColor(part.type)
-            );
+        // Prepare the prioritized lists
+        HashMap<RoadType, ArrayList<Line>> prioLines = new HashMap<>();
+        for (RoadType type : prioritized) {
+            prioLines.put(type, new ArrayList<Line>());
         }
+        
+        for(RoadPart road: roads) {
+            if (instructions.getColor(road.type) == instructions.getVoidColor()) {
+                continue; // Ignore undrawn roads
+            }
+
+            // Create the line to be drawn
+            Line line = new Line(
+                    getScreenX(intersecMap.get(road.sourceID).x, area, target), 
+                    getScreenY(intersecMap.get(road.sourceID).y, area, target, windowHeight),
+                    getScreenX(intersecMap.get(road.targetID).x, area, target),
+                    getScreenY(intersecMap.get(road.targetID).y, area, target, windowHeight),
+                    instructions.getColor(road.type)
+            );
+            
+            // Prioritize if needed
+            if (prioritized.contains(road.type)) {
+                prioLines.get(road.type).add(line);
+            } else {
+                lines.add(line);
+            }
+        }
+        
+        // Add the prioritized lines in order
+        for (int i = prioLines.size()-1; i >= 0; i--) {
+            lines.addAll(prioLines.get(prioritized.get(i)));
+        }
+        
+        System.out.println("Returning "+lines.size()+" lines from the area "+area);
         return lines;
     }
     
-    public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
-        return getLines(area, target, target.height, instructions);
+    // Without <target height> or <priorities>
+    public ArrayList<Line> getLines(Rect area, Rect target, RenderInstructions instructions) {
+        return getLines(area, target, target.height, instructions, new ArrayList<RoadType>());
     }
+    
+    // Without <target height>
+    public ArrayList<Line> getLines(Rect area, Rect target, RenderInstructions instructions, 
+            ArrayList<RoadType> priorities) {
+        return getLines(area, target, target.height, instructions, priorities);
+    }
+    
+    // Without <priorities>
+    public ArrayList<Line> getLines(Rect area, Rect target, int windowHeight, 
+            RenderInstructions instructions) {
+        return getLines(area, target, windowHeight, instructions, new ArrayList<RoadType>());
+    }
+    
 }
 

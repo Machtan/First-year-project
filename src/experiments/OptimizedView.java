@@ -12,6 +12,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import javax.swing.JPanel;
 
 /**
@@ -65,7 +66,7 @@ public class OptimizedView extends JPanel  {
      * @param newLines The new lines to patch up 
      * @param newSize The new dimension of the image
      */
-    public void offsetImage(int x, int y, Line[] newLines, Dimension newSize) { // Takes roughly 0.0016 secs at worst
+    public void offsetImage(int x, int y, ArrayList<Line> newLines, Dimension newSize) { // Takes roughly 0.0016 secs at worst
         long t1 = System.nanoTime();
         scaleSource = gfx_config.createCompatibleImage(newSize.width, newSize.height);
         clear(scaleSource); // Clear the whole image
@@ -81,12 +82,14 @@ public class OptimizedView extends JPanel  {
         /*
         System.out.println("Offsetting by "+x+", "+y+" ("+newLines.length+" lines)");
         long t3 = System.nanoTime();
-        double nFac = 1000000000.0;
+        
         double stampTime = (t2-t1)/nFac;
         double drawTime = (t3-t2)/nFac;
         double total = (t3-t1)/nFac;
         System.out.println("Offsetting took "+total+" secs (image: "+stampTime+" secs, lines: "+drawTime+" secs)");
         */
+        double nFac = 1000000000.0;
+        System.out.println("Offset in "+(System.nanoTime()-t1)/nFac+" secs");
         image = scaleSource;
         repaint();
     }
@@ -98,7 +101,7 @@ public class OptimizedView extends JPanel  {
      * @param y The Nortward offset 
      * @param newLines The new lines to patch up 
      */
-    public void offsetImage(int x, int y, Line[] newLines) {
+    public void offsetImage(int x, int y, ArrayList<Line> newLines) {
         offsetImage(x, y, newLines, getSize());
     }
         
@@ -123,11 +126,11 @@ public class OptimizedView extends JPanel  {
     }
     
     /**
-     * Creates a buffered image from the given array of lines
+     * Creates a buffered image from the given list of lines
      * @param lineArr The lines to draw
      * @return A buffered image containing the drawn lines
      */
-    private BufferedImage createImage(Line[] lineArr, Dimension dim) {
+    private BufferedImage createImage(ArrayList<Line> lineArr, Dimension dim) {
         System.out.println("Creating an image with the size "+dim);
         BufferedImage img = gfx_config.createCompatibleImage(dim.width, dim.height);
         clear(img);
@@ -141,7 +144,7 @@ public class OptimizedView extends JPanel  {
         return img;
     }
     
-    public void renewImage(Line[] lines) {
+    public void renewImage(ArrayList<Line> lines) {
         scaleSource = createImage(lines, getSize());
         image = scaleSource;
         repaint();

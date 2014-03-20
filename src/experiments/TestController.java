@@ -5,6 +5,7 @@ import classes.Loader;
 import classes.Model;
 import classes.Rect;
 import classes.RenderInstructions;
+import enums.RoadType;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -18,6 +19,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import static java.lang.Math.abs;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.JFrame;
@@ -30,7 +32,6 @@ import javax.swing.WindowConstants;
  * @version 10-Mar-2014
  */
 public class TestController extends JFrame {
-    
     private final OptimizedView view;
     private final Model model;
     private final HashMap<Integer, Boolean> keyDown;
@@ -38,11 +39,13 @@ public class TestController extends JFrame {
     private final Timer resizeTimer;
     private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
+    private Rect limitRect;
     private Point startPos = null;
     private Point endPos = null;
     private Rect markRect = null;
     private Dimension prevSize;
     private Dimension startResizeSize; // The size when a resize is started
+    private ArrayList<RoadType> prioritized;
     
     // Tweakable configuration values
     private final static double scrollPerFrame = 12;
@@ -68,6 +71,19 @@ public class TestController extends JFrame {
         this.model = model;
         activeArea = model.getBoundingArea();
         
+        double lw = activeArea.width * 1.2;
+        double lx = activeArea.x - 0.1 * activeArea.width;
+        double lh = activeArea.height * 1.2;
+        double ly = activeArea.y - 0.1 * activeArea.height;
+        limitRect = new Rect(lx, ly, lw, lh);
+        System.out.println("Active area: "+activeArea);
+        System.out.println("Limit rect:  "+limitRect);
+        
+        prioritized = new ArrayList<>();
+        prioritized.add(RoadType.Highway);
+        prioritized.add(RoadType.HighwayExit);
+        prioritized.add(RoadType.PrimeRoute);
+        
         this.view = view;
         ResizeHandler resizeHandler = new ResizeHandler();
         KeyHandler keyHandler = new KeyHandler();
@@ -90,7 +106,8 @@ public class TestController extends JFrame {
         
         // Set the image of the view
         view.renewImage(model.getLines(activeArea, 
-                new Rect(0, 0, view.getWidth(), view.getHeight()), ins));
+                new Rect(0, 0, view.getWidth(), view.getHeight()), ins, 
+                prioritized));
         
         // Connect input
         keyDown = new HashMap<>();
@@ -122,8 +139,31 @@ public class TestController extends JFrame {
         
         System.out.println("Preparing the image...");
         view.renewImage(model.getLines(activeArea, new Rect(0, 0, 
-                view.getWidth(), view.getHeight()), ins));
+                view.getWidth(), view.getHeight()), ins, prioritized));
         System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
+    }
+    
+    public void zoomOut() {
+        System.out.println("Zooming out!");
+        double zOutFactor = 1/zoomFactor;
+        double newWidth = activeArea.width*zOutFactor;
+        double newHeight = activeArea.height*zOutFactor;
+        double newX = activeArea.x - (newWidth-activeArea.width)/2;
+        double newY = activeArea.y - (newHeight-activeArea.height)/2;
+        if (newHeight > limitRect.height) {
+            newHeight = limitRect.height;
+            newWidth = limitRect.width;
+            newX = limitRect.x;
+            newY = limitRect.y;
+            System.out.println("Restricted the zooming out");
+        }
+        
+        if (activeArea.height != limitRect.height) {
+            activeArea = new Rect(newX, newY, newWidth, newHeight);
+            redraw();
+        } else {
+            System.out.println("No size change, ignoring...");
+        }
     }
     
     private class KeyHandler implements KeyListener, ActionListener {
@@ -171,14 +211,7 @@ public class TestController extends JFrame {
             }
 
             if (e.getKeyChar() == '-') {
-                double zOutFactor = 1/zoomFactor;
-                double newWidth = activeArea.width*zOutFactor;
-                double newHeight = activeArea.height*zOutFactor;
-                double newX = activeArea.x - (newWidth-activeArea.width)/2;
-                double newY = activeArea.y - (newHeight-activeArea.height)/2;
-                activeArea = new Rect(newX, newY, newWidth, newHeight);
-                System.out.println("Zooming out!");
-                redraw();
+                zoomOut();
             }
 
             // Track keypresses
@@ -215,6 +248,76 @@ public class TestController extends JFrame {
             }
         }
         
+        private void shiftImage() {
+           // Pixels per unit
+           double ppu = view.getHeight()/activeArea.height;
+           double upp = 1.0 / ppu;
+           
+           int movx = vx;
+           int movy = vy;
+           /*
+           This doesn't work. Restriction is probably too cumbersome due to other
+           implementations
+           double activeRight = activeArea.x+(view.getWidth()*upp);
+           if (vx < 0 && (activeRight+vx*upp > limitRect.right)) {
+               System.out.println("Limiting RIGHT");
+               System.out.println("dx = "+(activeRight-limitRect.right));
+               movx = (int)Math.ceil((activeRight-limitRect.right)*ppu);
+               System.out.println("Active rect: "+activeArea);
+               System.out.println("Limit rect:  "+limitRect);
+               
+               System.out.println("movx "+vx+" -> "+movx);
+           } else if (vx > 0 && (activeArea.left-vx*upp < limitRect.left)) {
+               System.out.println("Limiting LEFT");
+               movx = (int)Math.floor((activeArea.left-limitRect.left)*ppu);
+               System.out.println("movx "+vx+" -> "+movx);
+           }*/
+           
+           
+           // Prepare the visual changes
+           Rect verArea = null;
+           Rect horArea = null;
+           Rect a = activeArea;
+           // Create the new active rect
+           Rect na = new Rect(activeArea.x-movx*upp, activeArea.y-movy*upp, 
+                   activeArea.width, activeArea.height); 
+
+           Rect verTarget = null;
+           Rect horTarget = null;
+           // Find out which parts of the map should be redrawn
+           if (movx > 0) { // (render)Left pressed -> map goes right 
+               verArea = new Rect(na.left, na.bottom, Math.abs(movx*upp), a.height); // <-- not working
+               verTarget = new Rect(0, 0, view.getWidth(), view.getHeight());
+           } else if (movx < 0) { // (render)Right pressed -> map goes left
+               verArea = new Rect(a.right, na.bottom, Math.abs(movx*upp), a.height);
+               verTarget = new Rect(view.getWidth()-abs(movx), 0, view.getWidth(), view.getHeight());
+           }
+           if (movy > 0) { // (render)Down -> map up
+               horArea = new Rect(na.left, na.bottom, a.width, Math.abs(movy*upp)); // <-- not working
+               horTarget = new Rect(0, 0, view.getWidth(), abs(movy)); // 
+           } else if (movy < 0) { // (render)Up -> map down
+               horArea = new Rect(na.left, a.top, a.width, Math.abs(movy*upp));
+               horTarget = new Rect(0, view.getHeight()-abs(movy), view.getWidth(), abs(movy)); // 
+           }
+
+           // Request the lines for the areas to be redrawn
+           ArrayList<Line> lines = new ArrayList<>();
+           if (verArea != null && horArea != null) {
+               lines = model.getLines(verArea, verTarget, view.getHeight(), ins, prioritized);
+               lines.addAll(model.getLines(horArea, horTarget, view.getHeight(), ins, prioritized));
+           } else if (verArea != null) {
+               lines = model.getLines(verArea, verTarget, view.getHeight(), ins, prioritized);
+           } else if (horArea != null) {
+               lines = model.getLines(horArea, horTarget, view.getHeight(), ins, prioritized);
+           }
+
+           // Finalize the change to the active area
+           activeArea = na;
+
+           // Update the view's image
+           view.offsetImage(movx, movy, lines);
+        }
+        
         /**
         * Called when the timer loop ticks :3
         * @param e 
@@ -222,56 +325,7 @@ public class TestController extends JFrame {
        @Override
        public void actionPerformed(ActionEvent e) {
            if (vx != 0 || vy != 0) {
-               // Pixels per unit
-               double ppu = view.getHeight()/activeArea.height;
-               double upp = 1.0 / ppu;
-
-               // Prepare the visual changes
-               Rect verArea = null;
-               Rect horArea = null;
-               Rect a = activeArea;
-               // Create the new active rect
-               Rect na = new Rect(activeArea.x-vx*upp, activeArea.y-vy*upp, 
-                       activeArea.width, activeArea.height); 
-
-               Rect verTarget = null;
-               Rect horTarget = null;
-               // Find out which parts of the map should be redrawn
-               if (vx > 0) { // (render)Left pressed -> map goes right 
-                   verArea = new Rect(na.left, na.bottom, Math.abs(vx*upp), a.height); // <-- not working
-                   verTarget = new Rect(0, 0, view.getWidth(), view.getHeight());
-               } else if (vx < 0) { // (render)Right pressed -> map goes left
-                   verArea = new Rect(a.right, na.bottom, Math.abs(vx*upp), a.height);
-                   verTarget = new Rect(view.getWidth()-abs(vx), 0, view.getWidth(), view.getHeight());
-               }
-               if (vy > 0) { // (render)Down -> map up
-                   horArea = new Rect(na.left, na.bottom, a.width, Math.abs(vy*upp)); // <-- not working
-                   horTarget = new Rect(0, 0, view.getWidth(), abs(vy)); // 
-               } else if (vy < 0) { // (render)Up -> map down
-                   horArea = new Rect(na.left, a.top, a.width, Math.abs(vy*upp));
-                   horTarget = new Rect(0, view.getHeight()-abs(vy), view.getWidth(), abs(vy)); // 
-               }
-
-               // Request the lines for the areas to be redrawn
-               Line[] lines = new Line[0];
-               if (verArea != null && horArea != null) {
-                   Line[] verLines = model.getLines(verArea, verTarget, view.getHeight(), ins);
-                   Line[] horLines = model.getLines(horArea, horTarget, view.getHeight(), ins);
-                   lines = Arrays.copyOf(verLines, verLines.length + horLines.length);
-                   for (int i = 0; i < horLines.length; i++) {
-                       lines[verLines.length+i] = horLines[i];
-                   }
-               } else if (verArea != null) {
-                   lines = model.getLines(verArea, verTarget, view.getHeight(), ins);
-               } else if (horArea != null) {
-                   lines = model.getLines(horArea, horTarget, view.getHeight(), ins);
-               }
-
-               // Finalize the change to the active area
-               activeArea = na;
-
-               // Update the view's image
-               view.offsetImage(vx, vy, lines);
+               shiftImage();
            }
        }
     }
@@ -347,6 +401,7 @@ public class TestController extends JFrame {
 
             view.setMarkerRect(null);
             activeArea = newArea;
+            lastArea = newArea;
             redraw();
         }
 
@@ -392,7 +447,7 @@ public class TestController extends JFrame {
                 //System.out.println("-> Target: "+target);
 
                 // Update the image to show the new content ;)
-                view.offsetImage(0, 0, model.getLines(source, target, ins), 
+                view.offsetImage(0, 0, model.getLines(source, target, ins, prioritized), 
                         new Dimension(newRightLimit, view.getHeight()));
                 lastArea = source;
             }
