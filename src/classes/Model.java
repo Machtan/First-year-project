@@ -31,10 +31,10 @@ public class Model {
      */
     static {
         // Create the default render instructions :
-        defaultInstructions.addMapping(Color.red, RoadType.Motorvej);
-        defaultInstructions.addMapping(Color.red, RoadType.Motorvejsafkorsel);
-        defaultInstructions.addMapping(new Color(51,51,255), RoadType.PrimaerRute);
-        defaultInstructions.addMapping(new Color(0,255,25), RoadType.Sti);
+        defaultInstructions.addMapping(Color.red, RoadType.Highway);
+        defaultInstructions.addMapping(Color.red, RoadType.HighwayExit);
+        defaultInstructions.addMapping(new Color(51,51,255), RoadType.PrimeRoute);
+        defaultInstructions.addMapping(new Color(0,255,25), RoadType.Path);
         defaultInstructions.addMapping(Color.black, RoadType.Other);
         
         System.out.println("Initialized the default render instructions!");

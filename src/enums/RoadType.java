@@ -6,7 +6,7 @@ package enums;
  * @version 10-Mar-2014
  */
 public enum RoadType {
-     Motorvej(1), PrimaerRute(3), Sti(8), Motorvejsafkorsel(31), Other(0);
+     Highway(1), PrimeRoute(3), Path(8), HighwayExit(31), Other(0);
       
     
     
