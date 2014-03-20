@@ -5,18 +5,19 @@ import classes.Loader;
 import classes.Model;
 import classes.Rect;
 import classes.RenderInstructions;
-import classes.View;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import static java.lang.Math.abs;
-import static java.lang.Math.round;
 import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.JFrame;
@@ -28,25 +29,34 @@ import javax.swing.WindowConstants;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 10-Mar-2014
  */
-public class TestController extends JFrame implements KeyListener, 
-            ActionListener, MouseListener, MouseMotionListener {
+public class TestController extends JFrame {
     
     private final OptimizedView view;
     private final Model model;
     private final HashMap<Integer, Boolean> keyDown;
     private final Timer timer;
+    private final Timer resizeTimer;
+    private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
+    private Point startPos = null;
+    private Point endPos = null;
+    private Rect markRect = null;
+    private Dimension prevSize;
+    private Dimension startResizeSize; // The size when a resize is started
     
     // Tweakable configuration values
-    private final double scrollPerFrame = 6;
-    private final double fps = 30;
-    private final double zoomFactor = 0.9;
+    private final static double scrollPerFrame = 12;
+    private final static double fps = 15;
+    private final static double zoomFactor = 0.7;
+    private final static int resizeDelay = 400; // milliseconds
+    private final static int margin = 40; // The amount of pixels to load to the right when resizing
     
     // Dynamic fields
     private int vx = 0;
     private int vy = 0;
     private Rect activeArea;
-    private RenderInstructions ins = new RenderInstructions();
+    private Rect lastArea;
+    private RenderInstructions ins = Model.defaultInstructions;
     
     /**
      * Constructor for the TestController class
@@ -55,224 +65,366 @@ public class TestController extends JFrame implements KeyListener,
      */
     public TestController (OptimizedView view, Model model) {
         super();
-        this.view = view;
-        view.addMouseListener(this);
-        view.addMouseMotionListener(this);
         this.model = model;
+        activeArea = model.getBoundingArea();
+        
+        this.view = view;
+        ResizeHandler resizeHandler = new ResizeHandler();
+        KeyHandler keyHandler = new KeyHandler();
+        MouseHandler mouseHandler = new MouseHandler();
+        view.addComponentListener(resizeHandler);
+        view.addMouseListener(mouseHandler);
+        view.addMouseMotionListener(mouseHandler);
+        view.addKeyListener(keyHandler);
         add(view);
+        
+        // Prepare resize handling :)
+        resizeTimer = new Timer(resizeDelay, resizeHandler);
+        resizeTimer.setRepeats(false);
+        
+        // Pack the window
         pack();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        resizeActiveArea(view.getSize());
+        prevSize = view.getSize(); // prepare for scaling
         
-        activeArea = model.getBoundingArea();
-        view.addKeyListener(this);
-        view.createImage(model.getLines(activeArea, 
+        // Set the image of the view
+        view.renewImage(model.getLines(activeArea, 
                 new Rect(0, 0, view.getWidth(), view.getHeight()), ins));
         
+        // Connect input
         keyDown = new HashMap<>();
         keyDown.put(KeyEvent.VK_LEFT, false);
         keyDown.put(KeyEvent.VK_RIGHT, false);
         keyDown.put(KeyEvent.VK_UP, false);
         keyDown.put(KeyEvent.VK_DOWN, false);
-        timer = new Timer((int)(1000/fps), this);
+        timer = new Timer((int)(1000/fps), keyHandler);
         timer.start();
-        
+    }
+    
+    public void resizeActiveArea(Dimension dim) {
+        double height = activeArea.height;
+        double width = (dim.width/(double)dim.height) * height;
+        Rect newArea = new Rect(activeArea.x, activeArea.y, width, height);
+        System.out.println("Resizing active area from "+activeArea+" to "+newArea);
+        activeArea = newArea;
     }
     
     /**
      * Tells the model to redraw based on the activeArea
      */
     private void redraw() {
-        view.createImage(model.getLines(activeArea, new Rect(0, 0, 
+        long t1 = System.nanoTime();
+        
+        // Change the active Rect so that it fits the screen
+        resizeActiveArea(view.getSize());
+        lastArea = activeArea;
+        
+        System.out.println("Preparing the image...");
+        view.renewImage(model.getLines(activeArea, new Rect(0, 0, 
                 view.getWidth(), view.getHeight()), ins));
+        System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
     }
     
-    @Override
-    public void keyTyped(KeyEvent e) {}
+    private class KeyHandler implements KeyListener, ActionListener {
+        @Override
+        public void keyTyped(KeyEvent e) {}
 
-    @Override
-    public void keyPressed(KeyEvent e) { // Key Repeat => Fuck
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_LEFT: {
-                if (!keyDown.get(e.getKeyCode()))
-                    vx += scrollPerFrame;
-                break;
+        @Override
+        public void keyPressed(KeyEvent e) { // Key Repeat => Fuck
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_LEFT: {
+                    if (!keyDown.get(e.getKeyCode()))
+                        vx += scrollPerFrame;
+                    break;
+                }
+                case KeyEvent.VK_RIGHT: {
+                    if (!keyDown.get(e.getKeyCode()))
+                        vx -= scrollPerFrame;
+                    break;
+                }
+                case KeyEvent.VK_UP: {
+                    if (!keyDown.get(e.getKeyCode()))
+                        vy -= scrollPerFrame;
+                    break;
+                }
+
+                case KeyEvent.VK_DOWN: {
+                    if (!keyDown.get(e.getKeyCode())) {
+                        vy += scrollPerFrame;
+                    }
+
+                    break;
+                }
             }
-            case KeyEvent.VK_RIGHT: {
-                if (!keyDown.get(e.getKeyCode()))
+
+            // Handle simple zoom
+            if (e.getKeyChar() == '+') {
+                double newWidth = activeArea.width*zoomFactor;
+                double newHeight = activeArea.height*zoomFactor;
+                double newX = activeArea.x + (activeArea.width-newWidth)/2;
+                double newY = activeArea.y + (activeArea.height-newHeight)/2;
+                System.out.println("Zooming...");
+                activeArea = new Rect(newX, newY, newWidth, newHeight);
+                redraw();
+                System.out.println("Zoomed!");
+            }
+
+            if (e.getKeyChar() == '-') {
+                double zOutFactor = 1/zoomFactor;
+                double newWidth = activeArea.width*zOutFactor;
+                double newHeight = activeArea.height*zOutFactor;
+                double newX = activeArea.x - (newWidth-activeArea.width)/2;
+                double newY = activeArea.y - (newHeight-activeArea.height)/2;
+                activeArea = new Rect(newX, newY, newWidth, newHeight);
+                System.out.println("Zooming out!");
+                redraw();
+            }
+
+            // Track keypresses
+            if (keyDown.containsKey(e.getKeyCode())) {
+                keyDown.put(e.getKeyCode(), true);
+            }
+
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_LEFT: {
                     vx -= scrollPerFrame;
-                break;
-            }
-            case KeyEvent.VK_UP: {
-                if (!keyDown.get(e.getKeyCode()))
-                    vy -= scrollPerFrame;
-                break;
-            }
-
-            case KeyEvent.VK_DOWN: {
-                if (!keyDown.get(e.getKeyCode())) {
+                    break;
+                }
+                case KeyEvent.VK_RIGHT: {
+                    vx += scrollPerFrame;
+                    break;
+                }
+                case KeyEvent.VK_UP: {
                     vy += scrollPerFrame;
+                    break;
                 }
-                    
-                break;
+
+                case KeyEvent.VK_DOWN: {
+                    vy -= scrollPerFrame;
+                    break;
+                }
+            }
+            // Track key releases
+            if (keyDown.containsKey(e.getKeyCode())) {
+                keyDown.put(e.getKeyCode(), false);
             }
         }
         
-        // Handle simple zoom
-        if (e.getKeyChar() == '+') {
-            double newWidth = activeArea.width*zoomFactor;
-            double newHeight = activeArea.height*zoomFactor;
-            double newX = activeArea.x + (activeArea.width-newWidth)/2;
-            double newY = activeArea.y + (activeArea.height-newHeight)/2;
-            System.out.println("Zooming...");
-            activeArea = new Rect(newX, newY, newWidth, newHeight);
+        /**
+        * Called when the timer loop ticks :3
+        * @param e 
+        */
+       @Override
+       public void actionPerformed(ActionEvent e) {
+           if (vx != 0 || vy != 0) {
+               // Pixels per unit
+               double ppu = view.getHeight()/activeArea.height;
+               double upp = 1.0 / ppu;
+
+               // Prepare the visual changes
+               Rect verArea = null;
+               Rect horArea = null;
+               Rect a = activeArea;
+               // Create the new active rect
+               Rect na = new Rect(activeArea.x-vx*upp, activeArea.y-vy*upp, 
+                       activeArea.width, activeArea.height); 
+
+               Rect verTarget = null;
+               Rect horTarget = null;
+               // Find out which parts of the map should be redrawn
+               if (vx > 0) { // (render)Left pressed -> map goes right 
+                   verArea = new Rect(na.left, na.bottom, Math.abs(vx*upp), a.height); // <-- not working
+                   verTarget = new Rect(0, 0, view.getWidth(), view.getHeight());
+               } else if (vx < 0) { // (render)Right pressed -> map goes left
+                   verArea = new Rect(a.right, na.bottom, Math.abs(vx*upp), a.height);
+                   verTarget = new Rect(view.getWidth()-abs(vx), 0, view.getWidth(), view.getHeight());
+               }
+               if (vy > 0) { // (render)Down -> map up
+                   horArea = new Rect(na.left, na.bottom, a.width, Math.abs(vy*upp)); // <-- not working
+                   horTarget = new Rect(0, 0, view.getWidth(), abs(vy)); // 
+               } else if (vy < 0) { // (render)Up -> map down
+                   horArea = new Rect(na.left, a.top, a.width, Math.abs(vy*upp));
+                   horTarget = new Rect(0, view.getHeight()-abs(vy), view.getWidth(), abs(vy)); // 
+               }
+
+               // Request the lines for the areas to be redrawn
+               Line[] lines = new Line[0];
+               if (verArea != null && horArea != null) {
+                   Line[] verLines = model.getLines(verArea, verTarget, view.getHeight(), ins);
+                   Line[] horLines = model.getLines(horArea, horTarget, view.getHeight(), ins);
+                   lines = Arrays.copyOf(verLines, verLines.length + horLines.length);
+                   for (int i = 0; i < horLines.length; i++) {
+                       lines[verLines.length+i] = horLines[i];
+                   }
+               } else if (verArea != null) {
+                   lines = model.getLines(verArea, verTarget, view.getHeight(), ins);
+               } else if (horArea != null) {
+                   lines = model.getLines(horArea, horTarget, view.getHeight(), ins);
+               }
+
+               // Finalize the change to the active area
+               activeArea = na;
+
+               // Update the view's image
+               view.offsetImage(vx, vy, lines);
+           }
+       }
+    }
+    private class MouseHandler implements MouseListener, MouseMotionListener {
+        @Override
+        public void mousePressed(MouseEvent e) {
+            startPos = e.getLocationOnScreen();
+            startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+            markRect = new Rect(startPos.x, startPos.y, 0, 0);
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if (startPos == null) { return; }
+            endPos = e.getLocationOnScreen();
+            endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+
+            double width = Math.abs(startPos.x - endPos.x);
+            double height = Math.abs(startPos.y - endPos.y);
+
+            // Restrict the ratio
+            if (width < height*wperh) { // Height is larger
+                height = width/wperh; // The smaller is used
+                //width = height*wperh; // The bigger is used
+            } else {
+                width = height*wperh; // The smaller is used
+                //height = width/wperh; // The bigger is used
+            }
+
+            double x;
+            if (endPos.x < startPos.x) {
+                x = startPos.x-width;
+            } else {
+                x = startPos.x;
+            }
+            double y;
+            if (endPos.y < startPos.y) {
+                y = startPos.y;
+            } else {
+                y = startPos.y + height;
+            }
+
+            markRect = new Rect(x, y, width, height);
+            view.setMarkerRect(markRect);
+            view.repaint();
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            double rHeight = markRect.height;
+            double rWidth = markRect.width;
+            double rX = markRect.x;
+            double rY = markRect.y;
+            if (rHeight < 15) { // Default zoom-ish
+                rHeight = 120;
+                rWidth = rHeight*wperh;
+                rX = markRect.x - (rWidth - (markRect.width))/2;
+                rY = markRect.y + (rHeight - (markRect.height))/2;
+            } 
+            
+            // create a new active rect from the marker rect
+            double relx = rX      / view.getWidth();
+            double rely = 1 - (rY / view.getHeight()); // Invert y
+            double relh = rHeight / view.getHeight();
+            double relw = rWidth  / view.getWidth(); // same aspect
+
+            double x = activeArea.x + (relx * activeArea.width);
+            double y = activeArea.y + (rely * activeArea.height);
+            double width = relw * activeArea.width;
+            double height = relh * activeArea.height;
+
+            Rect newArea = new Rect(x, y, width, height);
+
+            view.setMarkerRect(null);
+            activeArea = newArea;
             redraw();
-            System.out.println("Zoomed!");
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {}
+        @Override
+        public void mouseEntered(MouseEvent e) {}
+        @Override
+        public void mouseExited(MouseEvent e) {}
+        @Override
+        public void mouseMoved(MouseEvent e) {}
+    }
+    private class ResizeHandler implements ComponentListener, ActionListener {
+
+        @Override
+        public void componentResized(ComponentEvent e) {
+            if (prevSize == null) { return; } // You're too fast ;)
+            if (!view.initialized()) { return; } // You're still too fast ;)
+            Dimension newSize = view.getSize();
+            if (newSize.height == 0 || newSize.width == 0) { return; } // This cannot be resized ;)
+            if (newSize.height != prevSize.height) {
+                view.resizeMap(newSize);
+                prevSize = newSize;
+            } else if (newSize.width > Math.min(view.getSourceWidth()-margin, screenSize.width)) { // The windows is wider now
+                int prevRightLimit = view.getSourceWidth();
+                int newRightLimit = Math.max(prevRightLimit+margin, view.getWidth()+margin);
+
+                System.out.println("Moving the right limit to "+newRightLimit);
+                resizeActiveArea(newSize);
+
+                double sx = lastArea.right;
+                double sy = lastArea.y;
+                double sw = (newRightLimit-prevRightLimit) * (activeArea.width / view.getWidth());
+                double sh = lastArea.height;
+                Rect source = new Rect(sx, sy, sw, sh);
+                //System.out.println("-> Source: "+source);
+
+                double tx = prevRightLimit;
+                double ty = 0;
+                double tw = newRightLimit;
+                double th = newSize.height;
+                Rect target = new Rect(tx, ty, tw, th);
+                //System.out.println("-> Target: "+target);
+
+                // Update the image to show the new content ;)
+                view.offsetImage(0, 0, model.getLines(source, target, ins), 
+                        new Dimension(newRightLimit, view.getHeight()));
+                lastArea = source;
+            }
+            if (!resizeTimer.isRunning()) {
+                startResizeSize = view.getSize();
+                resizeTimer.start();
+            } else {
+                resizeTimer.restart();
+            }
         }
         
-        // Track keypresses
-        if (keyDown.containsKey(e.getKeyCode())) {
-            keyDown.put(e.getKeyCode(), true);
+        @Override
+        public void actionPerformed(ActionEvent e) { // Once the user has finished redrawing
+            // Only redraw if it is needed, plx
+            if (view.getHeight() != startResizeSize.height) {
+                System.out.println("Redrawing after resizing...");
+                redraw();
+            }
         }
-        
-    }
 
-    @Override
-    public void keyReleased(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_LEFT: {
-                vx -= scrollPerFrame;
-                break;
-            }
-            case KeyEvent.VK_RIGHT: {
-                vx += scrollPerFrame;
-                break;
-            }
-            case KeyEvent.VK_UP: {
-                vy += scrollPerFrame;
-                break;
-            }
-
-            case KeyEvent.VK_DOWN: {
-                vy -= scrollPerFrame;
-                break;
-            }
-        }
-        // Track key releases
-        if (keyDown.containsKey(e.getKeyCode())) {
-            keyDown.put(e.getKeyCode(), false);
-        }
+        @Override
+        public void componentMoved(ComponentEvent e) {}
+        @Override
+        public void componentShown(ComponentEvent e) {}
+        @Override
+        public void componentHidden(ComponentEvent e) {}
     }
-    
+     
     /**
-     * Called when the timer loop ticks :3
-     * @param e 
+     * Entry point
+     * @param args 
      */
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (vx != 0 || vy != 0) {
-            // Pixels per unit
-            double ppu = view.getHeight()/activeArea.height;
-            double upp = 1.0 / ppu;
-            
-            // Prepare the visual changes
-            Rect verArea = null;
-            Rect horArea = null;
-            Rect a = activeArea;
-            // Create the new active rect
-            Rect na = new Rect(activeArea.x-vx*upp, activeArea.y-vy*upp, 
-                    activeArea.width, activeArea.height); 
-            
-            // Calculate the 'actual' width of the map based on the ratio
-            double screenWidth = view.getHeight()*wperh;
-            
-            Rect verTarget = null;
-            Rect horTarget = null;
-            // Find out which parts of the map should be redrawn
-            if (vx > 0) { // (render)Left pressed -> map goes right 
-                verArea = new Rect(na.left, na.bottom, a.width, a.height);
-                verTarget = new Rect(0, 0, screenWidth, view.getHeight());
-            } else if (vx < 0) { // (render)Right pressed -> map goes left
-                verArea = new Rect(a.right, na.bottom, a.width, a.height);
-                verTarget = new Rect(screenWidth-abs(vx), 0, screenWidth, view.getHeight());
-            }
-            if (vy > 0) { // (render)Down -> map up
-                horArea = new Rect(na.left, na.bottom, a.width, a.height);
-                horTarget = new Rect(0, 0, view.getWidth(), view.getHeight());
-            } else if (vy < 0) { // (render)Up -> map down
-                horArea = new Rect(na.left, a.top, a.width, a.height);
-                horTarget = new Rect(0, view.getHeight()-abs(vy), view.getWidth(), view.getHeight());
-            }
-            
-            // Request the lines for the areas to be redrawn
-            Line[] lines = new Line[0];
-            if (verArea != null && horArea != null) {
-                Line[] verLines = model.getLines(verArea, verTarget, ins);
-                Line[] horLines = model.getLines(horArea, horTarget, ins);
-                lines = Arrays.copyOf(verLines, verLines.length + horLines.length);
-                for (int i = 0; i < horLines.length; i++) {
-                    lines[verLines.length+i] = horLines[i];
-                }
-            } else if (verArea != null) {
-                lines = model.getLines(verArea, verTarget, ins);
-            } else if (horArea != null) {
-                lines = model.getLines(horArea, horTarget, ins);
-            }
-            
-            // Finalize the change to the active area
-            activeArea = na;
-            
-            // Update the view's image
-            view.offsetImage(vx, vy, lines);
-        }
-    }
-    
-       // Mouse handling 
-    private Point startPos = null;
-    private Point endPos = null;
-    @Override
-    public void mousePressed(MouseEvent e) {
-        System.out.println("CLICK");
-        startPos = e.getLocationOnScreen();
-        System.out.println("Standard startPos: "+startPos);
-        startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-        System.out.println("Translated:        "+startPos);
-        System.out.println("Event location:  "+e.getLocationOnScreen());
-        System.out.println("Window location: "+view.getLocationOnScreen());
-    }
-    
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        if (startPos == null) { return; }
-        System.out.println("DRAG");
-        endPos = e.getLocationOnScreen();
-        endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-        
-        int width = Math.abs(startPos.x - endPos.x);
-        int height = Math.abs(startPos.y - endPos.y);
-        int x = Math.min(startPos.x, endPos.x);
-        int y = Math.max(startPos.y, endPos.y);
-        Rect rect = new Rect(x, y, width, height);
-        System.out.println("Rect Y: ("+y+"), Rect: ("+rect+")");
-        view.setMarkerRect(rect);
-        view.repaint();
-    }
-    
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        System.out.println("RELEASE");
-        view.setMarkerRect(null);
-        view.repaint();
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {}
-    @Override
-    public void mouseEntered(MouseEvent e) {}
-    @Override
-    public void mouseExited(MouseEvent e) {}
-    @Override
-    public void mouseMoved(MouseEvent e) {}
-    
     public static void main(String[] args) {
         OptimizedView view = new OptimizedView(new Dimension(600,400));
         Model model = new Model(Loader.loadIntersections("resources/intersections.txt"),
@@ -281,5 +433,5 @@ public class TestController extends JFrame implements KeyListener,
         TestController controller = new TestController(view, model);
         controller.setVisible(true);
     }
-    
+     
 }
