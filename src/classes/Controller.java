@@ -6,8 +6,6 @@
 
 package classes;
 
-import enums.RoadType;
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -15,7 +13,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowListener;
+
 
 /**
  *
@@ -114,6 +112,7 @@ public class Controller extends MouseAdapter implements KeyListener {
         view.setMarkerRect(null);*/
         refresh();
     }
+
     
     
     // End mouse handling
@@ -150,6 +149,8 @@ public class Controller extends MouseAdapter implements KeyListener {
                 new Rect(0,0,view.getWidth(),view.getHeight()), model.defaultInstructions));
         view.paintComponent(view.getGraphics());
     }
+    
+
 
     public static void main(String[] args) {
         

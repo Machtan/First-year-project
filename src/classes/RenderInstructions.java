@@ -28,7 +28,8 @@ public class RenderInstructions {
     }
     
     public void setColor(RoadType type, Color color) {
-        //Does nothing so far..
+        colorMap.remove(type);
+        colorMap.put(type,color);
     }
     
     public Color getVoidColor() {

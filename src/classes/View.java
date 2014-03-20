@@ -10,6 +10,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.util.Observable;
 import javax.swing.*;
 
 /**
@@ -23,6 +27,10 @@ public class View extends JPanel {
     private JLabel statusLabel;
     private Line[] lines;
     private final JFrame frame;
+    private JCheckBox HighwayCheck = new JCheckBox("Highways and exits");
+    private JCheckBox PrimeRouteCheck = new JCheckBox("Prime routes");
+    private JCheckBox PathCheck = new JCheckBox("Paths");
+    
     
     public View() {
         lines = View.makeLineArr();
@@ -32,12 +40,70 @@ public class View extends JPanel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(this, BorderLayout.CENTER);
         JLabel statusLabel = new JLabel("Address information here...");
+        JPanel checkBarPanel = new JPanel();
+        
+        
+        HighwayCheck.setMnemonic(MouseEvent.BUTTON1);
+        HighwayCheck.setSelected(true);
+        
+        
+        PrimeRouteCheck.setMnemonic(MouseEvent.BUTTON1);
+        PrimeRouteCheck.setSelected(true);
+        
+        
+        PathCheck.setMnemonic(MouseEvent.BUTTON1);
+        PathCheck.setSelected(true);
+        
+        checkBarPanel.add(HighwayCheck);
+        checkBarPanel.add(PrimeRouteCheck);
+        checkBarPanel.add(PathCheck);
+        
+        ItemListener listener = new ItemListener() {
+
+            @Override
+             public void itemStateChanged(ItemEvent e) {
+        Object source = e.getItemSelectable();
+        
+        if(source == HighwayCheck) {
+            Model.defaultInstructions.setColor(RoadType.Highway, Color.red);
+            Model.defaultInstructions.setColor(RoadType.HighwayExit, Color.red);
+            
+        } else if(source == PrimeRouteCheck) {
+            Model.defaultInstructions.setColor(RoadType.PrimeRoute, Color.blue);
+            
+        } else if(source == PathCheck) {
+            Model.defaultInstructions.setColor(RoadType.Path, Color.green);
+            
+        }
+        
+            if(e.getStateChange() == ItemEvent.DESELECTED) {
+                if(source == HighwayCheck) {
+                    Model.defaultInstructions.setColor(RoadType.Highway, Color.black);
+                    Model.defaultInstructions.setColor(RoadType.HighwayExit, Color.black);
+                    
+                } else if(source == PrimeRouteCheck) {
+                    Model.defaultInstructions.setColor(RoadType.PrimeRoute, Color.black);
+                   
+                } else if(source == PathCheck) {
+                    Model.defaultInstructions.setColor(RoadType.Path, Color.black);
+                }
+            }
+        }
+    };
+        
+        HighwayCheck.addItemListener(listener);
+        PrimeRouteCheck.addItemListener(listener);
+        PathCheck.addItemListener(listener);
+        
+        frame.add(checkBarPanel, BorderLayout.NORTH);
         statusLabel.setHorizontalAlignment(JLabel.CENTER);
         frame.add(statusLabel, BorderLayout.SOUTH);
         frame.setPreferredSize(new Dimension(800, 600));
         frame.pack();
         frame.setVisible(true);
-    }    
+    }   
+    
+
     
  
     /**
