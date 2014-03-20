@@ -2,7 +2,6 @@ package experiments;
 
 import classes.Line;
 import classes.Rect;
-import classes.Utils;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -11,6 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
@@ -71,6 +71,7 @@ public class OptimizedView extends JPanel  {
         clear(scaleSource); // Clear the whole image
         Graphics2D g2d = scaleSource.createGraphics();
         g2d.drawImage(image, x, -y, this); // Draw the old image offset
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         long t2 = System.nanoTime();
         for (Line line : newLines) {
             g2d.setColor(line.color);
@@ -131,6 +132,7 @@ public class OptimizedView extends JPanel  {
         BufferedImage img = gfx_config.createCompatibleImage(dim.width, dim.height);
         clear(img);
         Graphics2D g2d = img.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         for (Line line : lineArr) {
             g2d.setColor(line.color);
             g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
