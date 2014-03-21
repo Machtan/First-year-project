@@ -57,7 +57,7 @@ public class TestController extends JFrame {
     // Dynamic fields
     private int vx = 0;
     private int vy = 0;
-    private Rect activeArea;
+    private Rect activeRect;
     private Rect lastArea;
     private RenderInstructions ins = Model.defaultInstructions;
     
@@ -69,14 +69,14 @@ public class TestController extends JFrame {
     public TestController (OptimizedView view, Model model) {
         super();
         this.model = model;
-        activeArea = model.getBoundingArea();
+        activeRect = model.getBoundingArea();
         
-        double lw = activeArea.width * 1.2;
-        double lx = activeArea.x - 0.1 * activeArea.width;
-        double lh = activeArea.height * 1.2;
-        double ly = activeArea.y - 0.1 * activeArea.height;
+        double lw = activeRect.width * 1.2;
+        double lx = activeRect.x - 0.1 * activeRect.width;
+        double lh = activeRect.height * 1.2;
+        double ly = activeRect.y - 0.1 * activeRect.height;
         limitRect = new Rect(lx, ly, lw, lh);
-        System.out.println("Active area: "+activeArea);
+        System.out.println("Active area: "+activeRect);
         System.out.println("Limit rect:  "+limitRect);
         
         prioritized = new ArrayList<>();
@@ -105,7 +105,7 @@ public class TestController extends JFrame {
         prevSize = view.getSize(); // prepare for scaling
         
         // Set the image of the view
-        view.renewImage(model.getLines(activeArea, 
+        view.renewImage(model.getLines(activeRect, 
                 new Rect(0, 0, view.getWidth(), view.getHeight()), ins, 
                 prioritized));
         
@@ -119,26 +119,42 @@ public class TestController extends JFrame {
         timer.start();
     }
     
-    public void resizeActiveArea(Dimension dim) {
-        double height = activeArea.height;
-        double width = (dim.width/(double)dim.height) * height;
-        Rect newArea = new Rect(activeArea.x, activeArea.y, width, height);
-        System.out.println("Resizing active area from "+activeArea+" to "+newArea);
-        activeArea = newArea;
+    /**
+     * Returns the controller's active rect
+     * @return the controller's active rect
+     */
+    public Rect getActiveRect() {
+        return activeRect;
     }
     
     /**
-     * Tells the model to redraw based on the activeArea
+     * Returns the controller's active model
+     * @return the controller's active model
+     */
+    public Model getModel() {
+        return model;
+    }
+    
+    public void resizeActiveArea(Dimension dim) {
+        double height = activeRect.height;
+        double width = (dim.width/(double)dim.height) * height;
+        Rect newArea = new Rect(activeRect.x, activeRect.y, width, height);
+        System.out.println("Resizing active area from "+activeRect+" to "+newArea);
+        activeRect = newArea;
+    }
+    
+    /**
+     * Tells the model to redraw based on the activeRect
      */
     private void redraw() {
         long t1 = System.nanoTime();
         
         // Change the active Rect so that it fits the screen
         resizeActiveArea(view.getSize());
-        lastArea = activeArea;
+        lastArea = activeRect;
         
         System.out.println("Preparing the image...");
-        view.renewImage(model.getLines(activeArea, new Rect(0, 0, 
+        view.renewImage(model.getLines(activeRect, new Rect(0, 0, 
                 view.getWidth(), view.getHeight()), ins, prioritized));
         System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
     }
@@ -146,10 +162,10 @@ public class TestController extends JFrame {
     public void zoomOut() {
         System.out.println("Zooming out!");
         double zOutFactor = 1/zoomFactor;
-        double newWidth = activeArea.width*zOutFactor;
-        double newHeight = activeArea.height*zOutFactor;
-        double newX = activeArea.x - (newWidth-activeArea.width)/2;
-        double newY = activeArea.y - (newHeight-activeArea.height)/2;
+        double newWidth = activeRect.width*zOutFactor;
+        double newHeight = activeRect.height*zOutFactor;
+        double newX = activeRect.x - (newWidth-activeRect.width)/2;
+        double newY = activeRect.y - (newHeight-activeRect.height)/2;
         if (newHeight > limitRect.height) {
             newHeight = limitRect.height;
             newWidth = limitRect.width;
@@ -158,8 +174,8 @@ public class TestController extends JFrame {
             System.out.println("Restricted the zooming out");
         }
         
-        if (activeArea.height != limitRect.height) {
-            activeArea = new Rect(newX, newY, newWidth, newHeight);
+        if (activeRect.height != limitRect.height) {
+            activeRect = new Rect(newX, newY, newWidth, newHeight);
             redraw();
         } else {
             System.out.println("No size change, ignoring...");
@@ -200,12 +216,12 @@ public class TestController extends JFrame {
 
             // Handle simple zoom
             if (e.getKeyChar() == '+') {
-                double newWidth = activeArea.width*zoomFactor;
-                double newHeight = activeArea.height*zoomFactor;
-                double newX = activeArea.x + (activeArea.width-newWidth)/2;
-                double newY = activeArea.y + (activeArea.height-newHeight)/2;
+                double newWidth = activeRect.width*zoomFactor;
+                double newHeight = activeRect.height*zoomFactor;
+                double newX = activeRect.x + (activeRect.width-newWidth)/2;
+                double newY = activeRect.y + (activeRect.height-newHeight)/2;
                 System.out.println("Zooming...");
-                activeArea = new Rect(newX, newY, newWidth, newHeight);
+                activeRect = new Rect(newX, newY, newWidth, newHeight);
                 redraw();
                 System.out.println("Zoomed!");
             }
@@ -250,7 +266,7 @@ public class TestController extends JFrame {
         
         private void shiftImage() {
            // Pixels per unit
-           double ppu = view.getHeight()/activeArea.height;
+           double ppu = view.getHeight()/activeRect.height;
            double upp = 1.0 / ppu;
            
            int movx = vx;
@@ -258,18 +274,18 @@ public class TestController extends JFrame {
            /*
            This doesn't work. Restriction is probably too cumbersome due to other
            implementations
-           double activeRight = activeArea.x+(view.getWidth()*upp);
+           double activeRight = activeRect.x+(view.getWidth()*upp);
            if (vx < 0 && (activeRight+vx*upp > limitRect.right)) {
                System.out.println("Limiting RIGHT");
                System.out.println("dx = "+(activeRight-limitRect.right));
                movx = (int)Math.ceil((activeRight-limitRect.right)*ppu);
-               System.out.println("Active rect: "+activeArea);
+               System.out.println("Active rect: "+activeRect);
                System.out.println("Limit rect:  "+limitRect);
                
                System.out.println("movx "+vx+" -> "+movx);
-           } else if (vx > 0 && (activeArea.left-vx*upp < limitRect.left)) {
+           } else if (vx > 0 && (activeRect.left-vx*upp < limitRect.left)) {
                System.out.println("Limiting LEFT");
-               movx = (int)Math.floor((activeArea.left-limitRect.left)*ppu);
+               movx = (int)Math.floor((activeRect.left-limitRect.left)*ppu);
                System.out.println("movx "+vx+" -> "+movx);
            }*/
            
@@ -277,10 +293,10 @@ public class TestController extends JFrame {
            // Prepare the visual changes
            Rect verArea = null;
            Rect horArea = null;
-           Rect a = activeArea;
+           Rect a = activeRect;
            // Create the new active rect
-           Rect na = new Rect(activeArea.x-movx*upp, activeArea.y-movy*upp, 
-                   activeArea.width, activeArea.height); 
+           Rect na = new Rect(activeRect.x-movx*upp, activeRect.y-movy*upp, 
+                   activeRect.width, activeRect.height); 
 
            Rect verTarget = null;
            Rect horTarget = null;
@@ -312,7 +328,7 @@ public class TestController extends JFrame {
            }
 
            // Finalize the change to the active area
-           activeArea = na;
+           activeRect = na;
 
            // Update the view's image
            view.offsetImage(movx, movy, lines);
@@ -392,15 +408,15 @@ public class TestController extends JFrame {
             double relh = rHeight / view.getHeight();
             double relw = rWidth  / view.getWidth(); // same aspect
 
-            double x = activeArea.x + (relx * activeArea.width);
-            double y = activeArea.y + (rely * activeArea.height);
-            double width = relw * activeArea.width;
-            double height = relh * activeArea.height;
+            double x = activeRect.x + (relx * activeRect.width);
+            double y = activeRect.y + (rely * activeRect.height);
+            double width = relw * activeRect.width;
+            double height = relh * activeRect.height;
 
             Rect newArea = new Rect(x, y, width, height);
 
             view.setMarkerRect(null);
-            activeArea = newArea;
+            activeRect = newArea;
             lastArea = newArea;
             redraw();
         }
@@ -434,7 +450,7 @@ public class TestController extends JFrame {
 
                 double sx = lastArea.right;
                 double sy = lastArea.y;
-                double sw = (newRightLimit-prevRightLimit) * (activeArea.width / view.getWidth());
+                double sw = (newRightLimit-prevRightLimit) * (activeRect.width / view.getWidth());
                 double sh = lastArea.height;
                 Rect source = new Rect(sx, sy, sw, sh);
                 //System.out.println("-> Source: "+source);

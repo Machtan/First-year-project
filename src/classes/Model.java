@@ -118,6 +118,15 @@ public class Model {
     }
     
     /**
+     * Returns the road parts in the given area of the map
+     * @param area The area to look in
+     * @return Road parts in the area
+     */
+    public HashSet<RoadPart> getRoads(Rect area) {
+        return tree.getIn(area);
+    }
+    
+    /**
      * Returns the lines of the model from the given area, prepared for the 
      * size of the given viewer component
      * @param area The area to find roads inside and constrain the rendering to
@@ -129,7 +138,7 @@ public class Model {
      */
     public ArrayList<Line> getLines(Rect area, Rect target, double windowHeight, 
             RenderInstructions instructions, ArrayList<RoadType> prioritized) {
-        HashSet<RoadPart> roads = tree.getIn(area); // TODO THIS IS THE WEAK LINK!!!
+        HashSet<RoadPart> roads = getRoads(area);
         ArrayList<Line> lines = new ArrayList<>(roads.size());
         
         // Prepare the prioritized lists
