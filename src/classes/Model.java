@@ -22,6 +22,7 @@ public class Model {
     //private RoadPart[] roadPartArr;
     private Rect boundingArea; // The area the model encloses
     private final QuadTree<RoadPart> tree;
+    private static int quadCounter; //Used for loading
     
     public static final RenderInstructions defaultInstructions = new RenderInstructions();
     /**
@@ -81,6 +82,12 @@ public class Model {
             Rect rect = getRect(intersecMap.get(part.sourceID), intersecMap.get(part.targetID));
             part.setRect(rect);
             tree.add(part);
+            
+            // Progress bar stuff
+            quadCounter++;
+            ProgressBar.updateLabel(ProgressBar.update(quadCounter
+                    + Loader.getIntersectionCnt()
+                    + Loader.getRoadCnt() ));
         }
         double secs = (System.nanoTime()-t1)/1000000000.0;
         System.out.println("Finished!");
@@ -184,6 +191,14 @@ public class Model {
     public ArrayList<Line> getLines(Rect area, Rect target, int windowHeight, 
             RenderInstructions instructions) {
         return getLines(area, target, windowHeight, instructions, new ArrayList<RoadType>());
+    }
+    
+    /**
+     * Returns the number of quads in the quad-tree of the model
+     * @return the number of quads in the quad-tree of the model
+     */
+    public static int getQuadCnt() {
+        return quadCounter;
     }
     
 }
