@@ -146,11 +146,14 @@ public class Controller extends JFrame {
      * @param args 
      */
     public static void main(String[] args) {
+        ProgressBar.open(); // Create the progress bar
         OptimizedView view = new OptimizedView(new Dimension(600,400));
+        
         Model model = new Model(Loader.loadIntersections("resources/intersections.txt"),
             Loader.loadRoads("resources/roads.txt"));
         
-        Controller controller = new Controller(view, model);       
+        Controller controller = new Controller(view, model); 
+        ProgressBar.close();
         controller.setVisible(true);
     }
 }
