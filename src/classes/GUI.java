@@ -23,7 +23,7 @@ public class GUI extends JPanel {
     private static JCheckBox PathCheck = new JCheckBox("Paths");
     private static JPanel mainPanel = new JPanel();
     
-    public static JPanel makeGUI(final RenderInstructions instr, final Controller cont) {
+    public static JPanel makeGUI(final RenderInstructions instr, final Controller cont, final Model model) {
                 
         HighwayCheck.setMnemonic(MouseEvent.BUTTON1);
         HighwayCheck.setSelected(true);
@@ -46,9 +46,9 @@ public class GUI extends JPanel {
         if(source == HighwayCheck) {
             instr.setColor(RoadType.Highway, Color.red);
             instr.setColor(RoadType.HighwayExit, Color.red);
-            cont.redraw();
+           cont.redraw();
         } else if(source == PrimeRouteCheck) {
-            instr.setColor(RoadType.PrimeRoute, Color.blue);
+            instr.setColor(RoadType.PrimeRoute, new Color(255,170,100));
             cont.redraw();
         } else if(source == PathCheck) {
             instr.setColor(RoadType.Path, Color.green);
@@ -57,14 +57,14 @@ public class GUI extends JPanel {
         
             if(e.getStateChange() == ItemEvent.DESELECTED) {
                 if(source == HighwayCheck) {
-                    instr.setColor(RoadType.Highway, instr.getColor(RoadType.Other));
-                    instr.setColor(RoadType.HighwayExit, instr.getColor(RoadType.Other));
+                    instr.setColor(RoadType.Highway, instr.getVoidColor());
+                    instr.setColor(RoadType.HighwayExit, instr.getVoidColor());
                     cont.redraw();
                 } else if(source == PrimeRouteCheck) {
-                    instr.setColor(RoadType.PrimeRoute, instr.getColor(RoadType.Other));
-                   cont.redraw();
+                    instr.setColor(RoadType.PrimeRoute, instr.getVoidColor());
+                    cont.redraw();
                 } else if(source == PathCheck) {
-                    instr.setColor(RoadType.Path, instr.getColor(RoadType.Other));
+                    instr.setColor(RoadType.Path, instr.getVoidColor());
                     cont.redraw();
                 }
             }
