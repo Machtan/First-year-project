@@ -32,7 +32,7 @@ public class QuadTree<Item extends QuadNode> extends Quad {
         HashSet<Item> result = new HashSet<>();
         super.getIn(rect, result);
         double s = (System.nanoTime()-t1)/1000000000.0;
-        System.out.println("Returned lines from the QuadTree in "+s+"sec");
+        //System.out.println("Returned lines from the QuadTree in "+s+"sec");
         return result;
     }
 }

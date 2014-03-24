@@ -83,6 +83,13 @@ public class Controller extends JFrame {
     }
     
     /**
+     * Refreshes the view
+     */
+    public void refresh() {
+        view.repaint();
+    }
+    
+    /**
      * Sets the active rect of the controller
      * @param rect The new active rect of the controller
      */

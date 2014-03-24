@@ -201,5 +201,14 @@ public class Model {
         return quadCounter;
     }
     
+    /**
+     * Returns the road parts in the given area of the map
+     * @param area The area to look in
+     * @return Road parts in the area
+     */
+    public HashSet<RoadPart> getRoads(Rect area) {
+        return tree.getIn(area);
+    }
+    
 }
 

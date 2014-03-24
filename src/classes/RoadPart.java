@@ -14,40 +14,40 @@ import krak.EdgeData;
  * @version 25-Feb-2014
  */
 public class RoadPart implements CharSequence, QuadNode {
-    final int sourceID; // The ID of one of the road's ending intersections
-    final int targetID; // The ID of one of the road's ending intersections
-    final RoadType type; // The road type
-    final String name; // The name of the road
+    public final int sourceID; // The ID of one of the road's ending intersections
+    public final int targetID; // The ID of one of the road's ending intersections
+    public final RoadType type; // The road type
+    public final String name; // The name of the road
     
     // Address numbering on sides of the road
-    final int sLeftNum;
-    final int eLeftNum;
-    final int sRightNum;
-    final int eRightNum;
+    public final int sLeftNum;
+    public final int eLeftNum;
+    public final int sRightNum;
+    public final int eRightNum;
     
     // House address lettering mumbo jumbo
-    final String sLeftLetter;
-    final String eLeftLetter;
-    final String sRightLetter;
-    final String eRightLetter;
+    public final String sLeftLetter;
+    public final String eLeftLetter;
+    public final String sRightLetter;
+    public final String eRightLetter;
     
     // The postal code at each side
     // (What is this even used for... post area borders?)
-    final int rightZip;
-    final int leftZip;
+    public final int rightZip;
+    public final int leftZip;
     
     // Highway turn-off number (?)
-    final int turnoffNumber;
+    public final int turnoffNumber;
     
     // What type of zone is the road in (residential, industrial etc.)
-    final ZoneType zone;
-    final int speedLimit;
-    final double driveTime;
+    public final ZoneType zone;
+    public final int speedLimit;
+    public final double driveTime;
     
     // Info related to driveability
-    final String oneWay;
-    final String fTurn;
-    final String tTurn;
+    public final String oneWay;
+    public final String fTurn;
+    public final String tTurn;
     
     // The area this road is in
     private Rect area;
