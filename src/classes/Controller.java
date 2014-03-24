@@ -50,7 +50,7 @@ public class Controller extends JFrame {
         keyHandler = new CKeyHandler(this);
         
         mouseHandler = new CMouseHandler(this);
-        add(GUI.makeGUI(ins, this, model), BorderLayout.NORTH);
+        add(GUI.makeGUI(ins, this), BorderLayout.NORTH);
         add(view);
         
         

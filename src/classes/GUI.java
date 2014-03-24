@@ -23,7 +23,7 @@ public class GUI extends JPanel {
     private static JCheckBox PathCheck = new JCheckBox("Paths");
     private static JPanel mainPanel = new JPanel();
     
-    public static JPanel makeGUI(final RenderInstructions instr, final Controller cont, final Model model) {
+    public static JPanel makeGUI(final RenderInstructions instr, final Controller cont) {
                 
         HighwayCheck.setMnemonic(MouseEvent.BUTTON1);
         HighwayCheck.setSelected(true);
