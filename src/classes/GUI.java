@@ -23,7 +23,7 @@ public class GUI extends JPanel {
     private static JCheckBox PathCheck = new JCheckBox("Paths");
     private static JPanel mainPanel = new JPanel();
     
-    public static JPanel GUI(final RenderInstructions instr) {
+    public static JPanel makeGUI(final RenderInstructions instr, final Controller cont) {
                 
         HighwayCheck.setMnemonic(MouseEvent.BUTTON1);
         HighwayCheck.setSelected(true);
@@ -46,25 +46,26 @@ public class GUI extends JPanel {
         if(source == HighwayCheck) {
             instr.setColor(RoadType.Highway, Color.red);
             instr.setColor(RoadType.HighwayExit, Color.red);
-            
+            cont.redraw();
         } else if(source == PrimeRouteCheck) {
             instr.setColor(RoadType.PrimeRoute, Color.blue);
-            
+            cont.redraw();
         } else if(source == PathCheck) {
             instr.setColor(RoadType.Path, Color.green);
-            
+            cont.redraw();
         }
         
             if(e.getStateChange() == ItemEvent.DESELECTED) {
                 if(source == HighwayCheck) {
-                    instr.setColor(RoadType.Highway, Color.black);
-                    instr.setColor(RoadType.HighwayExit, Color.black);
-                    
+                    instr.setColor(RoadType.Highway, instr.getColor(RoadType.Other));
+                    instr.setColor(RoadType.HighwayExit, instr.getColor(RoadType.Other));
+                    cont.redraw();
                 } else if(source == PrimeRouteCheck) {
-                    instr.setColor(RoadType.PrimeRoute, Color.black);
-                   
+                    instr.setColor(RoadType.PrimeRoute, instr.getColor(RoadType.Other));
+                   cont.redraw();
                 } else if(source == PathCheck) {
-                    instr.setColor(RoadType.Path, Color.black);
+                    instr.setColor(RoadType.Path, instr.getColor(RoadType.Other));
+                    cont.redraw();
                 }
             }
         }

@@ -1,6 +1,7 @@
 package classes;
 
 import enums.RoadType;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import javax.swing.JFrame;
@@ -44,9 +45,11 @@ public class Controller extends JFrame {
         resizeHandler = new CResizeHandler(this);
         keyHandler = new CKeyHandler(this);
         mouseHandler = new CMouseHandler(this);
+        add(GUI.makeGUI(ins, this), BorderLayout.NORTH);
         add(view);
         
-
+        
+        
         // Pack the window
         pack();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
