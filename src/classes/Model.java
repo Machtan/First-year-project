@@ -34,6 +34,7 @@ public class Model {
         defaultInstructions.addMapping(Color.red, RoadType.HighwayExit);
         defaultInstructions.addMapping(new Color(255,170,100), RoadType.PrimeRoute);
         defaultInstructions.addMapping(new Color(0,255,25,200), RoadType.Path);
+        defaultInstructions.addMapping(Color.blue, RoadType.Ferry);
         defaultInstructions.addMapping(new Color(200,200,255), RoadType.Other);
     }
     
