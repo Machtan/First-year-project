@@ -28,7 +28,7 @@ public class CKeyHandler implements KeyListener, ActionListener {
     
     public CKeyHandler(Controller controller) {
         this.controller = controller;
-        controller.getView().addKeyListener(this);
+        controller.addKeyListener(this);
         
         // Prepare the key and update listening
         keyDown = new HashMap<>();

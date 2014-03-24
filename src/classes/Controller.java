@@ -42,7 +42,12 @@ public class Controller extends JFrame {
         
         this.view = view;
         resizeHandler = new CResizeHandler(this);
+        
+        // Key handling (This might need fixing)
+        setFocusTraversalKeysEnabled(false);
+        setFocusable(true);
         keyHandler = new CKeyHandler(this);
+        
         mouseHandler = new CMouseHandler(this);
         add(view);
         
@@ -133,7 +138,7 @@ public class Controller extends JFrame {
         
         // Change the active Rect so that it fits the screen
         resizeActiveArea(view.getSize());
-        resizeHandler.setLastArea(activeRect);
+        resizeHandler.setLastRect(activeRect);
         
         System.out.println("Preparing the image...");
         view.renewImage(model.getLines(activeRect, new Rect(0, 0, 

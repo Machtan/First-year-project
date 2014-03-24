@@ -26,13 +26,14 @@ public class CResizeHandler implements ComponentListener, ActionListener {
     private final static int resizeDelay = 400; // milliseconds
     private final static int margin = 40; // The amount of pixels to load to the right when resizing
     public final static double zoomFactor = 0.7;
-    private Rect lastArea;
+    private Rect lastRect;
     
     
     public CResizeHandler(Controller controller) {
         // Prepare resize handling :)
         this.controller = controller;
         controller.getView().addComponentListener(this);
+        lastRect = controller.getActiveRect();
         resizeTimer = new Timer(resizeDelay, this);
         resizeTimer.setRepeats(false);
         Rect activeRect = controller.getActiveRect();
@@ -45,11 +46,11 @@ public class CResizeHandler implements ComponentListener, ActionListener {
     }
     
     /**
-     * Sets the last area of the view
+     * Sets the last active rect
      * @param area The last area
      */
-    public void setLastArea(Rect area) {
-        lastArea = area;
+    public void setLastRect(Rect area) {
+        lastRect = area;
     }
     
     /**
@@ -113,10 +114,10 @@ public class CResizeHandler implements ComponentListener, ActionListener {
             System.out.println("Moving the right limit to "+newRightLimit);
             controller.resizeActiveArea(newSize);
 
-            double sx = lastArea.right;
-            double sy = lastArea.y;
+            double sx = lastRect.right;
+            double sy = lastRect.y;
             double sw = (newRightLimit-prevRightLimit) * (activeRect.width / view.getWidth());
-            double sh = lastArea.height;
+            double sh = lastRect.height;
             Rect source = new Rect(sx, sy, sw, sh);
 
             double tx = prevRightLimit;
@@ -128,7 +129,7 @@ public class CResizeHandler implements ComponentListener, ActionListener {
             // Update the image to show the new content ;)
             view.offsetImage(0, 0, controller.getLines(source, target), 
                     new Dimension(newRightLimit, view.getHeight()));
-            lastArea = source;
+            lastRect = source;
         }
         if (!resizeTimer.isRunning()) {
             startResizeSize = view.getSize();

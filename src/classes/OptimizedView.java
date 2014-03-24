@@ -36,8 +36,6 @@ public class OptimizedView extends JPanel  {
      */
     public OptimizedView (Dimension dimension) {
         setPreferredSize(dimension);
-        setFocusTraversalKeysEnabled(false);
-        setFocusable(true);
     }
     
     /**
