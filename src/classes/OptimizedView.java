@@ -1,4 +1,4 @@
-package experiments;
+package classes;
 
 import classes.Line;
 import classes.Rect;

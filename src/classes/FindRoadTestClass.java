@@ -4,7 +4,7 @@
  */
 package classes;
 
-import experiments.TestController;
+import experiments.Controller;
 import java.awt.Dimension;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -22,11 +22,11 @@ import javax.swing.WindowConstants;
  */
 public class FindRoadTestClass implements MouseMotionListener {
     private final JPanel view;
-    private final TestController controller;
+    private final Controller controller;
     private static final int width = 100; // initial invariable for the width of a new rectangle.
     private static final int height = 100; // initial invariable for the heigth of a new rectangle.
     
-    FindRoadTestClass(JPanel panel, TestController controller) {
+    FindRoadTestClass(JPanel panel, Controller controller) {
         this.controller = controller;
         view = panel;
         panel.addMouseMotionListener(this);

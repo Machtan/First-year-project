@@ -1,212 +1,156 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package classes;
 
-import java.awt.Point;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
+import enums.RoadType;
+import java.awt.Dimension;
+import java.util.ArrayList;
+import javax.swing.JFrame;
+import javax.swing.WindowConstants;
 
 /**
- *
- * @author Isabella
+ * The Controller class <More docs goes here>
+ * @author Jakob Lautrup Nysom (jaln@itu.dk)
+ * @version 10-Mar-2014
  */
-public class Controller extends MouseAdapter implements KeyListener {
-
-    private Model model;
-    private View view;
-    private Loader loader;
-    private Rect activeArea;
+public class Controller extends JFrame {
+    private final OptimizedView view;
+    private final Model model;
+    private final CMouseHandler mouseHandler;
+    private final CKeyHandler keyHandler;
+    private final CResizeHandler resizeHandler;
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
-
+    private ArrayList<RoadType> prioritized;
     
-    /*
-    x = 442254.35659
-    y = 6049914.43018
-    width = 352136.5527900001
-    height = 352136.5527900001
-    */
+    // Dynamic fields
+    private Rect activeRect;
+    private RenderInstructions ins;
     
-    
-    public Controller() {
-        Intersection[] intersecArr = Loader.loadIntersections("resources/intersections.txt");
-            RoadPart[] roadPartArr = Loader.loadRoads("resources/roads.txt");
-       model = new Model(intersecArr, roadPartArr);
+    /**
+     * Constructor for the TestController class
+     * @param view The view to manage
+     * @param model The model to manage
+     */
+    public Controller(OptimizedView view, Model model) {
+        super();
+        this.model = model;
+        activeRect = model.getBoundingArea();
+        this.ins = Model.defaultInstructions;
         
-        view = new View();
-        view.addMouseListener(this);
-        view.addMouseMotionListener(this);
-        view.addMouseWheelListener(this);
-        view.addComponentListener(new ResizeHandler());
-
-        System.out.println("View height: " + view.getHeight());
-
-        view.addKeyListener(this);
-        view.setFocusTraversalKeysEnabled(false);
-        view.setFocusable(true);
-
-        activeArea = model.getBoundingArea();
-        refresh();
+        prioritized = new ArrayList<>();
+        prioritized.add(RoadType.Highway);
+        prioritized.add(RoadType.HighwayExit);
+        prioritized.add(RoadType.PrimeRoute);
         
-    }
-    
-    // Mouse handling 
-    private Point startPos = null;
-    private Point endPos = null;
-    private Rect markerRect = null;
-    @Override
-    public void mousePressed(MouseEvent e) {
-        System.out.println("CLICK");
-        startPos = e.getLocationOnScreen();
-        System.out.println("Standard startPos: "+startPos);
-        startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-        System.out.println("Translated:        "+startPos);
-        System.out.println("Event location:  "+e.getLocationOnScreen());
-        System.out.println("Window location: "+view.getLocationOnScreen());
-    }
-    
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        if (startPos == null) { return; }
-        System.out.println("DRAG");
-        endPos = e.getLocationOnScreen();
-        endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+        this.view = view;
+        resizeHandler = new CResizeHandler(this);
+        keyHandler = new CKeyHandler(this);
+        mouseHandler = new CMouseHandler(this);
+        add(view);
         
-        int width = Math.abs(startPos.x - endPos.x);
-        int height = Math.abs(startPos.y - endPos.y);
-        int x = Math.min(startPos.x, endPos.x);
-        int y = Math.max(startPos.y, endPos.y);
-        markerRect = new Rect(x, y, width, height);
-        view.setMarkerRect(markerRect);
-        view.repaint();
-    }
-    
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        System.out.println("RELEASE");
-        /*
-         ______
-        |      | activeArea (kortkoordinater) 45000-88000x 350000-60000y
-        |______|
-         _
-        |_| markerRect (skærmkoordinater) 0-1024x 0-800y
-        */
-        //activeArea = markerRect;
-        double screenWidth = view.getHeight()*wperh;
+
+        // Pack the window
+        pack();
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        resizeActiveArea(view.getSize());
         
-        double unitsPerPixel = activeArea.width / screenWidth;
-        
-        /*Rect temp = new Rect( (markerRect.x)*unitsPerPixel , 
-                ( markerRect.y) *unitsPerPixel, 
-                ( markerRect.width) *unitsPerPixel, 
-                (markerRect.height) *unitsPerPixel );
-        activeArea = temp;
-        view.setMarkerRect(null);*/
-        refresh();
-    }
-
-    
-    
-    // End mouse handling
-
-    private class ResizeHandler implements ComponentListener {
-
-        @Override
-        public void componentResized(ComponentEvent e) {
-            refresh();
-        }
-
-        @Override
-        public void componentMoved(ComponentEvent e) {
-            
-        }
-
-        @Override
-        public void componentShown(ComponentEvent e) {
-            
-        }
-
-        @Override
-        public void componentHidden(ComponentEvent e) {
-            
-        }
+        // Set the image of the view
+        view.renewImage(model.getLines(activeRect, 
+                new Rect(0, 0, view.getWidth(), view.getHeight()), ins, 
+                prioritized));
         
     }
     
     /**
-     * Refreshes the view according to the active area
+     * Returns the lines of the given area mapped to the target
+     * @param area The area to get roads from
+     * @param target The target to map them to as lines
+     * @return A list of lines to render the area
      */
-    public void refresh() {
-        view.setLines(model.getLines(activeArea, 
-                new Rect(0,0,view.getWidth(),view.getHeight()), model.defaultInstructions));
-        view.paintComponent(view.getGraphics());
+    public ArrayList<Line> getLines(Rect area, Rect target) {
+        return model.getLines(area, target, view.getHeight(), ins, prioritized);
     }
     
-
-
+    /**
+     * Returns the controller's active rect
+     * @return the controller's active rect
+     */
+    public Rect getActiveRect() {
+        return activeRect;
+    }
+    
+    /**
+     * Sets the active rect of the controller
+     * @param rect The new active rect of the controller
+     */
+    public void setActiveRect(Rect rect) {
+        activeRect = rect;
+    }
+    
+    /**
+     * Returns the controller's active model
+     * @return the controller's active model
+     */
+    public Model getModel() {
+        return model;
+    }
+    
+    /**
+     * Returns the controller's view instance
+     * @return the controller's view instance
+     */
+    public OptimizedView getView() {
+        return view;
+    }
+    
+    public void resizeActiveArea(Dimension dim) {
+        double height = activeRect.height;
+        double width = (dim.width/(double)dim.height) * height;
+        Rect newArea = new Rect(activeRect.x, activeRect.y, width, height);
+        System.out.println("Resizing active area from "+activeRect+" to "+newArea);
+        activeRect = newArea;
+    }
+    
+    /**
+     * Zooms the view out
+     */
+    public void zoomOut() {
+        System.out.println("Zoomin' out!");
+        resizeHandler.zoomOut();
+    }
+    
+    /**
+     * Zoom the view in
+     */
+    public void zoomIn() {
+        System.out.println("Zoomin' in!");
+        resizeHandler.zoomIn();
+    }
+    
+    /**
+     * Tells the model to redraw based on the activeRect
+     */
+    public void redraw() {
+        long t1 = System.nanoTime();
+        
+        // Change the active Rect so that it fits the screen
+        resizeActiveArea(view.getSize());
+        resizeHandler.setLastArea(activeRect);
+        
+        System.out.println("Preparing the image...");
+        view.renewImage(model.getLines(activeRect, new Rect(0, 0, 
+                view.getWidth(), view.getHeight()), ins, prioritized));
+        System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
+    }
+     
+    /**
+     * Entry point
+     * @param args 
+     */
     public static void main(String[] args) {
+        OptimizedView view = new OptimizedView(new Dimension(600,400));
+        Model model = new Model(Loader.loadIntersections("resources/intersections.txt"),
+            Loader.loadRoads("resources/roads.txt"));
         
-        //Run program
-        Controller controller = new Controller();
+        Controller controller = new Controller(view, model);       
+        controller.setVisible(true);
     }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_LEFT: {
-                // The focus area goes left, meaning the map will go right
-                System.out.println("LEFT!");
-                activeArea = new Rect(activeArea.x - activeArea.width/30,
-                    activeArea.y, activeArea.width, activeArea.height);
-                refresh();
-                break;
-            }
-            case KeyEvent.VK_RIGHT: {
-                // The focus area goes right, meaning the map will go left
-                System.out.println("RIGHT!");
-                activeArea = new Rect(activeArea.x + activeArea.width/30,
-                    activeArea.y, activeArea.width, activeArea.height);
-                refresh();
-                break;
-            }
-            case KeyEvent.VK_UP: {
-
-                break;
-            }
-
-            case KeyEvent.VK_DOWN: {
-
-                break;
-            }
-        }
-        
-        if (e.getKeyChar() == '+') {
-            double zoomFactor = 0.7;
-            System.out.println("PLUS!");
-            activeArea = new Rect(activeArea.x + 0.5*activeArea.width*(1-zoomFactor), 
-                    activeArea.y + 0.5*activeArea.height*(1 - zoomFactor), 
-                    activeArea.width * zoomFactor, 
-                    activeArea.height * zoomFactor);
-            refresh();
-        }
-        
-    } 
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        //System.out.println("Key released!");
-    }
-
 }
