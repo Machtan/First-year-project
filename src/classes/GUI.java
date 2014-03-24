@@ -24,7 +24,6 @@ public class GUI extends JPanel {
     private static JPanel mainPanel = new JPanel();
     
     public static JPanel GUI(final RenderInstructions instr) {
-        
                 
         HighwayCheck.setMnemonic(MouseEvent.BUTTON1);
         HighwayCheck.setSelected(true);
