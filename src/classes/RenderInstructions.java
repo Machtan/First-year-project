@@ -21,7 +21,7 @@ public class RenderInstructions {
      */
     public RenderInstructions () {
         defaultColor = new Color(0,0,0);
-        voidColor = new Color(10,10,10);
+        voidColor = new Color(200,200,255);
         colorMap = new HashMap<>();
     
     
@@ -51,6 +51,8 @@ public class RenderInstructions {
         }
     }
     
+  
+    
     /**
      * Sets a new color for the given type of road
      * @param color The color the road shall be drawn with
@@ -59,6 +61,7 @@ public class RenderInstructions {
     public void addMapping(Color color, RoadType type) {
         
         colorMap.put(type, color);
+        
     }
     
     /**

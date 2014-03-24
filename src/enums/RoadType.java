@@ -9,7 +9,8 @@ public enum RoadType {
      Highway(1), 
      PrimeRoute(3), 
      Path(8), 
-     HighwayExit(31), 
+     HighwayExit(31),
+     Ferry(80),
      Other(0);
       
     
