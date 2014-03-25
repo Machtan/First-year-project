@@ -5,7 +5,6 @@
 package classes;
 
 import java.awt.Dimension;
-import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -30,10 +29,8 @@ public class FindRoadTestClass implements MouseMotionListener{
         view.addMouseMotionListener(this);
     }
     
-    // DEBUGGING
     @Override
-    public void mouseDragged(MouseEvent e) { 
-        System.out.println("Dragged");}
+    public void mouseDragged(MouseEvent e) {}
     
     @Override
     public void mouseMoved(MouseEvent e) {
@@ -47,19 +44,16 @@ public class FindRoadTestClass implements MouseMotionListener{
         double y = cPos.y; 
         
         // Change position from screen coordinates to map coordinates.
+        // Create a new small Rect with the mouseposition as midpoint with mapcoordinates.
         double modelX = activeRect.x + (x/view.getWidth())*activeRect.width;
         double modelY = activeRect.y + (1-(y/view.getHeight()))*activeRect.height;
-        
-        System.out.println("The map position: ("+modelX+", "+modelY+")");
-        
-        // Make a new Rect with the mouseposition as midpoint.
         Rect cursorRect = new Rect(modelX-width/2, modelY-height/2, width, height);
-        Model model = controller.getModel();
         
-        // HashSet containing RoadParts within the cursorRect.
+        // Get a HashSet containing RoadParts within the cursorRect.
+        Model model = controller.getModel();
         HashSet<RoadPart> roads = model.getRoads(cursorRect);
-       
-        // If no RoadParts are found, double size of cursorRect until 
+  
+        // If no RoadParts are found within the area, double size of cursorRect until 
         // at least one has been found.
         while (roads.isEmpty()) {
 
@@ -71,7 +65,7 @@ public class FindRoadTestClass implements MouseMotionListener{
             cursorRect = new Rect(rectX, rectY, rectWidth, rectHeight);
             roads = model.getRoads(cursorRect);
         }
-         
+        
         // Put RoadPart elements into ArrayList.
         ArrayList<RoadPart> roadArray = new ArrayList<>();
         for(RoadPart r : roads) {
@@ -83,8 +77,8 @@ public class FindRoadTestClass implements MouseMotionListener{
         for(int i = 0; i<roadArray.size(); i++) {
             double areaX1 = roadArray.get(i).getRect().x;
             double areaY1 = roadArray.get(i).getRect().y;
-            double areaX2 = (roadArray.get(i).getRect().x)-(roadArray.get(0).getRect().width);
-            double areaY2 = (roadArray.get(i).getRect().y)-(roadArray.get(0).getRect().height);  
+            double areaX2 = (roadArray.get(i).getRect().x)+(roadArray.get(i).getRect().width);//(roadArray.get(0).getRect().width);
+            double areaY2 = (roadArray.get(i).getRect().y)+(roadArray.get(i).getRect().height);  
             
             double distance = pointToLineDistance(areaX1, areaY1, areaX2, areaY2, modelX, modelY); 
             sizes[i] = distance;
@@ -111,22 +105,33 @@ public class FindRoadTestClass implements MouseMotionListener{
         // For DEBUGGING.
         // Get the rect that the RoadPart is contained within, and draw it
         // on the map to see which is selected. Refreshes when mouse is moved.
-        Rect roadRect = r.getRect();
-        double mx = (roadRect.x - activeRect.x)/activeRect.width * view.getWidth();
-        double my = view.getHeight()-((roadRect.y - activeRect.y)/activeRect.height * view.getHeight());
-        double mw = (roadRect.width / activeRect.width) * view.getWidth();
-        double mh = (roadRect.height / activeRect.height) * view.getHeight();
-        
-        Rect markerRect = new Rect(mx, my, mw, mh);
-        controller.getView().setMarkerRect(markerRect);
-        controller.refresh();
+        // Rect roadRect = r.getRect();
+        // double mx = (roadRect.x - activeRect.x)/activeRect.width * view.getWidth();
+        // double my = view.getHeight()-((roadRect.y - activeRect.y)/activeRect.height * view.getHeight());
+        // double mw = (roadRect.width / activeRect.width) * view.getWidth();
+        // double mh = (roadRect.height / activeRect.height) * view.getHeight();
+        //Rect markerRect = new Rect(mx, my, mw, mh);
+        //controller.getView().setMarkerRect(markerRect);
+        //controller.refresh();
     }
     
-    public double pointToLineDistance(
-        double Ax, double Ay, double Bx, double By, double Px, double Py) {
-        double normalLength = Math.sqrt((Bx-Ax)*(Bx-Ax)+(By-Ay)*(By-Ay));
-        return Math.abs((Px-Ax)*(By-Ay)-(Py-Ay)*(Bx-Ax))/normalLength;
-  }
+        /**
+         * private method to calculate the distance from a point P(pX, pY)
+         * to the middle of a line with ends at point A(aX, aY) and point B(bX, bY).
+         * @param double a = (aX, aY).
+         * @param double b = (bX, bY).
+         * @param double p = (pX, pY).
+         * @return double distance.
+         */
+    private double pointToLineDistance(
+        double aX, double aY, double bX, double bY, double pX, double pY) {
+        //return Math.abs((bX-aX)*(aY-pY)-(aX-pX)*(bY-aY)) / Math.sqrt((bX-aX)*(bX-aX)+(bY-aY)*(bY-aY));
+        
+        double centerx, centery;
+        centerx = aX+(bX-aX)/2;
+        centery = aY+(bY-aY)/2;
+        return Math.sqrt((pX-centerx)*(pX-centerx)+(pY-centery)*(pY-centery));
+       }
     
     public static void main(String[] args) {
         ProgressBar.open();
