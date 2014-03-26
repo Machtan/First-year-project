@@ -4,6 +4,7 @@
  */
 package classes;
 
+import enums.RoadType;
 import interfaces.QuadNode;
 import java.util.HashSet;
 
@@ -11,7 +12,7 @@ import java.util.HashSet;
  *
  * @author Alekxander
  */
-public class Quad<Item extends QuadNode> {
+public class Quad<Item extends RoadPart> {
 
     // 4 subquads if necessarry. Empty if not.
     private Quad[] subquads;
@@ -71,6 +72,30 @@ public class Quad<Item extends QuadNode> {
             for (Quad subquad : subquads) {
                 if (subquad.area.collidesWith(rect)) {
                     subquad.getIn(rect, set);
+                }
+            }
+        }
+    }
+    
+    public void getSelectedIn(Rect rect, HashSet<Item> set, HashSet<RoadType> types) {
+        if (bottom == true) {
+            if (rect.contains(area)) {
+                for (Item node : nodes) {
+                    if (node.getRect().collidesWith(rect) && types.contains(node.type)) {
+                        set.add(node);
+                    }
+                }
+            } else {
+                for (Item node : nodes) {
+                    if (types.contains(node.type)) {
+                        set.add(node);
+                    }
+                }
+            }
+        } else {
+            for (Quad subquad : subquads) {
+                if (subquad.area.collidesWith(rect)) {
+                    subquad.getSelectedIn(rect, set, types);
                 }
             }
         }

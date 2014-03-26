@@ -125,7 +125,7 @@ public class CKeyHandler implements KeyListener, ActionListener {
 
        int movx = vx;
        int movy = vy;
-       System.out.println("Shifting by ("+movx+", "+movy+")");
+       //System.out.println("Shifting by ("+movx+", "+movy+")");
        /*
        This doesn't work. Restriction is probably too cumbersome due to other
        implementations

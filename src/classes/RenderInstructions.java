@@ -3,6 +3,7 @@ package classes;
 import enums.RoadType;
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * The RenderInstructions class is used by the model to filter roads, and to
@@ -23,8 +24,6 @@ public class RenderInstructions {
         defaultColor = new Color(0,0,0);
         voidColor = new Color(200,200,255);
         colorMap = new HashMap<>();
-    
-    
     }
     
     public void setColor(RoadType type, Color color) {
@@ -42,8 +41,6 @@ public class RenderInstructions {
      * @return 
      */
     public Color getColor(RoadType type) {
-        
-        
         if (colorMap.containsKey(type)) {
             return colorMap.get(type);
         } else {
@@ -58,10 +55,8 @@ public class RenderInstructions {
      * @param color The color the road shall be drawn with
      * @param type The type of road
      */
-    public void addMapping(Color color, RoadType type) {
-        
+    public void addMapping(Color color, RoadType type) { 
         colorMap.put(type, color);
-        
     }
     
     /**
@@ -80,5 +75,32 @@ public class RenderInstructions {
         defaultColor = color;
     }
     
+    /**
+     * Returns the types of roads rendered with these instructions
+     * @return the types of roads rendered with these instructions
+     */
+    public HashSet<RoadType> getRenderedTypes() {
+        HashSet<RoadType> types = new HashSet<>();
+        System.out.println("Rendered:");
+        for (RoadType type : colorMap.keySet()) {
+            if (colorMap.get(type) != voidColor) {
+                types.add(type);
+                System.out.println("- "+type);
+            }
+        }
+        return types;
+    }
     
+    /**
+     * Creates a render instruction excluding everything but the given road type 
+     * @return a render instruction excluding everything but the given road type 
+     */
+    public RenderInstructions getExclusive() {
+        RenderInstructions ins = new RenderInstructions();
+        ins.setDefaultColor(ins.voidColor);
+        for (RoadType type : colorMap.keySet()) {
+            ins.addMapping(colorMap.get(type), type);
+        }
+        return ins;
+    }
 }

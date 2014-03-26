@@ -50,11 +50,11 @@ public class Controller extends JFrame {
         keyHandler = new CKeyHandler(this);
         
         mouseHandler = new CMouseHandler(this);
-        add(CheckBoxGUI.makeGUI(ins, this), BorderLayout.NORTH);
+        add(new RenderPanel(ins, this), BorderLayout.NORTH);
         add(new ZoomButtonsGUI(resizeHandler, this), BorderLayout.EAST);
         add(view);
         
-        
+        setTitle("Førsteårsprojekt - Danmarkskort");
         
         // Pack the window
         pack();

@@ -137,7 +137,10 @@ public class Model {
      */
     public ArrayList<Line> getLines(Rect area, Rect target, double windowHeight, 
             RenderInstructions instructions, ArrayList<RoadType> prioritized) {
-        HashSet<RoadPart> roads = tree.getIn(area); // TODO THIS IS THE WEAK LINK!!!
+        
+        long t1 = System.nanoTime();
+        HashSet<RoadType> types = instructions.getRenderedTypes();
+        HashSet<RoadPart> roads = tree.getSelectedIn(area, types); // TODO THIS IS THE WEAK LINK!!!
         ArrayList<Line> lines = new ArrayList<>(roads.size());
         
         // Prepare the prioritized lists
@@ -173,7 +176,9 @@ public class Model {
             lines.addAll(prioLines.get(prioritized.get(i)));
         }
         
-        System.out.println("Returning "+lines.size()+" lines from the area "+area);
+        double deltaTime = (System.nanoTime()-t1)/1000000000.0;
+        
+        System.out.println("The model returned "+lines.size()+" lines in "+deltaTime+" secs.");
         return lines;
     }
     
@@ -209,6 +214,16 @@ public class Model {
      */
     public HashSet<RoadPart> getRoads(Rect area) {
         return tree.getIn(area);
+    }
+    
+    /**
+     * Returns the road parts in the given area of the map
+     * @param area The area to look in
+     * @param ins Instructions for the current way of rendering
+     * @return Road parts in the area
+     */
+    public HashSet<RoadPart> getRoads(Rect area, RenderInstructions ins) {
+        return tree.getSelectedIn(area, ins.getRenderedTypes());
     }
     
 }
