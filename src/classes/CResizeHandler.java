@@ -24,7 +24,7 @@ public class CResizeHandler implements ComponentListener, ActionListener {
 
     
     // Tweakable values
-    private final static int resizeDelay = 800; // milliseconds
+    private final static int resizeDelay = 500; // milliseconds
     private final static int margin = 40; // The amount of pixels to load to the right when resizing
     public final static double zoomFactor = 0.7;
     private Rect lastRect;

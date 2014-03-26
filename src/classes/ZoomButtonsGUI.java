@@ -1,9 +1,6 @@
 package classes;
 
 import external.SpringUtilities;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -23,7 +20,7 @@ public class ZoomButtonsGUI extends JPanel {
     private void addButton(String text, String tooltip, ActionListener listener) {
         JButton button = new JButton(text);
         button.setFocusable(false);
-        button.setFont(new Font("Verdana", Font.BOLD, 18));
+        //button.setFont(new Font("Verdana", Font.BOLD, 18));
         button.setToolTipText(tooltip);
         button.addActionListener(listener);
         //button.setBorder(BorderFactory.createBevelBorder(5, Color.lightGray, Color.yellow));
@@ -38,14 +35,14 @@ public class ZoomButtonsGUI extends JPanel {
         panel = new JPanel(new SpringLayout());
         
         String zoomTip = "You can also zoom in by clicking '+' on your keyboard.";
-        addButton("+", zoomTip, new ActionListener(){
+        addButton("Zoom +", zoomTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
                 resizeHandler.zoomIn();
             }
         });
         String zoomOutTip = "You can also zoom out by clicking '-' on your keyboard";
-        addButton("-", zoomOutTip, new ActionListener(){
+        addButton("Zoom -", zoomOutTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
                 resizeHandler.zoomOut();
