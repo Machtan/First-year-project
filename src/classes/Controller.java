@@ -54,6 +54,9 @@ public class Controller extends JFrame {
         add(new ZoomButtonsGUI(resizeHandler, this), BorderLayout.EAST);
         add(view);
         
+        FindRoadPanel roadPanel = new FindRoadPanel(this);
+        add(roadPanel, BorderLayout.SOUTH);
+        
         setTitle("Førsteårsprojekt - Danmarkskort");
         
         // Pack the window

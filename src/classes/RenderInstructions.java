@@ -99,7 +99,9 @@ public class RenderInstructions {
         RenderInstructions ins = new RenderInstructions();
         ins.setDefaultColor(ins.voidColor);
         for (RoadType type : colorMap.keySet()) {
-            ins.addMapping(colorMap.get(type), type);
+            if (!(colorMap.get(type)==voidColor)) {
+                ins.addMapping(colorMap.get(type), type);
+            }
         }
         return ins;
     }

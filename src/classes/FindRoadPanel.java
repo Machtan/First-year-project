@@ -4,29 +4,46 @@
  */
 package classes;
 
-import java.awt.Dimension;
+import java.awt.BorderLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.HashSet;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.BevelBorder;
 
 
 /**
  *
  * @author Alekxander
  */
-public class FindRoadTestClass implements MouseMotionListener{
+public class FindRoadPanel extends JPanel implements MouseMotionListener {
     private final JPanel view;
     private final Controller controller;
     private static final int width = 100; // initial invariable for the width of a new rectangle.
     private static final int height = 100; // initial invariable for the heigth of a new rectangle.
+    private JLabel roadLabel;
+    private final String description = "Nearest road: ";
     
-    FindRoadTestClass(JPanel panel, Controller controller) {
+    FindRoadPanel(Controller controller) {
+        super(new BorderLayout());
+        setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        roadLabel = new JLabel(description + "Undefined");
+        add(roadLabel, BorderLayout.WEST);
         this.controller = controller;
-        view = panel;
+        view = controller.getView();
         view.addMouseMotionListener(this);
+    }
+    
+    public void setNearestRoad(String name) {
+        if (!name.equals("")) {
+            roadLabel.setText(description + name);
+        } else {
+            roadLabel.setText(description + "UNKNOWN");
+        }
     }
     
     @Override
@@ -100,19 +117,19 @@ public class FindRoadTestClass implements MouseMotionListener{
         
         // Print out name of the RoadPart that is found to be closest to the mouse.
         RoadPart r = roadArray.get(smallestDis);
-        System.out.println(r.name);
+        this.setNearestRoad(r.name);
         
         // For DEBUGGING.
         // Get the rect that the RoadPart is contained within, and draw it
         //on the map to see which is selected. Refreshes when mouse is moved.
-        Rect roadRect = r.getRect();
+        /*Rect roadRect = r.getRect();
         double mx = (roadRect.x - activeRect.x)/activeRect.width * view.getWidth();
         double my = view.getHeight()-((roadRect.y - activeRect.y)/activeRect.height * view.getHeight());
         double mw = (roadRect.width / activeRect.width) * view.getWidth();
         double mh = (roadRect.height / activeRect.height) * view.getHeight();
         Rect markerRect = new Rect(mx, my, mw, mh);
         controller.getView().setMarkerRect(markerRect);
-        controller.refresh();
+        controller.refresh();*/
     }
     
         /**
@@ -132,15 +149,4 @@ public class FindRoadTestClass implements MouseMotionListener{
         centery = aY+(bY-aY)/2;
         return Math.sqrt((pX-centerx)*(pX-centerx)+(pY-centery)*(pY-centery));
        }
-    
-    public static void main(String[] args) {
-        ProgressBar.open();
-        OptimizedView view = new OptimizedView(new Dimension(600,400));
-        Model model = new Model(Loader.loadIntersections("resources/intersections.txt"),
-        Loader.loadRoads("resources/roads.txt"));
-        Controller controller = new Controller(view, model);
-        ProgressBar.close();
-        FindRoadTestClass test = new FindRoadTestClass(view, controller);
-        controller.setVisible(true);
-    }
 }
