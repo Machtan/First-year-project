@@ -5,18 +5,14 @@
 package classes;
 
 import enums.RoadType;
-import external.SpringUtilities;
 import java.awt.Color;
-import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import javax.swing.BorderFactory;
+import java.util.Collection;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
-import javax.swing.SpringLayout;
-import javax.swing.border.BevelBorder;
 
 /**
  *
@@ -24,9 +20,6 @@ import javax.swing.border.BevelBorder;
  */
 public class RenderPanel extends JPanel {
 
-    private JCheckBox HighwayCheck;
-    private JCheckBox PrimeRouteCheck;
-    private JCheckBox PathCheck;
     private final RenderInstructions ins;
     private final Controller controller;
     private final ArrayList<RoadType> defined;
@@ -77,7 +70,7 @@ public class RenderPanel extends JPanel {
             System.out.println("Changing the color from the Render panel");
             RenderInstructions overwriteIns = ins.getExclusive();
             Rect target = new Rect(0,0,controller.getView().getWidth(), controller.getView().getHeight());
-            ArrayList<Line> lines = controller.getModel().getLines(controller.getActiveRect(), 
+            Collection<Line> lines = controller.getModel().getLines(controller.getActiveRect(), 
                     target, overwriteIns, defined);
             controller.getView().renewImage(lines);
         }

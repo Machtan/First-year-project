@@ -1,7 +1,5 @@
 package classes;
 
-import classes.Line;
-import classes.Rect;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -12,7 +10,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.Collection;
 import javax.swing.JPanel;
 
 /**
@@ -65,7 +63,7 @@ public class OptimizedView extends JPanel  {
      * @param newLines The new lines to patch up 
      * @param newSize The new dimension of the image
      */
-    public void offsetImage(int x, int y, ArrayList<Line> newLines, Dimension newSize) { // Takes roughly 0.0016 secs at worst
+    public void offsetImage(int x, int y, Collection<Line> newLines, Dimension newSize) { // Takes roughly 0.0016 secs at worst
         long t1 = System.nanoTime();
         scaleSource = gfx_config.createCompatibleImage(newSize.width, newSize.height);
         clear(scaleSource); // Clear the whole image
@@ -100,7 +98,7 @@ public class OptimizedView extends JPanel  {
      * @param y The Nortward offset 
      * @param newLines The new lines to patch up 
      */
-    public void offsetImage(int x, int y, ArrayList<Line> newLines) {
+    public void offsetImage(int x, int y, Collection<Line> newLines) {
         offsetImage(x, y, newLines, getSize());
     }
         
@@ -129,7 +127,7 @@ public class OptimizedView extends JPanel  {
      * @param lineArr The lines to draw
      * @return A buffered image containing the drawn lines
      */
-    private BufferedImage createImage(ArrayList<Line> lineArr, Dimension dim) {
+    private BufferedImage createImage(Collection<Line> lineArr, Dimension dim) {
         if (dim.height == 0 || dim.width == 0) { 
             dim = this.getMinimumSize(); 
         }
@@ -146,7 +144,7 @@ public class OptimizedView extends JPanel  {
         return img;
     }
     
-    public void renewImage(ArrayList<Line> lines) {
+    public void renewImage(Collection<Line> lines) {
         scaleSource = createImage(lines, getSize());
         image = scaleSource;
         repaint();

@@ -18,26 +18,18 @@ public class QuadTree<Item extends RoadPart> extends Quad {
         super(area, maxNodes, maxDepth, 1);
     }
     
-    @Override
-    public HashSet<Item> getIn(Rect rect) {
+    public void fillFromRect(Rect rect, Collection<Item> col) {
         long t1 = System.nanoTime();
         HashSet<Item> result = new HashSet<>();
-        super.fillFrom(rect, result);
+        super.fillFrom(rect, col);
         double s = (System.nanoTime()-t1)/1000000000.0;
         System.out.println("Returned "+result.size()+" roads from the QuadTree in "+s+"sec");
-        return result;
     }
     
-    public HashSet<Item> getSelectedIn(Rect rect, HashSet<RoadType> types) {
+    public void fillSelectedFromRect(Rect rect, Collection<Item> col, HashSet<RoadType> types) {
         long t1 = System.nanoTime();
-        HashSet<Item> result = new HashSet<>();
-        super.getSelectedIn(rect, result, types);
+        super.fillSelectedFrom(rect, col, types);
         double s = (System.nanoTime()-t1)/1000000000.0;
-        System.out.println("(Exclusive method) Returned "+result.size()+" roads from the QuadTree in "+s+"sec");
-        return result;
-    }
-    
-    public void fillFromRect(Rect rect, Collection<Item> col) {
-        super.fillFrom(rect, col);
+        System.out.println("(Exclusive method) Returned "+col.size()+" roads from the QuadTree in "+s+"sec");
     }
 }

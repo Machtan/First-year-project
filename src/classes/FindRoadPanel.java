@@ -5,6 +5,7 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -96,7 +97,7 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         
         // Get a HashSet containing RoadParts within the cursorRect.
         Model model = controller.getModel();
-        HashSet<RoadPart> roads = model.getRoads(cursorRect);
+        Collection<RoadPart> roads = model.getRoads(cursorRect);
   
         // If no RoadParts are found within the area, double size of cursorRect until 
         // at least one has been found.
@@ -111,43 +112,25 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
             roads = model.getRoads(cursorRect);
         }
         
-        // Put RoadPart elements into ArrayList.
-        ArrayList<RoadPart> roadArray = new ArrayList<>();
-        for(RoadPart r : roads) {
-            roadArray.add(r);
-        }
-        
         // Calculate distance from mouse coordinates to all the RoadParts found.
-        double[] sizes = new double[roadArray.size()];
-        for(int i = 0; i<roadArray.size(); i++) {
-            double areaX1 = roadArray.get(i).getRect().x;
-            double areaY1 = roadArray.get(i).getRect().y;
-            double areaX2 = (roadArray.get(i).getRect().x)+(roadArray.get(i).getRect().width);//(roadArray.get(0).getRect().width);
-            double areaY2 = (roadArray.get(i).getRect().y)+(roadArray.get(i).getRect().height);  
+        double minDist = Integer.MAX_VALUE;
+        RoadPart nearest = null;
+        for(RoadPart road : roads) {
+            Rect r = road.getRect();
+            double areaX1 = r.x;
+            double areaY1 = r.y;
+            double areaX2 = r.x + r.width;
+            double areaY2 = r.y + r.height;  
             
             double distance = pointToLineDistance(areaX1, areaY1, areaX2, areaY2, modelX, modelY); 
-            sizes[i] = distance;
+            if (distance < minDist) {
+                nearest = road;
+                minDist = distance;
+            }
         }
-        
-        // Find out which RoadPart is closest to the mouse coordinates.
-        int currentDis;
-        int smallestDis = -1;
-        for(int i = 0; i<roadArray.size(); i++) {
-            if(smallestDis == -1) {
-                smallestDis = i; }
-            else {
-                currentDis = i; 
-                if(sizes[i] < sizes[smallestDis]) {
-                    smallestDis = i;
-                }
-            }     
-        }
-        
-        // Sets roadLabel to be the RoadPart that is found to be closest 
-        // to the cursor.
-        RoadPart r = roadArray.get(smallestDis);
-        this.setNearestRoad(r.name);
-        
+
+        setNearestRoad(nearest.name);
+
         /* Can be used if needed for DEBUGGING purposes.
         Draw the rect containing the nearest RoadPart r.
         

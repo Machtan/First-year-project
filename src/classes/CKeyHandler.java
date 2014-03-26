@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import static java.lang.Math.abs;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import javax.swing.Timer;
 
@@ -172,7 +173,7 @@ public class CKeyHandler implements KeyListener, ActionListener {
        }
 
        // Request the lines for the areas to be redrawn
-       ArrayList<Line> lines = new ArrayList<>();
+       Collection<Line> lines = new ArrayList<>();
        if (verArea != null && horArea != null) {
            lines = controller.getLines(verArea, verTarget);
            lines.addAll(controller.getLines(horArea, horTarget));

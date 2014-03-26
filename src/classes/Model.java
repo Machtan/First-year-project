@@ -10,6 +10,7 @@ import enums.RoadType;
 import interfaces.IProgressBar;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -51,6 +52,14 @@ public class Model {
         double width = Math.abs(one.x - two.x);
         double height = Math.abs(one.y - two.y);
         return new Rect(x,y,width,height);
+    }
+    
+    /**
+     * This should only be used for testing. Returns the model's QuadTree instance
+     * @return the model's QuadTree instance
+     */
+    public QuadTree getTree() {
+        return tree;
     }
     
     public Model(ArrayList<Intersection> inters, ArrayList<RoadPart> roads, IProgressBar... bar) {
@@ -145,12 +154,13 @@ public class Model {
      * @param prioritized A list of roads to be prioritized, from highest to lowest
      * @return A list of lines converted to local coordinates for the view
      */
-    public ArrayList<Line> getLines(Rect area, Rect target, double windowHeight, 
+    public Collection<Line> getLines(Rect area, Rect target, double windowHeight, 
             RenderInstructions instructions, ArrayList<RoadType> prioritized) {
         
         long t1 = System.nanoTime();
         HashSet<RoadType> types = instructions.getRenderedTypes();
-        HashSet<RoadPart> roads = tree.getSelectedIn(area, types); // TODO THIS IS THE WEAK LINK!!!
+        ArrayList<RoadPart> roads = new ArrayList<>();
+        tree.fillSelectedFromRect(area, roads, types); // TODO THIS IS THE WEAK LINK!!!
         ArrayList<Line> lines = new ArrayList<>(roads.size());
         
         // Prepare the prioritized lists
@@ -193,18 +203,18 @@ public class Model {
     }
     
     // Without <target height> or <priorities>
-    public ArrayList<Line> getLines(Rect area, Rect target, RenderInstructions instructions) {
+    public Collection<Line> getLines(Rect area, Rect target, RenderInstructions instructions) {
         return getLines(area, target, target.height, instructions, new ArrayList<RoadType>());
     }
     
     // Without <target height>
-    public ArrayList<Line> getLines(Rect area, Rect target, RenderInstructions instructions, 
+    public Collection<Line> getLines(Rect area, Rect target, RenderInstructions instructions, 
             ArrayList<RoadType> priorities) {
         return getLines(area, target, target.height, instructions, priorities);
     }
     
     // Without <priorities>
-    public ArrayList<Line> getLines(Rect area, Rect target, int windowHeight, 
+    public Collection<Line> getLines(Rect area, Rect target, int windowHeight, 
             RenderInstructions instructions) {
         return getLines(area, target, windowHeight, instructions, new ArrayList<RoadType>());
     }
@@ -222,8 +232,10 @@ public class Model {
      * @param area The area to look in
      * @return Road parts in the area
      */
-    public HashSet<RoadPart> getRoads(Rect area) {
-        return tree.getIn(area);
+    public Collection<RoadPart> getRoads(Rect area) {
+        ArrayList<RoadPart> roads = new ArrayList<>();
+        tree.fillFromRect(area, roads);
+        return roads;
     }
     
     /**
@@ -232,8 +244,10 @@ public class Model {
      * @param ins Instructions for the current way of rendering
      * @return Road parts in the area
      */
-    public HashSet<RoadPart> getRoads(Rect area, RenderInstructions ins) {
-        return tree.getSelectedIn(area, ins.getRenderedTypes());
+    public Collection<RoadPart> getRoads(Rect area, RenderInstructions ins) {
+        ArrayList<RoadPart> roads = new ArrayList<>();
+        tree.fillSelectedFromRect(area, roads, ins.getRenderedTypes());
+        return roads;
     }
     
 }

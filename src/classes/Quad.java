@@ -1,7 +1,7 @@
 package classes;
 
 import enums.RoadType;
-import interfaces.QuadNode;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -26,7 +26,7 @@ public class Quad<Item extends RoadPart> {
     // The area of the Quad
     public final Rect area;
     // The elements in the Quad.
-    private HashSet<Item> nodes;
+    private ArrayList<Item> nodes;
     // The max depth
     private int maxDepth;
     
@@ -35,27 +35,8 @@ public class Quad<Item extends RoadPart> {
         this.maxNodes = maxNodes;
         this.maxDepth = maxDepth;
         this.depth = depth;
-        nodes = new HashSet<>();
+        nodes = new ArrayList<>();
         bottom = true;
-    }
-    
-    /**
-     * Retrieve elements in a given area.
-     * @param rect area to retrieve elements from
-     * @return HashSet<Item> with elements.
-     */
-    public HashSet<Item> getIn(Rect rect) {        
-        if (bottom == true) {
-            return (HashSet<Item>) nodes.clone();
-        } else {
-            HashSet<Item> hSet = new HashSet<>();
-            for (Quad subquad : subquads) {
-                if (subquad.area.collidesWith(rect)) {
-                    hSet.addAll(subquad.getIn(rect));
-                }
-            }
-            return hSet;
-        }
     }
     
     /**
@@ -84,37 +65,29 @@ public class Quad<Item extends RoadPart> {
         }
     }
     
-    /**
-     * Retrieve elements in a riven area and add them to a given HashSet
-     * if they are of a certain type.
-     * @param rect
-     * @param set
-     * @param types 
-     */
-    public void getSelectedIn(Rect rect, HashSet<Item> set, HashSet<RoadType> types) {
+    public void fillSelectedFrom(Rect rect, Collection<Item> col, HashSet<RoadType> types) {
         if (bottom == true) {
             if (rect.contains(area)) {
                 for (Item node : nodes) {
                     if (node.getRect().collidesWith(rect) && types.contains(node.type)) {
-                        set.add(node);
+                        col.add(node);
                     }
                 }
             } else {
                 for (Item node : nodes) {
                     if (types.contains(node.type)) {
-                        set.add(node);
+                        col.add(node);
                     }
                 }
             }
         } else {
             for (Quad subquad : subquads) {
                 if (subquad.area.collidesWith(rect)) {
-                    subquad.getSelectedIn(rect, set, types);
+                    subquad.fillSelectedFrom(rect, col, types);
                 }
             }
         }
-    }
-    
+    }    
     
     /**
      * Adds an item to a quad. If quad has subquads, the item is added to the
@@ -173,6 +146,7 @@ public class Quad<Item extends RoadPart> {
                     }
                 }
             }
+            nodes = null; // Clean up!
         }
     }
 }

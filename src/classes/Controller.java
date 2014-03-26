@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.ArrayList;
+import java.util.Collection;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -84,7 +85,7 @@ public class Controller extends JFrame {
      * @param target The target to map them to as lines
      * @return A list of lines to render the area
      */
-    public ArrayList<Line> getLines(Rect area, Rect target) {
+    public Collection<Line> getLines(Rect area, Rect target) {
         return model.getLines(area, target, view.getHeight(), ins, prioritized);
     }
     
