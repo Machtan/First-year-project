@@ -50,7 +50,8 @@ public class Controller extends JFrame {
         keyHandler = new CKeyHandler(this);
         
         mouseHandler = new CMouseHandler(this);
-        add(GUI.makeGUI(ins, this), BorderLayout.NORTH);
+        add(CheckBoxGUI.makeGUI(ins, this), BorderLayout.NORTH);
+        add(new ZoomButtonsGUI(resizeHandler, this), BorderLayout.EAST);
         add(view);
         
         
@@ -122,6 +123,11 @@ public class Controller extends JFrame {
         Rect newArea = new Rect(activeRect.x, activeRect.y, width, height);
         System.out.println("Resizing active area from "+activeRect+" to "+newArea);
         activeRect = newArea;
+    }
+    
+    public void resetView() {
+        setActiveRect(model.getBoundingArea());
+        redraw();
     }
     
     /**
