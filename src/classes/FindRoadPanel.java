@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package classes;
 
 import java.awt.BorderLayout;
@@ -18,7 +14,11 @@ import javax.swing.border.Border;
 
 
 /**
- *
+ * The FindRoadPanel class works as a panel and makes it possible to show 
+ * the road that is closest to the cursor on the map.
+ * @author Daniel
+ * @author Jakob
+ * @author Isabella
  * @author Alekxander
  */
 public class FindRoadPanel extends JPanel implements MouseMotionListener {
@@ -41,6 +41,11 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         view.addMouseMotionListener(this);
     }
     
+    /**
+     * Set field roadLabel to Sring name.
+     * If given string is empty, set roadLabel to UNKNOWN.
+     * @param name of road
+     */
     public void setNearestRoad(String name) {
         if (!name.equals("")) {
             roadLabel.setText(description + name);
@@ -49,9 +54,29 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         }
     }
     
-    @Override
-    public void mouseDragged(MouseEvent e) {}
+    /**
+    * private method to calculate the distance from a point P(pX, pY)
+    * to the middle of a line with ends at point A(aX, aY) and point B(bX, bY).
+    * @param double a = (aX, aY).
+    * @param double b = (bX, bY).
+    * @param double p = (pX, pY).
+    * @return double distance.
+    */
+    private double pointToLineDistance(
+        double aX, double aY, double bX, double bY, double pX, double pY) {
+        //return Math.abs((bX-aX)*(aY-pY)-(aX-pX)*(bY-aY)) / Math.sqrt((bX-aX)*(bX-aX)+(bY-aY)*(bY-aY));
+        
+        double centerx, centery;
+        centerx = aX+(bX-aX)/2;
+        centery = aY+(bY-aY)/2;
+        return Math.sqrt((pX-centerx)*(pX-centerx)+(pY-centery)*(pY-centery));
+       }
     
+    /**
+     * Find the road closest to the mousecursor. Is called whenever
+     * the cursor moves.
+     * @param e mousemovement.
+     */
     @Override
     public void mouseMoved(MouseEvent e) {
         // Mouse cursor on screen.
@@ -118,38 +143,27 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
             }     
         }
         
-        // Print out name of the RoadPart that is found to be closest to the mouse.
+        // Sets roadLabel to be the RoadPart that is found to be closest 
+        // to the cursor.
         RoadPart r = roadArray.get(smallestDis);
         this.setNearestRoad(r.name);
         
-        // For DEBUGGING.
-        // Get the rect that the RoadPart is contained within, and draw it
-        //on the map to see which is selected. Refreshes when mouse is moved.
-        /*Rect roadRect = r.getRect();
+        /* Can be used if needed for DEBUGGING purposes.
+        Draw the rect containing the nearest RoadPart r.
+        
+        Rect roadRect = r.getRect();
         double mx = (roadRect.x - activeRect.x)/activeRect.width * view.getWidth();
         double my = view.getHeight()-((roadRect.y - activeRect.y)/activeRect.height * view.getHeight());
         double mw = (roadRect.width / activeRect.width) * view.getWidth();
         double mh = (roadRect.height / activeRect.height) * view.getHeight();
         Rect markerRect = new Rect(mx, my, mw, mh);
         controller.getView().setMarkerRect(markerRect);
-        controller.refresh();*/
+        controller.refresh();
+        */
     }
     
-        /**
-         * private method to calculate the distance from a point P(pX, pY)
-         * to the middle of a line with ends at point A(aX, aY) and point B(bX, bY).
-         * @param double a = (aX, aY).
-         * @param double b = (bX, bY).
-         * @param double p = (pX, pY).
-         * @return double distance.
-         */
-    private double pointToLineDistance(
-        double aX, double aY, double bX, double bY, double pX, double pY) {
-        //return Math.abs((bX-aX)*(aY-pY)-(aX-pX)*(bY-aY)) / Math.sqrt((bX-aX)*(bX-aX)+(bY-aY)*(bY-aY));
-        
-        double centerx, centery;
-        centerx = aX+(bX-aX)/2;
-        centery = aY+(bY-aY)/2;
-        return Math.sqrt((pX-centerx)*(pX-centerx)+(pY-centery)*(pY-centery));
-       }
+    @Override
+    public void mouseDragged(MouseEvent e) {
+            // Do nothing 
+    }
 }

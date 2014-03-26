@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package classes;
 
 import enums.RoadType;
@@ -9,7 +5,11 @@ import interfaces.QuadNode;
 import java.util.HashSet;
 
 /**
- *
+ * The Quad class divides a Rect area into smaller Rect subareas to help ease up 
+ * the resources needed when working with areas with a large amount of elements.
+ * @author Daniel
+ * @author Jakob
+ * @author Isabella
  * @author Alekxander
  */
 public class Quad<Item extends RoadPart> {
@@ -37,16 +37,16 @@ public class Quad<Item extends RoadPart> {
         nodes = new HashSet<>();
         bottom = true;
     }
-
+    
     /**
-     * Der er jo ikke nogen konkret QuadNode klasse, kun et interface - er der
-     * brug for det?
+     * Retrieve elements in a given area.
+     * @param rect area to retrieve elements from
+     * @return HashSet<Item> with elements.
      */
     public HashSet<Item> getIn(Rect rect) {        
         if (bottom == true) {
             return (HashSet<Item>) nodes.clone();
         } else {
-            //System.out.println("Getting in rect "+rect+" from "+this+" at "+depth);
             HashSet<Item> hSet = new HashSet<>();
             for (Quad subquad : subquads) {
                 if (subquad.area.collidesWith(rect)) {
@@ -57,6 +57,12 @@ public class Quad<Item extends RoadPart> {
         }
     }
     
+    /**
+     * Retrieve elements in a given area and add them to 
+     * a given HashSet
+     * @param rect area to retrieve elements from.
+     * @param set HashSet<Item> to add items to.
+     */
     public void getIn(Rect rect, HashSet<Item> set) { // Fills the given set
         if (bottom == true) {
             if (rect.contains(area)) {
@@ -77,6 +83,13 @@ public class Quad<Item extends RoadPart> {
         }
     }
     
+    /**
+     * Retrieve elements in a riven area and add them to a given HashSet
+     * if they are of a certain type.
+     * @param rect
+     * @param set
+     * @param types 
+     */
     public void getSelectedIn(Rect rect, HashSet<Item> set, HashSet<RoadType> types) {
         if (bottom == true) {
             if (rect.contains(area)) {
@@ -101,6 +114,12 @@ public class Quad<Item extends RoadPart> {
         }
     }
     
+    
+    /**
+     * Adds an item to a quad. If quad has subquads, the item is added to the
+     * corresponding subquad instead.
+     * @param node 
+     */
     public void add(Item node) {
         if (bottom) {
             //System.out.println("Adding "+node+" to "+this);
@@ -117,8 +136,9 @@ public class Quad<Item extends RoadPart> {
         }
     }
 
-    /*
-     * Hvor stor skal maxDepth være?
+    /**
+     * Splits a quad into four subquads by added four quads into subquads field
+     * and setting bottom field to false.
      */
     public void split() {
         if (bottom == true && depth < maxDepth) {
@@ -154,5 +174,4 @@ public class Quad<Item extends RoadPart> {
             }
         }
     }
-    // Måske To DO : Metode som tjekker alle subquads og finder den som er 'nederst', og finder ud af hvor dyb quaden er.
 }
