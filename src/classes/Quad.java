@@ -16,7 +16,7 @@ import java.util.HashSet;
 public class Quad<Item extends RoadPart> {
 
     // 4 subquads if necessarry. Empty if not.
-    private Quad[] subquads;
+    private Quad<Item>[] subquads;
     // True if the element is the bottommost element.
     private boolean bottom;
     // Number of nodes a quad can hold before it splits.
@@ -26,7 +26,7 @@ public class Quad<Item extends RoadPart> {
     // The area of the Quad
     public final Rect area;
     // The elements in the Quad.
-    private ArrayList<Item> nodes;
+    private Collection<Item> nodes;
     // The max depth
     private int maxDepth;
     

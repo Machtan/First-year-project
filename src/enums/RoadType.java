@@ -15,7 +15,7 @@ public enum RoadType {
       
     
     
-    private final int value;
+    public final int value;
     /**
      * Constructor for the RoadType class
      */

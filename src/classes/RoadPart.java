@@ -50,7 +50,7 @@ public class RoadPart implements CharSequence, QuadNode {
     public final String tTurn;
     
     // The area this road is in
-    private Rect area;
+    protected Rect area;
     
     // Probably unneeded
     //String leftParish;
@@ -180,7 +180,7 @@ public class RoadPart implements CharSequence, QuadNode {
         return Utils.joinStrings(new Object[]{
             sourceID,
             targetID,
-            type,
+            type.value,
             name,
             sLeftNum,
             eLeftNum,

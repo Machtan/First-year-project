@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  *
@@ -62,7 +63,7 @@ public class Model {
         return tree;
     }
     
-    public Model(ArrayList<Intersection> inters, ArrayList<RoadPart> roads, IProgressBar... bar) {
+    public Model(Collection<Intersection> inters, Collection<RoadPart> roads, IProgressBar... bar) {
         IProgressBar progbar = null; // Optional progress bar
         if (bar.length != 0) { 
             progbar = bar[0]; 
@@ -77,19 +78,15 @@ public class Model {
         intersecMap = new HashMap<>();
         for (Intersection i : inters) {
             intersecMap.put(i.id, i); // Add intersections to the map
-            if (i.x < minX) {
-                minX = i.x;
-            } 
-            if (i.x > maxX) {
-                maxX = i.x;
-            }
-            if (i.y < minY) { minY = i.y; }
-            if (i.y > maxY) { maxY = i.y; }
+            minX = Math.min(i.x, minX);
+            maxX = Math.max(i.x, maxX);
+            minY = Math.min(i.y, minY);
+            maxY = Math.max(i.y, maxY);
         }
         
         // Create the quad tree
         boundingArea = new Rect(minX, minY, maxX-minX, maxY-minY);
-        tree = new QuadTree<>(boundingArea, 400, 15);
+        tree = new QuadTree<>(boundingArea, 400, 30);
         
         // Fill the quad tree
         System.out.println("Populating the Quad Tree...");
@@ -155,7 +152,7 @@ public class Model {
      * @return A list of lines converted to local coordinates for the view
      */
     public Collection<Line> getLines(Rect area, Rect target, double windowHeight, 
-            RenderInstructions instructions, ArrayList<RoadType> prioritized) {
+            RenderInstructions instructions, List<RoadType> prioritized) {
         
         long t1 = System.nanoTime();
         HashSet<RoadType> types = instructions.getRenderedTypes();
