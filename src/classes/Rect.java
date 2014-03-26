@@ -43,6 +43,15 @@ public class Rect {
         return this.right > other.left && this.left < other.right && this.top > other.bottom && this.bottom < other.top;
     }
     
+    /**
+     * Checks whether the other rect is fully contained by this rect
+     * @param other The other rect
+     * @return whether the other rect is fully contained by this rect
+     */
+    public boolean contains(Rect other) {
+        return !((other.top > this.top)||(other.bottom < this.bottom)||(other.left < this.left)||(other.right > this.right));
+    }
+    
     @Override
     public String toString() {
         return "Rect("+x+", "+y+", "+width+", "+height+")";
