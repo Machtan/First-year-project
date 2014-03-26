@@ -14,6 +14,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
 
 
 /**
@@ -30,7 +31,9 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
     
     FindRoadPanel(Controller controller) {
         super(new BorderLayout());
-        setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        Border padding = BorderFactory.createEmptyBorder(5,5,5,5);
+        Border bevel = BorderFactory.createBevelBorder(BevelBorder.LOWERED);
+        setBorder(BorderFactory.createCompoundBorder(bevel, padding));
         roadLabel = new JLabel(description + "Undefined");
         add(roadLabel, BorderLayout.WEST);
         this.controller = controller;

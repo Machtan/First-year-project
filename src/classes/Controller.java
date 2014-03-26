@@ -3,9 +3,14 @@ package classes;
 import enums.RoadType;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.util.ArrayList;
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.WindowConstants;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
 
 /**
  * The Controller class <More docs goes here>
@@ -32,6 +37,7 @@ public class Controller extends JFrame {
      */
     public Controller(OptimizedView view, Model model) {
         super();
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.model = model;
         activeRect = model.getBoundingArea();
         this.ins = Model.defaultInstructions;
@@ -42,33 +48,34 @@ public class Controller extends JFrame {
         prioritized.add(RoadType.PrimeRoute);
         
         this.view = view;
-        resizeHandler = new CResizeHandler(this);
         
-        // Key handling (This might need fixing)
+        // Set the insets / padding of the window
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        
+        // Padding for the view (and unobstructing borders)
+        JPanel viewPanel = new JPanel(new GridLayout(1,1));
+        Border padding = BorderFactory.createEmptyBorder(10,0,10,10);
+        Border bevel = BorderFactory.createBevelBorder(BevelBorder.LOWERED);
+        viewPanel.setBorder(BorderFactory.createCompoundBorder(padding, bevel));
+        viewPanel.add(view);
+        
+        // Key handling
         setFocusTraversalKeysEnabled(false);
         setFocusable(true);
         keyHandler = new CKeyHandler(this);
-        
         mouseHandler = new CMouseHandler(this);
-        add(new RenderPanel(ins, this), BorderLayout.NORTH);
-        add(new ZoomButtonsGUI(resizeHandler, this), BorderLayout.EAST);
-        add(view);
+        resizeHandler = new CResizeHandler(this, view);
         
-        FindRoadPanel roadPanel = new FindRoadPanel(this);
-        add(roadPanel, BorderLayout.SOUTH);
+        contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
+        contentPanel.add(new ZoomButtonsGUI(resizeHandler, this), BorderLayout.EAST);
+        contentPanel.add(viewPanel);
+        contentPanel.add(new FindRoadPanel(this), BorderLayout.SOUTH);
         
         setTitle("Førsteårsprojekt - Danmarkskort");
         
         // Pack the window
-        pack();
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        resizeActiveArea(view.getSize());
-        
-        // Set the image of the view
-        view.renewImage(model.getLines(activeRect, 
-                new Rect(0, 0, view.getWidth(), view.getHeight()), ins, 
-                prioritized));
-        
+        this.setContentPane(contentPanel);
     }
     
     /**
@@ -177,6 +184,9 @@ public class Controller extends JFrame {
             Loader.loadRoads("resources/roads.txt"));
         
         Controller controller = new Controller(view, model); 
+        controller.setMinimumSize(new Dimension(600,500));
+        controller.pack();
+        controller.redraw();
         ProgressBar.close();
         controller.setVisible(true);
     }

@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import javax.swing.JPanel;
 import javax.swing.Timer;
 
 /**
@@ -23,16 +24,16 @@ public class CResizeHandler implements ComponentListener, ActionListener {
 
     
     // Tweakable values
-    private final static int resizeDelay = 400; // milliseconds
+    private final static int resizeDelay = 800; // milliseconds
     private final static int margin = 40; // The amount of pixels to load to the right when resizing
     public final static double zoomFactor = 0.7;
     private Rect lastRect;
     
     
-    public CResizeHandler(Controller controller) {
+    public CResizeHandler(Controller controller, JPanel target) {
         // Prepare resize handling :)
         this.controller = controller;
-        controller.getView().addComponentListener(this);
+        target.addComponentListener(this);
         lastRect = controller.getActiveRect();
         resizeTimer = new Timer(resizeDelay, this);
         resizeTimer.setRepeats(false);
@@ -107,6 +108,7 @@ public class CResizeHandler implements ComponentListener, ActionListener {
         if (newSize.height != prevSize.height) {
             view.resizeMap(newSize);
             prevSize = newSize;
+        // Widen the window
         } else if (newSize.width > Math.min(view.getSourceWidth()-margin, screenSize.width)) { // The windows is wider now
             int prevRightLimit = view.getSourceWidth();
             int newRightLimit = Math.max(prevRightLimit+margin, view.getWidth()+margin);

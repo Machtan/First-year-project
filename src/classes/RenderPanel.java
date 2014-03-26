@@ -5,14 +5,18 @@
 package classes;
 
 import enums.RoadType;
+import external.SpringUtilities;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.SpringLayout;
+import javax.swing.border.BevelBorder;
 
 /**
  *
@@ -41,7 +45,7 @@ public class RenderPanel extends JPanel {
     }
     
     public RenderPanel(RenderInstructions ins, Controller cont) {
-        super(new GridLayout(1, 0));
+        super();
         this.ins = ins;
         controller = cont;
         defined = new ArrayList<>();

@@ -35,7 +35,8 @@ public class OptimizedView extends JPanel  {
      * @param dimension
      */
     public OptimizedView (Dimension dimension) {
-        setPreferredSize(dimension);
+        super();
+        setMinimumSize(dimension);
     }
     
     /**
@@ -129,6 +130,9 @@ public class OptimizedView extends JPanel  {
      * @return A buffered image containing the drawn lines
      */
     private BufferedImage createImage(ArrayList<Line> lineArr, Dimension dim) {
+        if (dim.height == 0 || dim.width == 0) { 
+            dim = this.getMinimumSize(); 
+        }
         System.out.println("Creating an image with the size "+dim);
         BufferedImage img = gfx_config.createCompatibleImage(dim.width, dim.height);
         clear(img);
