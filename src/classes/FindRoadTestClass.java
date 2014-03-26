@@ -104,15 +104,15 @@ public class FindRoadTestClass implements MouseMotionListener{
         
         // For DEBUGGING.
         // Get the rect that the RoadPart is contained within, and draw it
-        // on the map to see which is selected. Refreshes when mouse is moved.
-        // Rect roadRect = r.getRect();
-        // double mx = (roadRect.x - activeRect.x)/activeRect.width * view.getWidth();
-        // double my = view.getHeight()-((roadRect.y - activeRect.y)/activeRect.height * view.getHeight());
-        // double mw = (roadRect.width / activeRect.width) * view.getWidth();
-        // double mh = (roadRect.height / activeRect.height) * view.getHeight();
-        //Rect markerRect = new Rect(mx, my, mw, mh);
-        //controller.getView().setMarkerRect(markerRect);
-        //controller.refresh();
+        //on the map to see which is selected. Refreshes when mouse is moved.
+        Rect roadRect = r.getRect();
+        double mx = (roadRect.x - activeRect.x)/activeRect.width * view.getWidth();
+        double my = view.getHeight()-((roadRect.y - activeRect.y)/activeRect.height * view.getHeight());
+        double mw = (roadRect.width / activeRect.width) * view.getWidth();
+        double mh = (roadRect.height / activeRect.height) * view.getHeight();
+        Rect markerRect = new Rect(mx, my, mw, mh);
+        controller.getView().setMarkerRect(markerRect);
+        controller.refresh();
     }
     
         /**
