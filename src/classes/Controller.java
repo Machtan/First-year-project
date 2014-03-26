@@ -177,17 +177,18 @@ public class Controller extends JFrame {
      * @param args 
      */
     public static void main(String[] args) {
-        ProgressBar.open(); // Create the progress bar
+        ProgressBar progbar = new ProgressBar(); // Create the progress bar
         OptimizedView view = new OptimizedView(new Dimension(600,400));
         
-        Model model = new Model(Loader.loadIntersections("resources/intersections.txt"),
-            Loader.loadRoads("resources/roads.txt"));
+        // Load everything with the optional progressbar on :U
+        Model model = new Model(Loader.loadIntersections("resources/intersections.txt", progbar),
+            Loader.loadRoads("resources/roads.txt", progbar), progbar);
         
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(600,500));
         controller.pack();
         controller.redraw();
-        ProgressBar.close();
+        progbar.close();
         controller.setVisible(true);
     }
 }

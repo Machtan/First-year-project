@@ -1,7 +1,7 @@
 package interfaces;
 import classes.Rect;
 import enums.RoadType;
-import java.util.HashSet;
+import java.util.Collection;
 
 /**
  * The QuadInterface interface is an interface for the quad trees
@@ -11,6 +11,6 @@ import java.util.HashSet;
  */
 public interface QuadInterface <Item extends QuadNode>{
     public Item[] getIn(Rect rect);
-    public HashSet<Item> getIn(Rect rect, HashSet<RoadType> types);
+    public Collection<Item> getIn(Rect rect, Collection<RoadType> types);
     public void add(Item node);
 }

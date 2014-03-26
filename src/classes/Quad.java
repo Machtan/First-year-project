@@ -2,6 +2,7 @@ package classes;
 
 import enums.RoadType;
 import interfaces.QuadNode;
+import java.util.Collection;
 import java.util.HashSet;
 
 /**
@@ -59,25 +60,25 @@ public class Quad<Item extends RoadPart> {
     
     /**
      * Retrieve elements in a given area and add them to 
-     * a given HashSet
-     * @param rect area to retrieve elements from.
-     * @param set HashSet<Item> to add items to.
+     * the given collection object
+     * @param rect area to retrieve elements from. 
+     * @param col The collection to add items to
      */
-    public void getIn(Rect rect, HashSet<Item> set) { // Fills the given set
+    public void fillFrom(Rect rect, Collection<Item> col) { // Fills the given set
         if (bottom == true) {
             if (rect.contains(area)) {
                 for (Item node : nodes) {
                     if (node.getRect().collidesWith(rect)) {
-                        set.add(node);
+                        col.add(node);
                     }
                 }
             } else {
-                set.addAll(nodes);
+                col.addAll(nodes);
             }
         } else {
             for (Quad subquad : subquads) {
                 if (subquad.area.collidesWith(rect)) {
-                    subquad.getIn(rect, set);
+                    subquad.fillFrom(rect, col);
                 }
             }
         }

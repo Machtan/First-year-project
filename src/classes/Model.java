@@ -7,6 +7,7 @@
 package classes;
 
 import enums.RoadType;
+import interfaces.IProgressBar;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,7 +53,12 @@ public class Model {
         return new Rect(x,y,width,height);
     }
     
-    public Model(Intersection[] intersecArr, RoadPart[] roadPartArr) {
+    public Model(ArrayList<Intersection> inters, ArrayList<RoadPart> roads, IProgressBar... bar) {
+        IProgressBar progbar = null; // Optional progress bar
+        if (bar.length != 0) { 
+            progbar = bar[0]; 
+            progbar.setTarget("Populating Quad Tree...", 812301);
+        }
         // Find the bounding area of the intersections
         double minX = Double.MAX_VALUE;
         double maxX = Double.MIN_VALUE;
@@ -60,7 +66,7 @@ public class Model {
         double maxY = Double.MIN_VALUE;
         
         intersecMap = new HashMap<>();
-        for (Intersection i : intersecArr) {
+        for (Intersection i : inters) {
             intersecMap.put(i.id, i); // Add intersections to the map
             if (i.x < minX) {
                 minX = i.x;
@@ -79,17 +85,21 @@ public class Model {
         // Fill the quad tree
         System.out.println("Populating the Quad Tree...");
         long t1 = System.nanoTime();
-        for (RoadPart part : roadPartArr) {
-            Rect rect = getRect(intersecMap.get(part.sourceID), intersecMap.get(part.targetID));
-            part.setRect(rect);
-            tree.add(part);
-            
-            // Progress bar stuff
-            quadCounter++;
-            ProgressBar.updateLabel(ProgressBar.update(quadCounter
-                    + Loader.getIntersectionCnt()
-                    + Loader.getRoadCnt() ));
+        if (progbar != null) {
+            for (RoadPart part : roads) {
+                Rect rect = getRect(intersecMap.get(part.sourceID), intersecMap.get(part.targetID));
+                part.setRect(rect);
+                tree.add(part);
+                progbar.update(1);
+            }
+        } else {
+            for (RoadPart part : roads) {
+                Rect rect = getRect(intersecMap.get(part.sourceID), intersecMap.get(part.targetID));
+                part.setRect(rect);
+                tree.add(part);
+            }
         }
+        
         double secs = (System.nanoTime()-t1)/1000000000.0;
         System.out.println("Finished!");
         System.out.println("Populating the tree took "+secs+" seconds");

@@ -5,8 +5,7 @@
 package classes;
 
 import enums.RoadType;
-import interfaces.QuadNode;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 
 /**
@@ -19,20 +18,11 @@ public class QuadTree<Item extends RoadPart> extends Quad {
         super(area, maxNodes, maxDepth, 1);
     }
     
-    @Deprecated
-    public HashSet<Item> oldGetIn(Rect rect) {  
-        long t1 = System.nanoTime();
-        HashSet<Item> result = super.getIn(rect);
-        double s = (System.nanoTime()-t1)/1000000000.0;
-        System.out.println("Returned the contents of "+rect+" in "+s+"sec");
-        return result;
-    }
-    
     @Override
     public HashSet<Item> getIn(Rect rect) {
         long t1 = System.nanoTime();
         HashSet<Item> result = new HashSet<>();
-        super.getIn(rect, result);
+        super.fillFrom(rect, result);
         double s = (System.nanoTime()-t1)/1000000000.0;
         System.out.println("Returned "+result.size()+" roads from the QuadTree in "+s+"sec");
         return result;
@@ -45,5 +35,9 @@ public class QuadTree<Item extends RoadPart> extends Quad {
         double s = (System.nanoTime()-t1)/1000000000.0;
         System.out.println("(Exclusive method) Returned "+result.size()+" roads from the QuadTree in "+s+"sec");
         return result;
+    }
+    
+    public void fillFromRect(Rect rect, Collection<Item> col) {
+        super.fillFrom(rect, col);
     }
 }
