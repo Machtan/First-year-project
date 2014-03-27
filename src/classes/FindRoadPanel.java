@@ -97,11 +97,11 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         
         // Get a HashSet containing RoadParts within the cursorRect.
         Model model = controller.getModel();
-        Collection<RoadPart> roads = model.getRoads(cursorRect);
+        RoadPart[] roads = model.getRoads(cursorRect);
   
         // If no RoadParts are found within the area, double size of cursorRect until 
         // at least one has been found.
-        while (roads.isEmpty()) {
+        while (roads.length == 0) {
 
             double rectX = cursorRect.x-cursorRect.width/2;
             double rectY = cursorRect.y-cursorRect.height/2;
