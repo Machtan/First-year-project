@@ -60,7 +60,7 @@ public class Loader {
      * @param bar An optional progress bar
      * @return An array of RoadPart elements
      */
-    public static ArrayList<RoadPart> loadRoads(String roadFilePath, IProgressBar... bar) {
+    public static RoadPart[] loadRoads(String roadFilePath, IProgressBar... bar) {
         IProgressBar progbar = null; // Optional progress bar
         if (bar.length != 0) { 
             progbar = bar[0]; 
@@ -97,7 +97,7 @@ public class Loader {
         System.out.println("Road data loaded!");
         double elapsed = (System.nanoTime() - t1) / (1000000000.0);
         System.out.printf("Loaded the roads in %.3f seconds\n", elapsed);
-        return list;
+        return list.toArray(new RoadPart[list.size()]);
     }
 
     /**
@@ -107,7 +107,7 @@ public class Loader {
      * @param bar An optional progress bar
      * @return An array of intersections
      */
-    public static ArrayList<Intersection> loadIntersections(String intersectionFilePath, IProgressBar... bar) {
+    public static Intersection[] loadIntersections(String intersectionFilePath, IProgressBar... bar) {
         IProgressBar progbar = null; // Optional progress bar
         if (bar.length != 0) { 
             progbar = bar[0]; 
@@ -143,7 +143,7 @@ public class Loader {
         System.out.println("Intersection data loaded!");
         double elapsed = (System.nanoTime() - t1) / (1000000000.0);
         System.out.printf("Loaded the intersections in %.3f seconds\n", elapsed);
-        return list;
+        return list.toArray(new Intersection[list.size()]);
     }
 
     public static Intersection[] loadKrakIntersections(String nodeFilePath) {
@@ -192,7 +192,7 @@ public class Loader {
         //RoadPart[] roads = loadRoads("resources/roads.txt"); // ~100MB heap ~2x size //now 220 :d
         //Intersection[] intersections = loadKrakIntersections("krak/kdv_node_unload.txt");
         //saveIntersections(intersections, "resources/intersections.txt");
-        ArrayList<Intersection> ints = loadIntersections("resources/intersections.txt"); // ~30MB
+        Intersection[] ints = loadIntersections("resources/intersections.txt"); // ~30MB
         double minX = Double.MAX_VALUE;
         double maxX = Double.MIN_VALUE;
         double minY = Double.MAX_VALUE;

@@ -73,7 +73,7 @@ public class Controller extends JFrame {
         contentPanel.add(viewPanel);
         contentPanel.add(new FindRoadPanel(this), BorderLayout.SOUTH);
         
-        setTitle("Førsteårsprojekt - Danmarkskort");
+        setTitle("First-year Project - Visualization of Denmark");
         
         // Pack the window
         this.setContentPane(contentPanel);
@@ -85,7 +85,7 @@ public class Controller extends JFrame {
      * @param target The target to map them to as lines
      * @return A list of lines to render the area
      */
-    public Collection<Line> getLines(Rect area, Rect target) {
+    public Line[] getLines(Rect area, Rect target) {
         return model.getLines(area, target, view.getHeight(), ins, prioritized);
     }
     

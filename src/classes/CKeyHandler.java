@@ -173,10 +173,17 @@ public class CKeyHandler implements KeyListener, ActionListener {
        }
 
        // Request the lines for the areas to be redrawn
-       Collection<Line> lines = new ArrayList<>();
+       Line[] lines = new Line[0];
        if (verArea != null && horArea != null) {
-           lines = controller.getLines(verArea, verTarget);
-           lines.addAll(controller.getLines(horArea, horTarget));
+           Line[] lines1 = controller.getLines(verArea, verTarget);
+           Line[] lines2 = controller.getLines(horArea, horTarget);
+           lines = new Line[lines1.length+lines2.length];
+           for (int i = 0; i<lines1.length; i++) {
+               lines[i] = lines1[i];
+           }
+           for (int i = 0; i < lines2.length; i++) {
+               lines[lines1.length+i] = lines2[i];
+           }
        } else if (verArea != null) {
            lines = controller.getLines(verArea, verTarget);
        } else if (horArea != null) {

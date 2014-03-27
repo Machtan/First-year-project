@@ -5,30 +5,52 @@
 package classes;
 
 import enums.RoadType;
-import java.util.Collection;
 import java.util.HashSet;
 
 /**
  *
  * @author Alekxander
- * @param <Item>
+ * @author Jakob
  */
-public class QuadTree<Item extends RoadPart> extends Quad<Item> {
+public class QuadTree extends Quad {
+    boolean frozen = false;
     public QuadTree(Rect area, int maxNodes, int maxDepth) {
         super(area, maxNodes, maxDepth, 1);
     }
     
-    public void fillFromRect(Rect rect, Collection<Item> col) {
+    public RoadPart[] getSelectedIn(Rect rect, HashSet<RoadType> types) {
+        assureFrozen();
         long t1 = System.nanoTime();
-        super.fillFrom(rect, col);
-        double s = (System.nanoTime()-t1)/1000000000.0;
-        System.out.println("Returned "+col.size()+" roads from the QuadTree in "+s+"sec");
+        FastArList<RoadPart> result = new FastArList<>();
+        super.getSelectedIn(rect, result, types);
+        double s = (System.nanoTime()-t1)/1e9;
+        System.out.println("'getSelectedIn' returned "+result.size()+" roads from the QuadTree in "+s+"sec");
+        return result.toArray(new RoadPart[result.size()]);
     }
     
-    public void fillSelectedFromRect(Rect rect, Collection<Item> col, HashSet<RoadType> types) {
+    /**
+     * Assure that the tree is frozen :)
+     */
+    private void assureFrozen() {
+        if (!frozen) { 
+            freeze();
+        }
+    }
+    
+    @Override
+    public void freeze() {
+        System.out.println("Freezing the Quad Tree :)");
+        super.freeze();
+        frozen = true;
+    }
+    
+    public RoadPart[] getIn(Rect rect) {
+        assureFrozen();
         long t1 = System.nanoTime();
-        super.fillSelectedFrom(rect, col, types);
-        double s = (System.nanoTime()-t1)/1000000000.0;
-        System.out.println("(Exclusive method) Returned "+col.size()+" roads from the QuadTree in "+s+"sec");
+        FastArList<RoadPart> result = new FastArList<>();
+        super.getIn(rect, result);
+        double s = (System.nanoTime()-t1)/1e9;
+        System.out.println("'getIn' returned "+result.size()+" roads from the QuadTree in "+s+"sec");
+        return result.toArray(new RoadPart[result.size()]);
     }
 }

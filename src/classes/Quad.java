@@ -1,8 +1,6 @@
 package classes;
 
 import enums.RoadType;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 
 /**
@@ -13,102 +11,135 @@ import java.util.HashSet;
  * @author Isabella
  * @author Alekxander
  */
-public class Quad<Item extends RoadPart> {
+public class Quad {
 
-    // 4 subquads if necessarry. Empty if not.
-    private Quad<Item>[] subquads;
-    // True if the element is the bottommost element.
-    private boolean bottom;
-    // Number of nodes a quad can hold before it splits.
-    private int maxNodes = 400;
-    // The depth of the quad
-    private int depth;
-    // The area of the Quad
-    public final Rect area;
-    // The elements in the Quad.
-    private Collection<Item> nodes;
-    // The max depth
-    private int maxDepth;
+    private Quad[] subquads; // 4 subquads if necessarry. Empty if not.
+    private boolean bottom; // True if the element is the bottommost element.
+    private int maxNodes = 400; // Number of nodes a quad can hold before it splits.
+    private final int depth; // The depth of the quad
+    public final Rect area; // The area of the Quad
+    private FastArList<RoadPart> nodeList; // The elements in the Quad.
+    private RoadPart[] nodes;
+    private final int maxDepth; // The max depth
+    private int subCount; // The nodes below this one
     
     public Quad(Rect area, int maxNodes, int maxDepth, int depth) {
         this.area = area;
         this.maxNodes = maxNodes;
         this.maxDepth = maxDepth;
         this.depth = depth;
-        nodes = new ArrayList<>();
+        nodeList = new FastArList<>();
         bottom = true;
+        subCount = 0;
     }
-    
-    /**
-     * Retrieve elements in a given area and add them to 
-     * the given collection object
-     * @param rect area to retrieve elements from. 
-     * @param col The collection to add items to
-     */
-    public void fillFrom(Rect rect, Collection<Item> col) { // Fills the given set
-        if (bottom == true) {
-            if (rect.contains(area)) {
-                for (Item node : nodes) {
-                    if (node.getRect().collidesWith(rect)) {
-                        col.add(node);
-                    }
-                }
-            } else {
-                col.addAll(nodes);
-            }
-        } else {
-            for (Quad subquad : subquads) {
-                if (subquad.area.collidesWith(rect)) {
-                    subquad.fillFrom(rect, col);
-                }
-            }
-        }
-    }
-    
-    public void fillSelectedFrom(Rect rect, Collection<Item> col, HashSet<RoadType> types) {
-        if (bottom == true) {
-            if (rect.contains(area)) {
-                for (Item node : nodes) {
-                    if (node.getRect().collidesWith(rect) && types.contains(node.type)) {
-                        col.add(node);
-                    }
-                }
-            } else {
-                for (Item node : nodes) {
-                    if (types.contains(node.type)) {
-                        col.add(node);
-                    }
-                }
-            }
-        } else {
-            for (Quad subquad : subquads) {
-                if (subquad.area.collidesWith(rect)) {
-                    subquad.fillSelectedFrom(rect, col, types);
-                }
-            }
-        }
-    }    
     
     /**
      * Adds an item to a quad. If quad has subquads, the item is added to the
      * corresponding subquad instead.
      * @param node 
      */
-    public void add(Item node) {
+    public void add(RoadPart node) {
+        subCount++;
         if (bottom) {
             //System.out.println("Adding "+node+" to "+this);
-            nodes.add(node);
-            if (nodes.size() > maxNodes && depth < maxDepth) {
+            nodeList.add(node);
+            if (nodeList.size() > maxNodes && depth < maxDepth) {
                 split();
             }
         } else {
             for (Quad subquad : subquads) {
                 if (subquad.area.collidesWith(node.getRect())) {
                     subquad.add(node);
+                    //break; // Make it duplicate-safe :)
                 }
             }
         }
     }
+    
+    
+    /**
+     * Fills the given FastArList with the items from the given area of this quad
+     * @param area The area to look in
+     * @param list The list to add nodes to
+     */
+    protected void getIn(Rect area, FastArList<RoadPart> list) {
+        if (bottom) {
+            if (area.contains(this.area)) {
+                list.addAll(nodes);
+                /*list.ensureCapacity(list.size()+nodes.length);
+                for (RoadPart node : nodes) {
+                    list.add(node); 
+                }*/
+            } else {
+                for (RoadPart node : nodes) {
+                    if (node.getRect().collidesWith(area)) {
+                        list.add(node);
+                    }
+                }
+            }
+        } else {
+            for (Quad subquad : subquads) {
+                if (subquad.area.collidesWith(area)) {
+                    subquad.getIn(area, list);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Adds any nodes of the selected types to the given list
+     * @param area The area to find nodes in
+     * @param list The list to add nodes to
+     * @param types The types of nodes to add
+     */
+    protected void getSelectedIn(Rect area, FastArList<RoadPart> list, HashSet<RoadType> types) {
+        if (bottom) {
+            if (area.contains(this.area)) { // If all nodes are contained
+                for (RoadPart node : nodes) {
+                    if (types.contains(node.type)) { // Add them if the type is ok
+                        list.add(node);
+                    }
+                }
+            } else {
+                for (RoadPart node : nodes) { // Check both for containment and type
+                    if (node.getRect().collidesWith(area) && types.contains(node.type)) {
+                        list.add(node);
+                    }
+                }
+            }
+        } else {
+            for (Quad subquad : subquads) {
+                if (subquad.area.collidesWith(area)) {
+                    subquad.getSelectedIn(area, list, types);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Returns the amount of nodes in or below this quad
+     * @return the amount of nodes in or below this quad
+     */
+    public int getSubCount() {
+        return subCount;
+    }
+    
+    /**
+     * Freezes the tree, preventing further addition to it and improving its 
+     * performance by converting lists to arrays
+     */
+    protected void freeze() {
+        if (bottom) {
+            nodes = nodeList.toArray(new RoadPart[nodeList.size()]);
+            nodeList = null;
+        } else {
+            for (Quad subquad : subquads) {
+                subquad.freeze();
+            }
+        }
+    }
+    
+    
 
     /**
      * Splits a quad into four subquads by added four quads into subquads field
@@ -119,34 +150,27 @@ public class Quad<Item extends RoadPart> {
             double hw = 0.5 * area.width; // Half width
             double hh = 0.5 * area.height; // Half height
             Rect swRect = new Rect(area.x, area.y, hw, hh);
-            Quad sw = new Quad(swRect, maxNodes, maxDepth, this.depth+1);
-            
             Rect nwRect = new Rect(area.x, area.y + 0.5 * area.height, hw, hh);
-            Quad nw = new Quad(nwRect, maxNodes, maxDepth, this.depth+1);
-            
             Rect seRect = new Rect(area.x + 0.5 * area.width, area.y, hw, hh);
-            Quad se = new Quad(seRect, maxNodes, maxDepth, this.depth+1);
-            
             Rect neRect = new Rect(area.x + 0.5 * area.width, area.y + hh, hw, hh);
+            
+            Quad sw = new Quad(swRect, maxNodes, maxDepth, this.depth+1);
+            Quad nw = new Quad(nwRect, maxNodes, maxDepth, this.depth+1);
+            Quad se = new Quad(seRect, maxNodes, maxDepth, this.depth+1);
             Quad ne = new Quad(neRect, maxNodes, maxDepth, this.depth+1);
             
-            subquads = new Quad[4];
-            subquads[0] = sw;
-            subquads[1] = nw;
-            subquads[2] = se;
-            subquads[3] = ne;
-            
+            subquads = new Quad[] {sw, nw, se, ne};
             bottom = false;
 
             // nu skal vi indele nodes fra vores Quad til at være i de mindre subquads
-            for (Item i : nodes) {
+            for (RoadPart i : nodeList.toArray(new RoadPart[nodeList.size()])) {
                 for (Quad subquad : subquads) {
                     if (i.getRect().collidesWith(subquad.area)) {
                         subquad.add(i);
                     }
                 }
             }
-            nodes = null; // Clean up!
+            nodeList = null;
         }
     }
 }

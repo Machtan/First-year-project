@@ -21,10 +21,10 @@ import java.util.List;
  */
 public class Model {
     private Model model;
-    private HashMap<Integer, Intersection> intersecMap;
+    private HashMap<Integer, Intersection> inMap;
     //private RoadPart[] roadPartArr;
     private Rect boundingArea; // The area the model encloses
-    private final QuadTree<RoadPart> tree;
+    private final QuadTree tree;
     private static int quadCounter; //Used for loading
     
     public static final RenderInstructions defaultInstructions = new RenderInstructions();
@@ -63,7 +63,7 @@ public class Model {
         return tree;
     }
     
-    public Model(Collection<Intersection> inters, Collection<RoadPart> roads, IProgressBar... bar) {
+    public Model(Intersection[] inters, RoadPart[] roads, IProgressBar... bar) {
         IProgressBar progbar = null; // Optional progress bar
         if (bar.length != 0) { 
             progbar = bar[0]; 
@@ -75,9 +75,9 @@ public class Model {
         double minY = Double.MAX_VALUE;
         double maxY = Double.MIN_VALUE;
         
-        intersecMap = new HashMap<>();
+        inMap = new HashMap<>();
         for (Intersection i : inters) {
-            intersecMap.put(i.id, i); // Add intersections to the map
+            inMap.put(i.id, i); // Add intersections to the map
             minX = Math.min(i.x, minX);
             maxX = Math.max(i.x, maxX);
             minY = Math.min(i.y, minY);
@@ -86,51 +86,34 @@ public class Model {
         
         // Create the quad tree
         boundingArea = new Rect(minX, minY, maxX-minX, maxY-minY);
-        tree = new QuadTree<>(boundingArea, 400, 30);
+        tree = new QuadTree(boundingArea, 400, 30);
         
         // Fill the quad tree
         System.out.println("Populating the Quad Tree...");
         long t1 = System.nanoTime();
         if (progbar != null) {
+            int minUpdate = 1000;
+            int delta = 0;
             for (RoadPart part : roads) {
-                Rect rect = getRect(intersecMap.get(part.sourceID), intersecMap.get(part.targetID));
-                part.setRect(rect);
+                part.setPoints(inMap.get(part.sourceID), inMap.get(part.targetID));
                 tree.add(part);
-                progbar.update(1);
+                if (++delta == minUpdate) {
+                    progbar.update(delta);
+                    delta -= minUpdate;
+                }
             }
+            progbar.update(delta);
         } else {
             for (RoadPart part : roads) {
-                Rect rect = getRect(intersecMap.get(part.sourceID), intersecMap.get(part.targetID));
-                part.setRect(rect);
+                part.setPoints(inMap.get(part.sourceID), inMap.get(part.targetID));
                 tree.add(part);
             }
         }
+        tree.freeze(); // Freeze that tree ;)
         
         double secs = (System.nanoTime()-t1)/1000000000.0;
         System.out.println("Finished!");
         System.out.println("Populating the tree took "+secs+" seconds");
-    }
-    
-    public int getScreenX(double x, Rect area, Rect target) {
-        int screenX = (int)(target.x + (x-area.x) * (target.height / area.height));
-        return screenX;
-    }
-        
-    public int getScreenY(double y, Rect area, Rect target) {
-        return getScreenY(y, area, target, target.height);
-    }
-    
-    /**
-     * Returns y from the slice of a target
-     * @param y
-     * @param area
-     * @param target
-     * @param windowheight
-     * @return 
-     */
-    public int getScreenY(double y, Rect area, Rect target, double windowheight) {
-        int sy = (int) (windowheight - (target.y + (y-area.y)*(target.height/area.height)));
-        return sy;
     }
     
     /**
@@ -151,67 +134,74 @@ public class Model {
      * @param prioritized A list of roads to be prioritized, from highest to lowest
      * @return A list of lines converted to local coordinates for the view
      */
-    public Collection<Line> getLines(Rect area, Rect target, double windowHeight, 
+    public Line[] getLines(Rect area, Rect target, double windowHeight, 
             RenderInstructions instructions, List<RoadType> prioritized) {
-        
-        long t1 = System.nanoTime();
+       long t1 = System.nanoTime();
+
         HashSet<RoadType> types = instructions.getRenderedTypes();
-        ArrayList<RoadPart> roads = new ArrayList<>();
-        tree.fillSelectedFromRect(area, roads, types); // TODO THIS IS THE WEAK LINK!!!
-        ArrayList<Line> lines = new ArrayList<>(roads.size());
+        RoadPart[] roadArr = tree.getSelectedIn(area, types);
         
+        Line[] lineArr = new Line[roadArr.length];
+
         // Prepare the prioritized lists
         HashMap<RoadType, ArrayList<Line>> prioLines = new HashMap<>();
         for (RoadType type : prioritized) {
             prioLines.put(type, new ArrayList<Line>());
         }
         
-        for(RoadPart road: roads) {
+        System.out.println("Constructing lines");
+        long lineT1 = System.nanoTime();
+        
+        double ppu = target.height / area.height;
+        double heightFac = windowHeight - target.y;
+        double x1 = area.x;
+        double y1 = area.y;
+        int i = 0;
+        for(RoadPart road: roadArr) {
             if (instructions.getColor(road.type) == instructions.getVoidColor()) {
                 continue; // Ignore undrawn roads
             }
 
             // Create the line to be drawn
-            Line line = new Line(
-                    getScreenX(intersecMap.get(road.sourceID).x, area, target), 
-                    getScreenY(intersecMap.get(road.sourceID).y, area, target, windowHeight),
-                    getScreenX(intersecMap.get(road.targetID).x, area, target),
-                    getScreenY(intersecMap.get(road.targetID).y, area, target, windowHeight),
-                    instructions.getColor(road.type)
-            );
-            
+            Line line = road.asLine(x1, y1, target, ppu, heightFac, instructions);
+
             // Prioritize if needed
             if (prioritized.contains(road.type)) {
                 prioLines.get(road.type).add(line);
             } else {
-                lines.add(line);
+                lineArr[i++] = line;
             }
         }
-        
+        double lineDelta = (System.nanoTime()-lineT1)/1e9;
+        System.out.println("The line construction loop took "+lineDelta+"s");
+
         // Add the prioritized lines in order
-        for (int i = prioLines.size()-1; i >= 0; i--) {
-            lines.addAll(prioLines.get(prioritized.get(i)));
+        int insert = i;
+        for (int j = prioLines.size()-1; j >= 0; j--) {
+            ArrayList<Line> pLines = prioLines.get(prioritized.get(j));
+            for (int k = 0; k < pLines.size(); k++) {
+                lineArr[insert++] = pLines.get(k);
+            }
         }
-        
-        double deltaTime = (System.nanoTime()-t1)/1000000000.0;
-        
-        System.out.println("The model returned "+lines.size()+" lines in "+deltaTime+" secs.");
-        return lines;
+
+        double deltaTime = (System.nanoTime()-t1)/1e9;
+        System.out.println("Returned "+lineArr.length+" drawlines in "+deltaTime+" secs.");
+        return lineArr;
     }
     
     // Without <target height> or <priorities>
-    public Collection<Line> getLines(Rect area, Rect target, RenderInstructions instructions) {
+    public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
         return getLines(area, target, target.height, instructions, new ArrayList<RoadType>());
     }
     
     // Without <target height>
-    public Collection<Line> getLines(Rect area, Rect target, RenderInstructions instructions, 
+    public Line[] getLines(Rect area, Rect target, RenderInstructions instructions, 
             ArrayList<RoadType> priorities) {
         return getLines(area, target, target.height, instructions, priorities);
     }
     
     // Without <priorities>
-    public Collection<Line> getLines(Rect area, Rect target, int windowHeight, 
+    public Line[] getLines(Rect area, Rect target, int windowHeight, 
             RenderInstructions instructions) {
         return getLines(area, target, windowHeight, instructions, new ArrayList<RoadType>());
     }
@@ -229,10 +219,8 @@ public class Model {
      * @param area The area to look in
      * @return Road parts in the area
      */
-    public Collection<RoadPart> getRoads(Rect area) {
-        ArrayList<RoadPart> roads = new ArrayList<>();
-        tree.fillFromRect(area, roads);
-        return roads;
+    public RoadPart[] getRoads(Rect area) {
+        return tree.getIn(area);
     }
     
     /**
@@ -241,10 +229,8 @@ public class Model {
      * @param ins Instructions for the current way of rendering
      * @return Road parts in the area
      */
-    public Collection<RoadPart> getRoads(Rect area, RenderInstructions ins) {
-        ArrayList<RoadPart> roads = new ArrayList<>();
-        tree.fillSelectedFromRect(area, roads, ins.getRenderedTypes());
-        return roads;
+    public RoadPart[] getRoads(Rect area, RenderInstructions ins) {
+        return tree.getSelectedIn(area, ins.getRenderedTypes());
     }
     
 }

@@ -63,10 +63,10 @@ public class ProgressBar implements IProgressBar {
      * @param addition The amount to increase by
      */
     public void update(int addition) {
-        if (!done()) {
+        if (!done() || addition==0) {
             progressBar.setValue(progressBar.getValue() + addition);
         } else {
-            throw new RuntimeException("Update attempted while already finished!");
+            throw new RuntimeException("Update ("+addition+") attempted while already finished!");
         }
     }
 

@@ -81,11 +81,9 @@ public class RenderInstructions {
      */
     public HashSet<RoadType> getRenderedTypes() {
         HashSet<RoadType> types = new HashSet<>();
-        System.out.println("Rendered:");
         for (RoadType type : colorMap.keySet()) {
             if (colorMap.get(type) != voidColor) {
                 types.add(type);
-                System.out.println("- "+type);
             }
         }
         return types;

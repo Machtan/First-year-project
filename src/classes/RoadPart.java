@@ -50,6 +50,8 @@ public class RoadPart implements CharSequence, QuadNode {
     public final String tTurn;
     
     // The area this road is in
+    protected Intersection p1;
+    protected Intersection p2;
     protected Rect area;
     
     // Probably unneeded
@@ -74,15 +76,44 @@ public class RoadPart implements CharSequence, QuadNode {
         initialized = true;
     }
     
-    public void setRect(Rect rect) {
-        this.area = rect;
+    public void setPoints(Intersection p1, Intersection p2) {
+        this.p1 = p1;
+        this.p2 = p2;
+        double x = Math.min(p1.x, p2.x);
+        double y = Math.min(p1.y, p2.y);
+        double width = Math.abs(p1.x - p2.x);
+        double height = Math.abs(p1.y - p2.y);
+        area = new Rect(x,y,width,height);
     }
+
+    /**
+     * This method returns the roadpart as a drawable line with a color which
+     * can be rendered in the given target area
+     * @param x1 The origin x-coordinate of the source area
+     * @param y1 The origin y-coordinate of the source area
+     * @param target The target 
+     * @param ppu Pixels per units (a ratio)
+     * @param heightFac The heightFactor (windowHieght-target.y)
+     * @param ins Render instructions
+     * @return The roadPart as a drawable line
+     */
+    public Line asLine(double x1, double y1, Rect target, double ppu, double heightFac, RenderInstructions ins) {
+        Line line = new Line(
+            target.x+(p1.x-x1)*ppu, 
+            heightFac - (p1.y-y1)*ppu, 
+            target.x+(p2.x-x1)*ppu, 
+            heightFac - (p2.y-y1)*ppu, 
+            ins.getColor(type)
+        );
+        return line;
+    }
+    
+    /**
+     * Returns the bounding area of this road part
+     * @return the bounding area of this road part
+     */
     public Rect getRect() {
-        if (this.area == null) {
-            throw new RuntimeException("RoadPart rect requested before being set");
-        } else {
-            return area;
-        }
+        return area;
     }
     
     /**
