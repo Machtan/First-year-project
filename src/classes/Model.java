@@ -10,10 +10,7 @@ import enums.RoadType;
 import interfaces.IProgressBar;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  *
@@ -92,17 +89,11 @@ public class Model {
         System.out.println("Populating the Quad Tree...");
         long t1 = System.nanoTime();
         if (progbar != null) {
-            int minUpdate = 1000;
-            int delta = 0;
             for (RoadPart part : roads) {
                 part.setPoints(inMap.get(part.sourceID), inMap.get(part.targetID));
                 tree.add(part);
-                if (++delta == minUpdate) {
-                    progbar.update(delta);
-                    delta -= minUpdate;
-                }
+                progbar.update(1);
             }
-            progbar.update(delta);
         } else {
             for (RoadPart part : roads) {
                 part.setPoints(inMap.get(part.sourceID), inMap.get(part.targetID));
@@ -135,12 +126,14 @@ public class Model {
      * @return A list of lines converted to local coordinates for the view
      */
     public Line[] getLines(Rect area, Rect target, double windowHeight, 
-            RenderInstructions instructions, List<RoadType> prioritized) {
+            RenderInstructions instructions, ArrayList<RoadType> prioritized) {
        long t1 = System.nanoTime();
 
-        HashSet<RoadType> types = instructions.getRenderedTypes();
+        RoadType[] types = instructions.getRenderedTypes();
         RoadPart[] roadArr = tree.getSelectedIn(area, types);
-        
+        if (roadArr.length == 0) {
+            return new Line[0];
+        }
         Line[] lineArr = new Line[roadArr.length];
 
         // Prepare the prioritized lists
@@ -161,15 +154,11 @@ public class Model {
             if (instructions.getColor(road.type) == instructions.getVoidColor()) {
                 continue; // Ignore undrawn roads
             }
-
-            // Create the line to be drawn
-            Line line = road.asLine(x1, y1, target, ppu, heightFac, instructions);
-
-            // Prioritize if needed
+            
             if (prioritized.contains(road.type)) {
-                prioLines.get(road.type).add(line);
+                prioLines.get(road.type).add(road.asLine(x1, y1, target, ppu, heightFac, instructions));
             } else {
-                lineArr[i++] = line;
+                lineArr[i++] = road.asLine(x1, y1, target, ppu, heightFac, instructions);
             }
         }
         double lineDelta = (System.nanoTime()-lineT1)/1e9;

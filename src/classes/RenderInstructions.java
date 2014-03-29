@@ -79,14 +79,14 @@ public class RenderInstructions {
      * Returns the types of roads rendered with these instructions
      * @return the types of roads rendered with these instructions
      */
-    public HashSet<RoadType> getRenderedTypes() {
-        HashSet<RoadType> types = new HashSet<>();
+    public RoadType[] getRenderedTypes() {
+        FastArList<RoadType> types = new FastArList<>();
         for (RoadType type : colorMap.keySet()) {
             if (colorMap.get(type) != voidColor) {
                 types.add(type);
             }
         }
-        return types;
+        return types.toArray(new RoadType[types.size()]);
     }
     
     /**

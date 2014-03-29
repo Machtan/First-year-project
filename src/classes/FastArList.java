@@ -1,6 +1,7 @@
 package classes;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 
 /**
  * The FastArList class is a simpler and thus hopefully faster array-based list
@@ -47,9 +48,7 @@ public class FastArList<T> {
         } else { // Make it smaller
             iterations = newSize;
         }
-        for (int i = 0; i < iterations; i++) {
-            newArr[i] = arr[i];
-        }
+        System.arraycopy(arr, 0, newArr, 0, N);
         return newArr;
     }
     
@@ -84,9 +83,8 @@ public class FastArList<T> {
         if (size != arr.length) {
             resize(size);
         }
-        for (int i = 0; i < items.length; i++) {
-            arr[N++] = items[i];
-        }
+        System.arraycopy(items, 0, arr, N, items.length);
+        N += items.length;
     }
     
     /**
@@ -102,13 +100,12 @@ public class FastArList<T> {
      * @return a copy of the list as an array
      */
     public <E> E[] toArray(E[] inArr) {
+        E[] result = inArr;
         if (inArr.length < N) {
-            inArr = (E[]) Array.newInstance(inArr.getClass(), N);
+            return (E[]) Arrays.copyOf(arr, N, inArr.getClass()); // Gotten from java.util.ArrayList
         }
-        for (int i = 0; i < N; i++) {
-            inArr[i] = (E)arr[i];
-        }
-        return inArr;
+        System.arraycopy(arr, 0, result, 0, N);
+        return result;
     }
     
     public static void main(String[] args) {
@@ -116,12 +113,16 @@ public class FastArList<T> {
         list.add(1);
         list.add(2);
         list.add(3);
-        Integer[] ins = list.toArray(new Integer[3]);
+        list.addAll(new Integer[]{4, 5, 6});
+        Integer[] ins = list.toArray(new Integer[5]);
+        System.out.println("ints: "+ins);
+        for (Integer i : ins) {
+            System.out.println("- "+i);
+        }
         /*int[] ints = new int[list.size()];
         Object[] arr = list.toArray();
         for (int i = 0; i< list.size(); i++) {
             ints[i] = (int)arr[i];
         }*/
-        System.out.println("ints: "+ins);
     }
 }

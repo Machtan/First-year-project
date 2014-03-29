@@ -66,10 +66,6 @@ public class Quad {
         if (bottom) {
             if (area.contains(this.area)) {
                 list.addAll(nodes);
-                /*list.ensureCapacity(list.size()+nodes.length);
-                for (RoadPart node : nodes) {
-                    list.add(node); 
-                }*/
             } else {
                 for (RoadPart node : nodes) {
                     if (node.getRect().collidesWith(area)) {
@@ -92,18 +88,24 @@ public class Quad {
      * @param list The list to add nodes to
      * @param types The types of nodes to add
      */
-    protected void getSelectedIn(Rect area, FastArList<RoadPart> list, HashSet<RoadType> types) {
+    protected void getSelectedIn(Rect area, FastArList<RoadPart> list, RoadType... types) {
         if (bottom) {
             if (area.contains(this.area)) { // If all nodes are contained
                 for (RoadPart node : nodes) {
-                    if (types.contains(node.type)) { // Add them if the type is ok
-                        list.add(node);
+                    for (RoadType type : types) {
+                        if (node.type == type) {
+                            list.add(node);
+                        }
                     }
                 }
             } else {
                 for (RoadPart node : nodes) { // Check both for containment and type
-                    if (node.getRect().collidesWith(area) && types.contains(node.type)) {
-                        list.add(node);
+                    if (node.getRect().collidesWith(area)) {
+                        for (RoadType type : types) {
+                            if (node.type == type) {
+                                list.add(node);
+                            }
+                        }
                     }
                 }
             }
@@ -172,5 +174,10 @@ public class Quad {
             }
             nodeList = null;
         }
+    }
+    
+    @Override
+    public String toString() {
+        return "Quad( Depth: "+depth+" subCount: "+subCount+" Bottom: "+bottom+" @ "+area+")";
     }
 }

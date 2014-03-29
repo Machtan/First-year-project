@@ -13,6 +13,10 @@ public class ProgressBar implements IProgressBar {
     private final JFrame frame;
     private final JProgressBar progressBar;
     private final JLabel statusLabel;
+    private final static double updateAmount = 0.004; 
+    private int target;
+    private int counter; // Current counter
+    private int minAdd; // How much the counter needs to be before updating
 
     public ProgressBar() {
         frame = new JFrame();
@@ -53,6 +57,9 @@ public class ProgressBar implements IProgressBar {
      * @param target The target amount
      */
     public void setTarget(String text, int target) {
+        minAdd = (int)Math.ceil(target*updateAmount);
+        counter = 0;
+        this.target = target;
         progressBar.setMaximum(target);
         progressBar.setValue(0);
         statusLabel.setText(text);
@@ -63,8 +70,12 @@ public class ProgressBar implements IProgressBar {
      * @param addition The amount to increase by
      */
     public void update(int addition) {
+        counter += addition;
         if (!done() || addition==0) {
-            progressBar.setValue(progressBar.getValue() + addition);
+            if (counter == minAdd || (counter+progressBar.getValue() == target)) {
+                progressBar.setValue(progressBar.getValue() + counter);
+                counter = 0;
+            }
         } else {
             throw new RuntimeException("Update ("+addition+") attempted while already finished!");
         }
