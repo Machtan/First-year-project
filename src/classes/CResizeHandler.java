@@ -162,6 +162,8 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
 
     @Override
     public void windowStateChanged(WindowEvent e) {
-        System.out.println("Window state changed: "+e);
+        if (e.getNewState() == 6) { // Maximize window on windows
+            componentResized(new ComponentEvent(controller.getView(), WindowEvent.COMPONENT_RESIZED));
+        }
     }
 }
