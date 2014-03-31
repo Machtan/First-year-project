@@ -20,7 +20,7 @@ public class CKeyHandler implements KeyListener, ActionListener {
     private int vy = 0;
     private final HashMap<Integer, Boolean> keyDown;
     private final Timer timer;
-    private OptimizedView view;
+    private final OptimizedView view;
     
     // Tweakable configuration values
     private final static double scrollPerFrame = 12;
@@ -29,6 +29,7 @@ public class CKeyHandler implements KeyListener, ActionListener {
     public CKeyHandler(Controller controller, OptimizedView view) {
         this.controller = controller;
         controller.addKeyListener(this);
+        this.view = view;
         
         // Prepare the key and update listening
         keyDown = new HashMap<>();
@@ -175,12 +176,8 @@ public class CKeyHandler implements KeyListener, ActionListener {
            Line[] lines1 = controller.getLines(verArea, verTarget);
            Line[] lines2 = controller.getLines(horArea, horTarget);
            lines = new Line[lines1.length+lines2.length];
-           for (int i = 0; i<lines1.length; i++) {
-               lines[i] = lines1[i];
-           }
-           for (int i = 0; i < lines2.length; i++) {
-               lines[lines1.length+i] = lines2[i];
-           }
+           System.arraycopy(lines1, 0, lines, 0, lines1.length);
+           System.arraycopy(lines2, 0, lines, lines1.length, lines2.length);
        } else if (verArea != null) {
            lines = controller.getLines(verArea, verTarget);
        } else if (horArea != null) {
