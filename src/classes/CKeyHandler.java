@@ -5,8 +5,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import static java.lang.Math.abs;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import javax.swing.Timer;
 
@@ -22,12 +20,13 @@ public class CKeyHandler implements KeyListener, ActionListener {
     private int vy = 0;
     private final HashMap<Integer, Boolean> keyDown;
     private final Timer timer;
+    private OptimizedView view;
     
     // Tweakable configuration values
     private final static double scrollPerFrame = 12;
     private final static double fps = 15;
     
-    public CKeyHandler(Controller controller) {
+    public CKeyHandler(Controller controller, OptimizedView view) {
         this.controller = controller;
         controller.addKeyListener(this);
         
@@ -117,8 +116,6 @@ public class CKeyHandler implements KeyListener, ActionListener {
 
     private void shiftImage() {
        Rect activeRect = controller.getActiveRect();
-       Model model = controller.getModel();
-       OptimizedView view = controller.getView();
        
        // Pixels per unit
        double ppu = view.getHeight()/activeRect.height;

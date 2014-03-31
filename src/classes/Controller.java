@@ -63,14 +63,14 @@ public class Controller extends JFrame {
         // Key handling
         setFocusTraversalKeysEnabled(false);
         setFocusable(true);
-        keyHandler = new CKeyHandler(this);
-        mouseHandler = new CMouseHandler(this);
+        keyHandler = new CKeyHandler(this, view);
+        mouseHandler = new CMouseHandler(this, view);
         resizeHandler = new CResizeHandler(this, view);
         
         contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(resizeHandler, this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
-        contentPanel.add(new FindRoadPanel(this), BorderLayout.SOUTH);
+        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
         
         setTitle("First-year Project - Visualization of Denmark");
         
@@ -97,6 +97,14 @@ public class Controller extends JFrame {
     }
     
     /**
+     * Sets the marker rect of the view to the given rect
+     * @param markerRect The rect to mark
+     */
+    public void setMarkerRect(Rect markerRect) {
+        view.setMarkerRect(markerRect);
+    }
+    
+    /**
      * Refreshes the view
      */
     public void refresh() {
@@ -111,20 +119,16 @@ public class Controller extends JFrame {
         activeRect = rect;
     }
     
-    /**
-     * Returns the controller's active model
-     * @return the controller's active model
-     */
-    public Model getModel() {
-        return model;
+    public RoadPart[] getRoads(Rect area){
+        return model.getRoads(area, ins);
     }
     
     /**
-     * Returns the controller's view instance
-     * @return the controller's view instance
+     * Returns the size of the controller's view
+     * @return the size of the controller's view
      */
-    public OptimizedView getView() {
-        return view;
+    public Dimension getViewSize() {
+        return view.getSize();
     }
     
     public void resizeActiveArea(Dimension dim) {

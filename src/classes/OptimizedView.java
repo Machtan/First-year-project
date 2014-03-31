@@ -106,7 +106,7 @@ public class OptimizedView extends JPanel  {
      * Resizes the map somewhat naïvely
      * @param newSize 
      */
-    public void resizeMap(Dimension newSize) {
+    public void scaleMap(Dimension newSize) {
         if (scaleSource != null) {
             // Calculate the dimensions of the new image
             double ratio = newSize.height / (double)scaleSource.getHeight();

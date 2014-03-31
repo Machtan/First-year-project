@@ -68,11 +68,7 @@ public class RenderPanel extends JPanel {
          */
         private void refresh() {
             System.out.println("Changing the color from the Render panel");
-            RenderInstructions overwriteIns = ins.getExclusive();
-            Rect target = new Rect(0,0,controller.getView().getWidth(), controller.getView().getHeight());
-            Line[] lines = controller.getModel().getLines(controller.getActiveRect(), 
-                    target, overwriteIns, defined);
-            controller.getView().renewImage(lines);
+            controller.redraw();
         }
         
         private void onChecked(Object source) {

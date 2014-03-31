@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import javax.swing.JPanel;
 
 /**
  * The CMouseHandler class handles mouse-based input of the controller, which
@@ -18,11 +19,11 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
     private Point endPos;
     private Rect markRect;
     private final Controller controller;
-    private final OptimizedView view;
+    private final JPanel view;
     
-    public CMouseHandler(Controller controller) {
+    public CMouseHandler(Controller controller, JPanel target) {
         this.controller = controller;
-        view = controller.getView();
+        view = target;
         view.addMouseListener(this);
         view.addMouseMotionListener(this);
     }
@@ -66,7 +67,7 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
         }
 
         markRect = new Rect(x, y, width, height);
-        view.setMarkerRect(markRect);
+        controller.setMarkerRect(markRect);
         view.repaint();
     }
 
@@ -98,7 +99,7 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
 
         Rect newArea = new Rect(x, y, width, height);
 
-        view.setMarkerRect(null);
+        controller.setMarkerRect(null);
         controller.setActiveRect(newArea);
         controller.redraw();
     }

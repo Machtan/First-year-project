@@ -30,16 +30,16 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
     private JLabel roadLabel;
     private final String description = "Nearest road: ";
     
-    FindRoadPanel(Controller controller) {
+    FindRoadPanel(Controller controller, JPanel target) {
         super(new BorderLayout());
         Border padding = BorderFactory.createEmptyBorder(5,5,5,5);
         Border bevel = BorderFactory.createBevelBorder(BevelBorder.LOWERED);
         setBorder(BorderFactory.createCompoundBorder(bevel, padding));
         roadLabel = new JLabel(description + "Undefined");
         add(roadLabel, BorderLayout.WEST);
-        this.controller = controller;
-        view = controller.getView();
-        view.addMouseMotionListener(this);
+        this.controller = controller;;
+        target.addMouseMotionListener(this);
+        view = target;
     }
     
     /**
@@ -96,8 +96,7 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         Rect cursorRect = new Rect(modelX-width/2, modelY-height/2, width, height);
         
         // Get a HashSet containing RoadParts within the cursorRect.
-        Model model = controller.getModel();
-        RoadPart[] roads = model.getRoads(cursorRect);
+        RoadPart[] roads = controller.getRoads(cursorRect);
   
         // If no RoadParts are found within the area, double size of cursorRect until 
         // at least one has been found.
@@ -109,7 +108,7 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
             double rectHeight = cursorRect.height*2;
             
             cursorRect = new Rect(rectX, rectY, rectWidth, rectHeight);
-            roads = model.getRoads(cursorRect);
+            roads = controller.getRoads(cursorRect);
         }
         
         // Calculate distance from mouse coordinates to all the RoadParts found.

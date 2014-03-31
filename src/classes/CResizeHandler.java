@@ -30,12 +30,14 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
     private final static int margin = 40; // The amount of pixels to load to the right when resizing
     public final static double zoomFactor = 0.7;
     private Rect lastRect;
+    private OptimizedView view;
     
     
-    public CResizeHandler(Controller controller, JPanel target) {
+    public CResizeHandler(Controller controller, OptimizedView view) {
         // Prepare resize handling :)
         this.controller = controller;
-        target.addComponentListener(this);
+        this.view = view;
+        view.addComponentListener(this);
         controller.addWindowStateListener(this);
         lastRect = controller.getActiveRect();
         resizeTimer = new Timer(resizeDelay, this);
@@ -46,7 +48,7 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
         double lh = activeRect.height * 1.2;
         double ly = activeRect.y - 0.1 * activeRect.height;
         limitRect = new Rect(lx, ly, lw, lh);
-        prevSize = controller.getView().getSize(); // prepare for scaling
+        prevSize = view.getSize(); // prepare for scaling
     }
     
     /**
@@ -101,7 +103,6 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
     
     @Override
     public void componentResized(ComponentEvent e) {
-        OptimizedView view = controller.getView();
         Rect activeRect = controller.getActiveRect();
         
         if (prevSize == null) { return; } // You're too fast ;)
@@ -111,12 +112,12 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
         if (newSize.height == 0 || newSize.width == 0) { return; } // This cannot be resized ;)
         if (newSize.height != prevSize.height) {
             if (!resizeTimer.isRunning()) { // Start the 'draw it prettily' timer
-                startResizeSize = view.getSize();
+                startResizeSize = newSize;
                 resizeTimer.start();
             } else {
                 resizeTimer.restart(); // Interrupt the timer
             }
-            view.resizeMap(newSize);
+            view.scaleMap(newSize);
             prevSize = newSize;
         // Widen the window
         } else if (newSize.width > Math.min(view.getSourceWidth()-margin, screenSize.width)) { // The windows is wider now
@@ -148,7 +149,7 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
     @Override
     public void actionPerformed(ActionEvent e) { // Once the user has finished redrawing
         // Only redraw if it is needed, plx
-        if (controller.getView().getHeight() != startResizeSize.height) {
+        if (controller.getViewSize().height != startResizeSize.height) {
             System.out.println("Redrawing after resizing...");
             controller.redraw();
         }
@@ -164,10 +165,10 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
     @Override
     public void windowStateChanged(WindowEvent e) {
         if (e.getNewState() == 6 || e.getNewState() == 0) { // Maximize window on windows
-            String msg = "Window "+ ((e.getNewState() == 6)? "maximized": "restored");
+            String msg = "Window "+ ((e.getNewState() == 6)? "maximized!": "restored!");
             System.out.println(msg);
             controller.redraw();
-            prevSize = controller.getView().getSize();
+            prevSize = controller.getViewSize();
         } 
     }
 }
