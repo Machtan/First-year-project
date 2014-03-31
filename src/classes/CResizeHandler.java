@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -14,7 +16,7 @@ import javax.swing.Timer;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 24-Mar-2014
  */
-public class CResizeHandler implements ComponentListener, ActionListener {
+public class CResizeHandler implements ComponentListener, ActionListener, WindowStateListener {
     private final Timer resizeTimer;
     private final Rect limitRect;
     private Dimension prevSize;
@@ -34,6 +36,7 @@ public class CResizeHandler implements ComponentListener, ActionListener {
         // Prepare resize handling :)
         this.controller = controller;
         target.addComponentListener(this);
+        controller.addWindowStateListener(this);
         lastRect = controller.getActiveRect();
         resizeTimer = new Timer(resizeDelay, this);
         resizeTimer.setRepeats(false);
@@ -156,4 +159,9 @@ public class CResizeHandler implements ComponentListener, ActionListener {
     public void componentShown(ComponentEvent e) {}
     @Override
     public void componentHidden(ComponentEvent e) {}
+
+    @Override
+    public void windowStateChanged(WindowEvent e) {
+        System.out.println("Window state changed: "+e);
+    }
 }
