@@ -1,7 +1,9 @@
 package krak;
 
 import classes.Utils;
+import classes.Utils.LoadFileException;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,7 +36,7 @@ public class KrakLoader {
         System.out.println("Loading edge data...");
         ArrayList<EdgeData> edges = new ArrayList<>();
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(edgeFilePath)), 
+            BufferedReader br = new BufferedReader(new InputStreamReader(Utils.getFileStream(edgeFilePath), 
                     Charset.forName(encoding)));
             br.readLine(); // Again, first line is column names, not data.
             String line;
@@ -44,6 +46,9 @@ public class KrakLoader {
             br.close();
         } catch (IOException ex) {
             throw new RuntimeException("Could not load edge data from '"+edgeFilePath+"'");
+        } catch (LoadFileException ex) {
+            System.out.println("Could not load edges due to "+ex);
+            return new EdgeData[0];
         }
 
         DataLine.resetInterner();
@@ -62,7 +67,7 @@ public class KrakLoader {
         System.out.println("Loading node data...");
         ArrayList<NodeData> nodes = new ArrayList<>();
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(nodeFilePath)), 
+            BufferedReader br = new BufferedReader(new InputStreamReader(Utils.getFileStream(nodeFilePath), 
                     Charset.forName(encoding)));
             br.readLine(); // First line is column names, not data.
 
@@ -73,12 +78,15 @@ public class KrakLoader {
             br.close();
         } catch (IOException ex) {
             throw new RuntimeException("Could not load node data from '"+nodeFilePath+"'");
+        } catch (LoadFileException ex) {
+            System.out.println("Could not load nodes due to "+ex);
+            return new NodeData[0];
         }
         DataLine.resetInterner();
         System.gc();
         System.out.println("Node data loaded!");
         return nodes.toArray(new NodeData[0]);
-    }
+    } 
 
     /**
      * Example usage. You may need to adjust the java heap-size, i.e., -Xmx256M

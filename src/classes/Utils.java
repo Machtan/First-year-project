@@ -4,6 +4,9 @@ import static classes.Loader.encoding;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -50,24 +53,28 @@ public class Utils {
     }
     
     /**
-     * Uses the class path to load a file. Kinda necessary in NetBeans.
-     * @param path The path to the file to load eg. resources/image.png if a 
-     * file called 'image.png' is in the source folder called 'resources'.
-     * This function throws a RuntimeException if the file cannot be read.
-     * @return A file object to the file on the path
+     * An exception for when the files cannot be loaded
      */
-    public static File getFile(String path) throws RuntimeException {
-        try {
-            ClassLoader cl = Utils.class.getClassLoader();
-            URL url = cl.getResource(path);
-            if (url != null) {
-                return new File(url.toURI());
-            } else {
-                throw new Exception("See below"); 
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException("Bad file path: " + path);
+    public static class LoadFileException extends Exception {
+        public final String path;
+        public LoadFileException(String msg, String path) {
+            super(msg);
+            this.path = path;
         }
+    }
+    
+    /**
+     * Returns a file stream for the given relative path (in the project source)
+     * @param path The path to the eg. 'resources/roads.txt'
+     * @return A file stream of the file.
+     * @throws classes.Utils.LoadFileException
+     */
+    public static InputStream getFileStream(String path) throws LoadFileException {
+        InputStream in = Utils.class.getClassLoader().getResourceAsStream(path);
+        if (in == null) {
+            throw new LoadFileException("Unknown file path: '"+path+"'", path);
+        }
+        return in;
     }
     
     /**

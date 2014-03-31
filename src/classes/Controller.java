@@ -175,18 +175,31 @@ public class Controller extends JFrame {
                 view.getWidth(), view.getHeight()), ins, prioritized));
         System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
     }
-     
+    
     /**
      * Entry point
      * @param args 
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         ProgressBar progbar = new ProgressBar(); // Create the progress bar
         OptimizedView view = new OptimizedView(new Dimension(600,400));
         
         // Load everything with the optional progressbar on :U
-        Model model = new Model(Loader.loadIntersections("resources/intersections.txt", progbar),
-            Loader.loadRoads("resources/roads.txt", progbar), progbar);
+        Intersection[] intersections = Loader.loadIntersections("resources/intersections.txt", progbar);
+        if (intersections.length == 0) {
+            Thread.sleep(4000); // Show the message for 4 seconds
+            progbar.close();
+            return;
+        }    
+        
+        RoadPart[] roads = Loader.loadRoads("resources/roads.txt", progbar);
+        if (roads.length == 0) {
+            Thread.sleep(4000); // Show the message for 4 seconds
+            progbar.close();
+            return;
+        }
+                
+        Model model = new Model(intersections, roads, progbar);
         
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(600,500));

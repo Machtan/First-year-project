@@ -6,8 +6,10 @@ package classes;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 25-Feb-2014
  */
+import classes.Utils.LoadFileException;
 import interfaces.IProgressBar;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -73,7 +75,8 @@ public class Loader {
 
         BufferedReader br;
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(roadFilePath)),
+            
+            br = new BufferedReader(new InputStreamReader(Utils.getFileStream(roadFilePath),
                     Charset.forName(encoding)));
 
             String line;
@@ -92,6 +95,12 @@ public class Loader {
             br.close();
         } catch (IOException ex) {
             throw new RuntimeException("Could not load road data from '" + roadFilePath + "'");
+        } catch (LoadFileException ex) {
+            System.out.println("Could not load the file. Error: "+ex);
+            if (progbar != null) {
+                progbar.setTarget("Road loading Error!", 0);
+            }
+            return new RoadPart[0];
         }
         System.gc();
         System.out.println("Road data loaded!");
@@ -120,7 +129,8 @@ public class Loader {
 
         BufferedReader br;
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(Utils.getFile(intersectionFilePath)),
+            //File file = Utils.getFile(intersectionFilePath);
+            br = new BufferedReader(new InputStreamReader(Utils.getFileStream(intersectionFilePath),
                     Charset.forName(encoding)));
 
             String line;
@@ -138,6 +148,12 @@ public class Loader {
             br.close();
         } catch (IOException ex) {
             throw new RuntimeException("Could not load intersection data from '" + intersectionFilePath + "'");
+        } catch (LoadFileException ex) {
+            System.out.println("Could not load the file. Error: "+ex);
+            if (progbar != null) {
+                progbar.setTarget("Intersection loading Error!", 0);
+            }
+            return new Intersection[0];
         }
         System.gc();
         System.out.println("Intersection data loaded!");
