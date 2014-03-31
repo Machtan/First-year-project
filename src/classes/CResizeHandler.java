@@ -26,7 +26,7 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
 
     
     // Tweakable values
-    private final static int resizeDelay = 500; // milliseconds
+    private final static int resizeDelay = 300; // milliseconds
     private final static int margin = 40; // The amount of pixels to load to the right when resizing
     public final static double zoomFactor = 0.7;
     private Rect lastRect;
@@ -98,7 +98,7 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
             System.out.println("No size change, ignoring...");
         }
     }
-
+    
     @Override
     public void componentResized(ComponentEvent e) {
         OptimizedView view = controller.getView();
@@ -106,9 +106,16 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
         
         if (prevSize == null) { return; } // You're too fast ;)
         if (!view.initialized()) { return; } // You're still too fast ;)
+        
         Dimension newSize = view.getSize();
         if (newSize.height == 0 || newSize.width == 0) { return; } // This cannot be resized ;)
         if (newSize.height != prevSize.height) {
+            if (!resizeTimer.isRunning()) { // Start the 'draw it prettily' timer
+                startResizeSize = view.getSize();
+                resizeTimer.start();
+            } else {
+                resizeTimer.restart(); // Interrupt the timer
+            }
             view.resizeMap(newSize);
             prevSize = newSize;
         // Widen the window
@@ -136,12 +143,6 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
                     new Dimension(newRightLimit, view.getHeight()));
             lastRect = source;
         }
-        if (!resizeTimer.isRunning()) {
-            startResizeSize = view.getSize();
-            resizeTimer.start();
-        } else {
-            resizeTimer.restart();
-        }
     }
 
     @Override
@@ -162,8 +163,11 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
 
     @Override
     public void windowStateChanged(WindowEvent e) {
-        if (e.getNewState() == 6) { // Maximize window on windows
-            componentResized(new ComponentEvent(controller.getView(), WindowEvent.COMPONENT_RESIZED));
-        }
+        if (e.getNewState() == 6 || e.getNewState() == 0) { // Maximize window on windows
+            String msg = "Window "+ ((e.getNewState() == 6)? "maximized": "restored");
+            System.out.println(msg);
+            controller.redraw();
+            prevSize = controller.getView().getSize();
+        } 
     }
 }
