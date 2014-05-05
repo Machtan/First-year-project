@@ -5,9 +5,6 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -105,6 +102,7 @@ public class Utils {
         public static String getString() { return line.getString(); }
         public static int getInt() { return line.getInt(); }
         public static double getDouble() { return line.getDouble(); }
+        public static long getLong() { return line.getLong(); }
     }
     
      /**

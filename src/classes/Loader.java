@@ -7,10 +7,9 @@ package classes;
  * @version 25-Feb-2014
  */
 import classes.Utils.LoadFileException;
+import interfaces.ILoader;
 import interfaces.IProgressBar;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
@@ -32,7 +31,7 @@ import krak.NodeData;
  this.end = end;
  }
  }*/
-public class Loader {
+public class Loader implements ILoader {
 
     protected static final String encoding = "iso8859-1";
 
@@ -62,13 +61,7 @@ public class Loader {
      * @param bar An optional progress bar
      * @return An array of RoadPart elements
      */
-    public static RoadPart[] loadRoads(String roadFilePath, IProgressBar... bar) {
-        IProgressBar progbar = null; // Optional progress bar
-        if (bar.length != 0) { 
-            progbar = bar[0]; 
-            progbar.setTarget("Loading road data...", 812301);
-        }
-        
+    public static RoadPart[] loadRoads(String roadFilePath, IProgressBar bar) {
         System.out.println("Loading road data...");
         long t1 = System.nanoTime();
         ArrayList<RoadPart> list = new ArrayList<>();
@@ -81,10 +74,10 @@ public class Loader {
 
             String line;
             // Do the long loading without if-statements inside ;)
-            if (progbar != null) {
+            if (bar != null) {
                 while ((line = br.readLine()) != null) {
                     list.add(new RoadPart(line));
-                    progbar.update(1);
+                    bar.update(1);
                 }
             } else {
                 while ((line = br.readLine()) != null) {
@@ -97,8 +90,8 @@ public class Loader {
             throw new RuntimeException("Could not load road data from '" + roadFilePath + "'");
         } catch (LoadFileException ex) {
             System.out.println("Could not load the file. Error: "+ex);
-            if (progbar != null) {
-                progbar.setTarget("Road loading Error!", 0);
+            if (bar != null) {
+                bar.setTarget("Road loading Error!", 0);
             }
             return new RoadPart[0];
         }
@@ -108,6 +101,10 @@ public class Loader {
         System.out.printf("Loaded the roads in %.3f seconds\n", elapsed);
         return list.toArray(new RoadPart[list.size()]);
     }
+    
+    public static RoadPart[] loadRoads(String roadFilePath) {
+        return loadRoads(roadFilePath, null);
+    }
 
     /**
      * Loads a list of intersections in the new format from a file
@@ -116,13 +113,7 @@ public class Loader {
      * @param bar An optional progress bar
      * @return An array of intersections
      */
-    public static Intersection[] loadIntersections(String intersectionFilePath, IProgressBar... bar) {
-        IProgressBar progbar = null; // Optional progress bar
-        if (bar.length != 0) { 
-            progbar = bar[0]; 
-            progbar.setTarget("Loading intersection data...", 675902);
-        }
-        
+    public static Intersection[] loadIntersections(String intersectionFilePath, IProgressBar bar) {        
         System.out.println("Loading intersection data...");
         long t1 = System.nanoTime();
         ArrayList<Intersection> list = new ArrayList<>();
@@ -134,10 +125,10 @@ public class Loader {
                     Charset.forName(encoding)));
 
             String line;
-            if (progbar != null) { // Conditional stuff here as well
+            if (bar != null) { // Conditional stuff here as well
                 while ((line = br.readLine()) != null) {
                     list.add(new Intersection(line));
-                    progbar.update(1);
+                    bar.update(1);
                 }
             } else {
                 while ((line = br.readLine()) != null) {
@@ -150,8 +141,8 @@ public class Loader {
             throw new RuntimeException("Could not load intersection data from '" + intersectionFilePath + "'");
         } catch (LoadFileException ex) {
             System.out.println("Could not load the file. Error: "+ex);
-            if (progbar != null) {
-                progbar.setTarget("Intersection loading Error!", 0);
+            if (bar != null) {
+                bar.setTarget("Intersection loading Error!", 0);
             }
             return new Intersection[0];
         }
@@ -160,6 +151,10 @@ public class Loader {
         double elapsed = (System.nanoTime() - t1) / (1000000000.0);
         System.out.printf("Loaded the intersections in %.3f seconds\n", elapsed);
         return list.toArray(new Intersection[list.size()]);
+    }
+    
+    public static Intersection[] loadIntersections(String intersectionFilePath) {
+        return loadIntersections(intersectionFilePath, null);
     }
 
     public static Intersection[] loadKrakIntersections(String nodeFilePath) {
@@ -235,5 +230,43 @@ public class Loader {
         MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
         System.out.printf("Heap memory usage: %d MB%n",
                 mxbean.getHeapMemoryUsage().getUsed() / (1000000));
+    }
+
+    /**
+     * Loads data from the given files
+     * @param bar A progress bar (can be null)
+     * @param files The files to read from (intersectionfile, roadfile)
+     * @return 
+     */
+    @Override
+    public Model loadData(IProgressBar bar, Datafile... files) {
+        if (files.length < 2) {
+            throw new RuntimeException("Too few files passed to the Loader! (needs 2)");
+        }
+        Datafile insFile = files[0];
+        Datafile roadFile = files[1];
+        Intersection[] ins;
+        RoadPart[] roads;
+        Model model;
+        if (bar != null) {
+            System.out.println("Loading krak data with a progress bar :u!");
+            bar.setTarget(insFile.progressDescription, insFile.lines);
+            ins = loadIntersections(insFile.filename, bar);
+            bar.setTarget(roadFile.progressDescription, roadFile.lines);
+            roads = loadRoads(roadFile.filename, bar);
+            model = new Model(ins, roads, bar);
+            
+        } else {
+            System.out.println("Nope, no progress bar here");
+            ins = loadIntersections(insFile.filename);
+            roads = loadRoads(roadFile.filename);
+            model = new Model(ins, roads);
+        }
+        return model;
+    }
+
+    @Override
+    public Model loadData(Datafile... files) {
+        return loadData(null, files);
     }
 }

@@ -7,6 +7,6 @@ package interfaces;
  */
 public interface IProgressBar {
     public void update(int addition);
-    public void setTarget(String text, int target);
+    public void setTarget(String text, long target);
     public void close();
 }

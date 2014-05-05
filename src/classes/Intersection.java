@@ -10,7 +10,7 @@ import krak.NodeData;
  */
 public class Intersection implements CharSequence {
     
-    public final int id;
+    public final long id;
     public final double x;
     public final double y;
          
@@ -26,7 +26,7 @@ public class Intersection implements CharSequence {
     
     public Intersection (String line) {
         Tokenizer.setLine(line);
-        id = Tokenizer.getInt();
+        id = Tokenizer.getLong();
         x = Tokenizer.getDouble();
         y = Tokenizer.getDouble();
     }
