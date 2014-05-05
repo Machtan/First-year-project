@@ -68,6 +68,24 @@ public class Rect {
     }
     
     /**
+     * Returns the rect scaled by a given positive factor
+     * @param factor The factor to scale by
+     * @return A new rect scaled by the factor.
+     */
+    public Rect getScaled(double factor) {
+        if (factor < 0) {
+            throw new RuntimeException("The scale factor may not be negative! ("+factor+")");
+        }
+        double rw = width * factor;
+        double rh = height * factor;
+        double hdw = (width - rw) / 2; // half delta width
+        double hdh = (height - rh) / 2; // ~ height
+        double rx = x + hdw;
+        double ry = y + hdh;
+        return new Rect(rx, ry, rw, rh);
+    }
+    
+    /**
      * Returns the rect moved to the new position
      * @param x
      * @param y

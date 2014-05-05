@@ -8,26 +8,26 @@ import javax.swing.*;
  *
  * @author Isabella
  */
-public class ProgressBar implements IProgressBar {
+public class ProgressBar extends JFrame implements IProgressBar {
 
-    private final JFrame frame;
     private final JProgressBar progressBar;
     private final JLabel statusLabel;
-    private final static double updateAmount = 0.004; 
-    private int target;
+    private final static double updateAmount = 0.01; 
+    private long target;
     private int counter; // Current counter
     private int minAdd; // How much the counter needs to be before updating
 
     public ProgressBar() {
-        frame = new JFrame();
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setUndecorated(true);
+        super();
+        System.out.println("Creating progress bar");
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setUndecorated(true);
         statusLabel = new JLabel("No target set :)");
         progressBar = new JProgressBar(0, 0);
         progressBar.setValue(0);
         progressBar.setStringPainted(true);
-        frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         
         JPanel panel = new JPanel(new BorderLayout(5,5));
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -40,10 +40,13 @@ public class ProgressBar implements IProgressBar {
         panel.add(labelPanel, BorderLayout.NORTH);
         panel.add(barPanel, BorderLayout.SOUTH);
         
-        frame.setPreferredSize(new Dimension(200, panel.getPreferredSize().height));
-        frame.add(panel);
-        frame.pack();
-        frame.setVisible(true);
+        add(panel);
+        //setPreferredSize(new Dimension(200, panel.getPreferredSize().height));
+        
+        pack();
+        setVisible(true);
+        paintComponents(getGraphics());
+        System.out.println("Progress bar created!");
     }
     
     //Check whether or not the loading is complete
@@ -56,13 +59,16 @@ public class ProgressBar implements IProgressBar {
      * @param text The text to display for the target
      * @param target The target amount
      */
-    public void setTarget(String text, int target) {
+    public void setTarget(String text, long target) {
+        System.out.println("Progress: '"+text+"' ("+target+")");
         minAdd = (int)Math.ceil(target*updateAmount);
         counter = 0;
         this.target = target;
-        progressBar.setMaximum(target);
+        progressBar.setMaximum((int) target);
         progressBar.setValue(0);
         statusLabel.setText(text);
+        //repaint();
+        progressBar.update(progressBar.getGraphics());
     }
 
     /**
@@ -75,6 +81,8 @@ public class ProgressBar implements IProgressBar {
             if (counter == minAdd || (counter+progressBar.getValue() == target)) {
                 progressBar.setValue(progressBar.getValue() + counter);
                 counter = 0;
+                //update(getGraphics()); // Too inconsistent :( (too 'slow' to show everything)
+                System.out.println("Updating progress, "+progressBar.getValue()+" / "+target);
             }
         } else {
             throw new RuntimeException("Update ("+addition+") attempted while already finished!");
@@ -83,6 +91,6 @@ public class ProgressBar implements IProgressBar {
 
     //Closes the frame if done
     public void close() {
-        frame.dispose();
+        dispose();
     }
 }
