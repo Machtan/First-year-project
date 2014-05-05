@@ -93,10 +93,19 @@ public class DataLine {
 		try {
 			return Integer.parseInt(s);
 		} catch (NumberFormatException e) {
-			if (s.charAt(0) == '*') return -1;
 			throw new IllegalArgumentException(s + " is not a integer!");
 		}
 	}
+        
+        public long getLong() {
+            String s = nextToken();
+            try {
+                return Long.parseLong(s);
+            } catch (NumberFormatException e) {
+                if (s.charAt(0) == '*') return -1;
+                throw new IllegalArgumentException(s + " is not a long!");
+            }
+        }
 
 	/**
 	 * Attempts to parse the next token as a double

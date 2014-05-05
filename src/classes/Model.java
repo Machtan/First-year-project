@@ -18,7 +18,7 @@ import java.util.HashMap;
  */
 public class Model {
     private Model model;
-    private HashMap<Integer, Intersection> inMap;
+    private HashMap<Long, Intersection> inMap;
     //private RoadPart[] roadPartArr;
     private Rect boundingArea; // The area the model encloses
     private final QuadTree tree;
@@ -89,7 +89,9 @@ public class Model {
         System.out.println("Populating the Quad Tree...");
         long t1 = System.nanoTime();
         if (progbar != null) {
+            int c = 0;
             for (RoadPart part : roads) {
+                System.out.println("Loading road "+(c++));
                 part.setPoints(inMap.get(part.sourceID), inMap.get(part.targetID));
                 tree.add(part);
                 progbar.update(1);

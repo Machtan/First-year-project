@@ -14,8 +14,8 @@ import krak.EdgeData;
  * @version 25-Feb-2014
  */
 public class RoadPart implements CharSequence, QuadNode {
-    public final int sourceID; // The ID of one of the road's ending intersections
-    public final int targetID; // The ID of one of the road's ending intersections
+    public final long sourceID; // The ID of one of the road's ending intersections
+    public final long targetID; // The ID of one of the road's ending intersections
     public final RoadType type; // The road type
     public final String name; // The name of the road
 
@@ -151,8 +151,8 @@ public class RoadPart implements CharSequence, QuadNode {
     public RoadPart(String line) {
         // TOKENIZE DATA SHIT
         Tokenizer.setLine(line);
-        sourceID = Tokenizer.getInt();
-        targetID = Tokenizer.getInt();
+        sourceID = Tokenizer.getLong();
+        targetID = Tokenizer.getLong();
         type = RoadType.fromValue(Tokenizer.getInt());
         
         // Special case handling :u

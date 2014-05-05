@@ -81,7 +81,8 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
     @Override
     public void mouseMoved(MouseEvent e) {
         // Mouse cursor on screen.
-        Point cPos = e.getLocationOnScreen();   
+        Point cPos = e.getLocationOnScreen();  
+        if (!view.isShowing()) { return; }
         cPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);      
         
         // Retrieve active rect area
