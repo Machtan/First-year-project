@@ -5,6 +5,7 @@
 package classes;
 
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -45,13 +46,14 @@ public class SearchStuff extends JPanel {
         inputField = new JTextField("Search Field");
         inputField.setPreferredSize(new Dimension(130, 50));
         roadListName = new ArrayList<>();
+        this.setLayout(new GridLayout(1,2));
         this.add(inputField);
         this.add(roadJList);
         setTimer();
         addListeners();
     }
 
-    //A
+    //Set what the timer does
     private void setTimer() {
         typeTimer = new Timer(searchDelay, new ActionListener() {
             @Override
@@ -62,9 +64,10 @@ public class SearchStuff extends JPanel {
         typeTimer.setRepeats(false);
     }
 
+    //Add listeners
     private void addListeners() {
-         roadJList.addListSelectionListener(new ListSelectionListener() {
-            
+        //add a selection listener to the list
+        roadJList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (roadJList.getSelectedIndex() != -1) {
@@ -77,11 +80,12 @@ public class SearchStuff extends JPanel {
                     inputField.setText("");
                     listModel.clear();
                     roadJList.clearSelection();
-                } } });
-        
+                }
+            }
+        });
 
+        //add a focus listener to the textfield
         inputField.addFocusListener(new FocusListener() {
-            
             @Override
             public void focusGained(FocusEvent e) {
                 inputField.setText(""); //Sets the text to nothing if focus is gained
@@ -91,10 +95,11 @@ public class SearchStuff extends JPanel {
 
             @Override
             public void focusLost(FocusEvent e) {
-            } });
-
-        inputField.getDocument().addDocumentListener(new DocumentListener() { //Add a listener to check if something is written
-            
+            }
+        });
+        
+        //Add a listener to check if something is written
+        inputField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 checkTyping();
@@ -110,9 +115,10 @@ public class SearchStuff extends JPanel {
             @Override
             public void changedUpdate(DocumentEvent e) {
                 checkTyping();
-            } });
+            }
+        });
     }
-
+    
     public void checkTyping() {
         if (!typeTimer.isRunning()) {
             typeTimer.start(); //You sure you're finished typing?
@@ -122,27 +128,28 @@ public class SearchStuff extends JPanel {
         listModel.clear();
     }
 
+    //Searches through the list
     public void startSearch() {
         String searchText = inputField.getText().toLowerCase();
         boolean enoughInput = inputField.getText().length() >= 3;
         HashSet<Integer> usedZips = new HashSet<>();
-        
+
         if (letterCount > 0) { //Making sure the search happens when the letters in the textfield are written by us
             for (int i = 0; i < edges.length; i++) {
                 String edgeName = edges[i].name;
                 int edgeZip = edges[i].leftZip;
-                
+
                 if (enoughInput && edgeName.toLowerCase().startsWith(searchText)) {
                     if (listModel.isEmpty()) {
                         listModel.addElement(edgeName + " - " + edgeZip);
                         usedZips.add(edgeZip);
-                    } else if(!usedZips.contains(edgeZip)) {
+                    } else if (!usedZips.contains(edgeZip)) {
                         listModel.addElement(edgeName + " - " + edgeZip);
                         usedZips.add(edgeZip);
-                    } 
+                    }
                     roadJList.setVisible(true);
-                    
-                    if(listModel.size()>= 3) { break; }
+
+                    if (listModel.size() >= 3) { break; }
                 }
             }
         }
