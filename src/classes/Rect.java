@@ -1,5 +1,7 @@
 package classes;
 
+import java.awt.Dimension;
+
 /**
  * The Rect class <More docs goes here>
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
@@ -32,6 +34,10 @@ public class Rect {
         this.right = x+width;
         this.top = y+height;
         this.bottom = y;
+    }
+    
+    public Rect(Dimension dim) {
+        this(0, 0, dim.width, dim.height);
     }
     
     /**

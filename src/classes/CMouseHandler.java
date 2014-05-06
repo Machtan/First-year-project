@@ -34,22 +34,20 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
         startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
         markRect = new Rect(startPos.x, startPos.y, 0, 0);
     }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        if (startPos == null) { return; }
-        endPos = e.getLocationOnScreen();
-        endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-
+    
+    private Rect getMarkRect(Point startPos, Point endPos) {
         double width = Math.abs(startPos.x - endPos.x);
         double height = Math.abs(startPos.y - endPos.y);
-
+        double wperh = controller.viewport.ratio();
+        
         // Restrict the ratio
-        if (width < height*controller.wperh) { // Height is larger
-            height = width/controller.wperh; // The smaller is used
+        double expectedWidth = height*wperh;
+        if (width < expectedWidth) { // Height is larger
+            height = width/wperh; // The smaller is used
+            
             //width = height*wperh; // The bigger is used
         } else {
-            width = height*controller.wperh; // The smaller is used
+            width = expectedWidth; // The smaller is used
             //height = width/wperh; // The bigger is used
         }
 
@@ -66,42 +64,39 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
             y = startPos.y + height;
         }
 
-        markRect = new Rect(x, y, width, height);
-        controller.setMarkerRect(markRect);
+        return new Rect(x, y, width, height);
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if (startPos == null) { return; }
+        endPos = e.getLocationOnScreen();
+        endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+        controller.setMarkerRect(getMarkRect(startPos, endPos));
         view.repaint();
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        Viewport port = controller.viewport;
+        markRect = getMarkRect(startPos, endPos);
         double rHeight = markRect.height;
         double rWidth = markRect.width;
         double rX = markRect.x;
         double rY = markRect.y;
         if (rHeight < 15) { // Default zoom-ish
+            System.out.println("Using default zoom");
             rHeight = 120;
-            rWidth = rHeight*controller.wperh;
+            rWidth = rHeight*port.ratio();
             rX = markRect.x - (rWidth - (markRect.width))/2;
             rY = markRect.y + (rHeight - (markRect.height))/2;
-        } 
-
-        // create a new active rect from the marker rect
-        double relx = rX      / view.getWidth();
-        double rely = 1 - (rY / view.getHeight()); // Invert y
-        double relh = rHeight / view.getHeight();
-        double relw = rWidth  / view.getWidth(); // same aspect
-        
-        Rect activeRect = controller.getActiveRect();
-        
-        double x = activeRect.x + (relx * activeRect.width);
-        double y = activeRect.y + (rely * activeRect.height);
-        double width = relw * activeRect.width;
-        double height = relh * activeRect.height;
-
-        Rect newArea = new Rect(x, y, width, height);
-
+        }
         controller.setMarkerRect(null);
-        controller.setActiveRect(newArea);
-        controller.redraw();
+        
+        Rect mapArea = port.getMapArea(new Rect(rX, rY, rWidth, rHeight));
+        double mapRatio = mapArea.width/mapArea.height;
+        
+        controller.draw(port.setSource(mapArea));
     }
 
     @Override
