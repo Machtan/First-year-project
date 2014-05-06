@@ -6,8 +6,11 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
@@ -25,6 +28,11 @@ public class Controller extends JFrame {
     private final CResizeHandler resizeHandler;*/
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
     private ArrayList<RoadType> prioritized;
+    private SearchStuff searchStuff;
+    private JTextField inputField;
+    private JList adressList;
+    private DefaultListModel listModel;
+    private RoadPart[] roads;
     
     // Dynamic fields
     public Viewport viewport;
@@ -35,8 +43,9 @@ public class Controller extends JFrame {
      * @param view The view to manage
      * @param model The model to manage
      */
-    public Controller(OptimizedView view, Model model) {
+    public Controller(OptimizedView view, Model model, RoadPart[] roads) {
         super();
+        this.roads = roads;
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.model = model;
         viewport = new Viewport(model.getBoundingArea(), 1, view);
@@ -67,10 +76,13 @@ public class Controller extends JFrame {
         resizeHandler = new CResizeHandler(this, view);*/
         mouseHandler = new CMouseHandler(this, view);
         
+        
+        
         contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
+        contentPanel.add(new SearchStuff(roads), BorderLayout.WEST);
         
         setTitle("First-year Project - Visualization of Denmark");
         
@@ -119,8 +131,8 @@ public class Controller extends JFrame {
             675902, "Loading intersection data...");
         Model model = new Loader().loadData(progbar, krakInters, krakRoads);
         
-        Controller controller = new Controller(view, model); 
-        controller.setMinimumSize(new Dimension(600,500));
+        Controller controller = new Controller(view, model, roads); 
+        controller.setMinimumSize(new Dimension(800,600));
         controller.pack();
         controller.redraw();
         progbar.close();

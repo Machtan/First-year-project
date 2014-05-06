@@ -18,6 +18,7 @@ public class RoadPart implements CharSequence, QuadNode {
     public final long targetID; // The ID of one of the road's ending intersections
     public final RoadType type; // The road type
     public final String name; // The name of the road
+
     
     // Address numbering on sides of the road
     public final int sLeftNum;
@@ -50,8 +51,8 @@ public class RoadPart implements CharSequence, QuadNode {
     public final String tTurn;
     
     // The area this road is in
-    protected Intersection p1;
-    protected Intersection p2;
+    public Intersection p1;
+    public Intersection p2;
     protected Rect area;
     
     // Probably unneeded
@@ -107,6 +108,11 @@ public class RoadPart implements CharSequence, QuadNode {
         );
         return line;
     }
+    
+    public double x1() { return p1.x; }
+    public double y1() { return p1.y; }
+    public double x2() { return p2.x; }
+    public double y2() { return p2.y; }
     
     /**
      * Returns the bounding area of this road part
@@ -176,6 +182,7 @@ public class RoadPart implements CharSequence, QuadNode {
         @param data An EdgeData entity
     */
     public RoadPart(EdgeData data) {
+        
         sourceID = data.FNODE;
         targetID = data.TNODE;
         sLeftNum = data.FROMLEFT;
