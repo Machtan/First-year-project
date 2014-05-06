@@ -60,6 +60,10 @@ public class Model {
         return tree;
     }
     
+    public int intersectionCount() {
+        return inMap.size();
+    }
+    
     public Model(Intersection[] inters, RoadPart[] roads, IProgressBar... bar) {
         IProgressBar progbar = null; // Optional progress bar
         if (bar.length != 0) { 

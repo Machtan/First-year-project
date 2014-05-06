@@ -10,8 +10,8 @@ public class ShortestPath {
     private Graph G;
 
     private static double h(Intersection source, Intersection target) { //s = start, t = target
-        System.out.println("Heuristic analysis: \n"
-                + "Intersection source: " + source + ". Intersection target: " + target);
+       // System.out.println("Heuristic analysis: \n"
+       //         + "Intersection source: " + source + ". Intersection target: " + target);
         return Math.sqrt(Math.pow(source.x - target.x, 2) + Math.pow(source.y - target.y, 2));
     }
 
@@ -19,6 +19,7 @@ public class ShortestPath {
         if (G == null) {
             throw new RuntimeException("Graph have not been instantitiated.");
         } else {
+            System.out.println("Finding path");
             int t = G.getIntersectionIndex(targetID);
             edgeTo = new HashMap<>();
             distTo = new HashMap<>();
@@ -33,24 +34,30 @@ public class ShortestPath {
                 if (v == t) {
                     break;
                 }
-                for (RoadPart r : G.adj(v)) {
-                    System.out.println("- (" + v + ") Relaxing part " + r);
-                    relax(r, v, t);
-                }
+            //    for (RoadPart r : G.adj(v)) {
+              //      System.out.println("- (" + v + ") Relaxing part " + r);
+            //        relax(r, v, t);
+            //    }
             }
 
             //System.out.println("Checked edges:");
-            for (int key : edgeTo.keySet()) {
+          //  for (int key : edgeTo.keySet()) {
                 //System.out.println("- "+key+": "+edgeTo.get(key));
-            }
+         //   }
 
             HashMap<Integer, RoadPart> path = new HashMap<>();
             int current = G.getIntersectionIndex(targetID);
             int i = 0;
+            // #######################
+            // ###### ERROR because edgeTo is Empty, and we try to get a road from it.
+            // #######################
+            System.out.println("Building edgeTo");
+            System.out.println(edgeTo.toString());
             while (current != startIndex) {
                 RoadPart currentRoad = edgeTo.get(current);
                 path.put(i++, currentRoad);
                 //System.out.println("Checking the other intersection than "+current+" of "+currentRoad);
+                //System.out.println("Calling other() with: "+currentRoad+ " and current: " +current);
                 current = G.other(currentRoad, current);
             }
             RoadPart[] result = new RoadPart[path.size()];
@@ -66,11 +73,12 @@ public class ShortestPath {
     }
 
     public void relax(RoadPart r, int s, int t) {
+        System.out.println("Relaxing");
         int v = s; // The starting vertice
         int w = G.other(r, v); // w is the other vertice
         //System.out.println("Relaxing edge between: "+v+ " and "+w);
         if (!distTo.containsKey(w)) {
-            System.out.println("DistTo adds the new key with infinity:" + w);
+        //    System.out.println("DistTo adds the new key with infinity:" + w);
             distTo.put(w, Double.POSITIVE_INFINITY);
         }
         if (distTo.get(w) > distTo.get(v) + r.driveTime) {
@@ -78,10 +86,10 @@ public class ShortestPath {
             edgeTo.put(w, r);
             //System.out.println("Updates the approximated weight and puts the road into edgeTo: "+r);
             if (pq.contains(w)) {
-                System.out.println("Decreasing");
+          //      System.out.println("Decreasing");
                 pq.decreaseKey(w, distTo.get(w) + h(G.getIntersection(w), G.getIntersection(t)));
             } else {
-                System.out.println("Inserting");
+           //     System.out.println("Inserting");
                 pq.insert(w, distTo.get(w) + h(G.getIntersection(w), G.getIntersection(t)));
             }
         }

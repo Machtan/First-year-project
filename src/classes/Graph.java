@@ -44,7 +44,7 @@ public class Graph {
         int i = 0;
         for (RoadPart road : roads) {
             if (!IDToIndex.containsKey(road.sourceID)) {
-                System.out.println("Adding new intersection " + road.sourceID + " at index " + i);
+                //System.out.println("Road with Source - " + road.sourceID + ", and target - " +road.targetID);
                 indexToID.put(i, road.sourceID);
                 IDToIndex.put(road.sourceID, i++);
                 inters.add(road.p1);
@@ -52,16 +52,12 @@ public class Graph {
             adj[IDToIndex.get(road.sourceID)].add(road);
 
             if (!IDToIndex.containsKey(road.targetID)) {
-                System.out.println("Adding new intersection " + road.targetID + " at index " + i);
+                //System.out.println("Adding new intersection " + road.targetID + " at index " + i);
                 indexToID.put(i, road.targetID);
                 IDToIndex.put(road.targetID, i++);
                 inters.add(road.p2);
             }
             adj[IDToIndex.get(road.targetID)].add(road);
-        }
-        int c = 0;
-        for (ArrayList<RoadPart> arr : adj) {
-            System.out.println((c++) + ": " + arr.size());
         }
     }
 
@@ -94,16 +90,25 @@ public class Graph {
         if (v < 0 || v >= V) {
             throw new IndexOutOfBoundsException("vertex " + v + " is not between 0 and " + (V - 1));
         }
-        System.out.println("vertex " + v + " has " + adj[v].size() + " adjacent edges");
+        //  System.out.println("vertex " + v + " has " + adj[v].size() + " adjacent edges");
         return adj[v];
     }
 
     public int other(RoadPart part, int firstIDIndex) {
-        System.out.println("Checking other index with indexes " + part.sourceID + " and " + part.targetID);
-        if (IDToIndex.get(part.sourceID) == firstIDIndex) {
-            return IDToIndex.get(part.targetID);
+        // System.out.println("Checking other index with indexes " + part.sourceID + " and " + part.targetID);
+       // System.out.println("Road:" + part);
+        //System.out.println("RoadPart: " + part.name);
+        //System.out.println("SourceID: " + part.sourceID + "\n"
+          //      + "FirstIDIndex: " + firstIDIndex);
+        if (part != null) {
+            if (IDToIndex.get(part.sourceID) == firstIDIndex) {
+                return IDToIndex.get(part.targetID);
+            } else {
+                return IDToIndex.get(part.sourceID);
+            }
         } else {
-            return IDToIndex.get(part.sourceID);
+            throw new RuntimeException("Roadpart is null");
+            //return firstIDIndex;
         }
     }
 
@@ -112,12 +117,6 @@ public class Graph {
     }
 
     public int getIntersectionIndex(long ID) {
-        System.out.println("Valid IDs:");
-        for (long key : IDToIndex.keySet()) {
-            System.out.println("- " + key);
-        }
-
-        System.out.println(ID + " -> " + IDToIndex.get(ID));
         return IDToIndex.get(ID);
     }
 

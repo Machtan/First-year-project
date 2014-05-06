@@ -108,9 +108,9 @@ public class Controller extends JFrame {
      */
     public void redraw() {
         long t1 = System.nanoTime();
-        System.out.println("Preparing the image...");
+   //     System.out.println("Preparing the image...");
         view.renewImage(model.getLines(viewport.getProjection(), ins, prioritized));
-        System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
+   //     System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
     }
     
     /**
@@ -134,5 +134,21 @@ public class Controller extends JFrame {
         controller.redraw();
         progbar.close();
         controller.setVisible(true);
+        
+        RoadPart[] roadTemp = model.getRoads(model.getBoundingArea());
+        for(RoadPart r : roadTemp) {
+            //System.out.println("Roads: " +r.name);
+            r.setPoints(r.p1,r.p2);
+        }
+        
+        Graph graph = new Graph(model.intersectionCount(), roadTemp);
+
+        ShortestPath SP = new ShortestPath(graph);
+        
+        RoadPart[] RoadPartArray = SP.findPath(603585, 659617);
+        System.out.println("The found path is:");
+        for (RoadPart road : RoadPartArray) {
+            System.out.println("- " + road.name);
+        }
     }
 }
