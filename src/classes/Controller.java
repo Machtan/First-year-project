@@ -16,7 +16,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 
 /**
- * The Controller class <More docs goes here>
+ * The Controller class faciliates everythign between parts of the program
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 10-Mar-2014
  */
@@ -24,18 +24,17 @@ public class Controller extends JFrame {
     private final OptimizedView view;
     private final Model model;
     private final CMouseHandler mouseHandler;
-    private final CKeyHandler keyHandler;
-    private final CResizeHandler resizeHandler;
+    /*private final CKeyHandler keyHandler;
+    private final CResizeHandler resizeHandler;*/
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
     private ArrayList<RoadType> prioritized;
     private SearchStuff searchStuff;
     private JTextField inputField;
     private JList adressList;
     private DefaultListModel listModel;
-    private RoadPart[] roads;
     
     // Dynamic fields
-    private Rect activeRect;
+    public Viewport viewport;
     private RenderInstructions ins;
     
     /**
@@ -43,12 +42,11 @@ public class Controller extends JFrame {
      * @param view The view to manage
      * @param model The model to manage
      */
-    public Controller(OptimizedView view, Model model, RoadPart[] roads) {
+    public Controller(OptimizedView view, Model model) {
         super();
-        this.roads = roads;
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.model = model;
-        activeRect = model.getBoundingArea();
+        viewport = new Viewport(model.getBoundingArea(), 1, view);
         this.ins = Model.defaultInstructions;
         
         prioritized = new ArrayList<>();
@@ -72,40 +70,21 @@ public class Controller extends JFrame {
         // Key handling
         setFocusTraversalKeysEnabled(false);
         setFocusable(true);
-        keyHandler = new CKeyHandler(this, view);
+        /*keyHandler = new CKeyHandler(this, view);
+        resizeHandler = new CResizeHandler(this, view);*/
         mouseHandler = new CMouseHandler(this, view);
-        resizeHandler = new CResizeHandler(this, view);
-        
-        
         
         contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
-        contentPanel.add(new ZoomButtonsGUI(resizeHandler, this), BorderLayout.EAST);
+        contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
-        contentPanel.add(new SearchStuff(roads), BorderLayout.WEST);
+        contentPanel.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
+                BorderLayout.WEST);
         
         setTitle("First-year Project - Visualization of Denmark");
         
         // Pack the window
         this.setContentPane(contentPanel);
-    }
-    
-    /**
-     * Returns the lines of the given area mapped to the target
-     * @param area The area to get roads from
-     * @param target The target to map them to as lines
-     * @return A list of lines to render the area
-     */
-    public Line[] getLines(Rect area, Rect target) {
-        return model.getLines(area, target, view.getHeight(), ins, prioritized);
-    }
-    
-    /**
-     * Returns the controller's active rect
-     * @return the controller's active rect
-     */
-    public Rect getActiveRect() {
-        return activeRect;
     }
     
     /**
@@ -116,19 +95,8 @@ public class Controller extends JFrame {
         view.setMarkerRect(markerRect);
     }
     
-    /**
-     * Refreshes the view
-     */
-    public void refresh() {
-        view.repaint();
-    }
-    
-    /**
-     * Sets the active rect of the controller
-     * @param rect The new active rect of the controller
-     */
-    public void setActiveRect(Rect rect) {
-        activeRect = rect;
+    public void draw(Viewport.Projection p) {
+        view.renewImage(model.getLines(viewport.getProjection(), ins, prioritized));
     }
     
     public RoadPart[] getRoads(Rect area){
@@ -136,55 +104,12 @@ public class Controller extends JFrame {
     }
     
     /**
-     * Returns the size of the controller's view
-     * @return the size of the controller's view
-     */
-    public Dimension getViewSize() {
-        return view.getSize();
-    }
-    
-    public void resizeActiveArea(Dimension dim) {
-        double height = activeRect.height;
-        double width = (dim.width/(double)dim.height) * height;
-        Rect newArea = new Rect(activeRect.x, activeRect.y, width, height);
-        System.out.println("Resizing active area from "+activeRect+" to "+newArea);
-        activeRect = newArea;
-    }
-    
-    public void resetView() {
-        setActiveRect(model.getBoundingArea());
-        redraw();
-    }
-    
-    /**
-     * Zooms the view out
-     */
-    public void zoomOut() {
-        System.out.println("Zoomin' out!");
-        resizeHandler.zoomOut();
-    }
-    
-    /**
-     * Zoom the view in
-     */
-    public void zoomIn() {
-        System.out.println("Zoomin' in!");
-        resizeHandler.zoomIn();
-    }
-    
-    /**
      * Tells the model to redraw based on the activeRect
      */
     public void redraw() {
         long t1 = System.nanoTime();
-        
-        // Change the active Rect so that it fits the screen
-        resizeActiveArea(view.getSize());
-        resizeHandler.setLastRect(activeRect);
-        
         System.out.println("Preparing the image...");
-        view.renewImage(model.getLines(activeRect, new Rect(0, 0, 
-                view.getWidth(), view.getHeight()), ins, prioritized));
+        view.renewImage(model.getLines(viewport.getProjection(), ins, prioritized));
         System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
     }
     
@@ -197,23 +122,13 @@ public class Controller extends JFrame {
         OptimizedView view = new OptimizedView(new Dimension(600,400));
         
         // Load everything with the optional progressbar on :U
-        Intersection[] intersections = Loader.loadIntersections("resources/intersections.txt", progbar);
-        if (intersections.length == 0) {
-            Thread.sleep(4000); // Show the message for 4 seconds
-            progbar.close();
-            return;
-        }    
+        Datafile krakRoads = new Datafile("resources/roads.txt", 812301, 
+            "Loading road data...");
+        Datafile krakInters = new Datafile("resources/intersections.txt", 
+            675902, "Loading intersection data...");
+        Model model = new Loader().loadData(progbar, krakInters, krakRoads);
         
-        RoadPart[] roads = Loader.loadRoads("resources/roads.txt", progbar);
-        if (roads.length == 0) {
-            Thread.sleep(4000); // Show the message for 4 seconds
-            progbar.close();
-            return;
-        }
-                
-        Model model = new Model(intersections, roads, progbar);
-        
-        Controller controller = new Controller(view, model, roads); 
+        Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
         controller.pack();
         controller.redraw();

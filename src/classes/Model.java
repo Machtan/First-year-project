@@ -89,9 +89,7 @@ public class Model {
         System.out.println("Populating the Quad Tree...");
         long t1 = System.nanoTime();
         if (progbar != null) {
-            int c = 0;
             for (RoadPart part : roads) {
-                System.out.println("Loading road "+(c++));
                 part.setPoints(inMap.get(part.sourceID), inMap.get(part.targetID));
                 tree.add(part);
                 progbar.update(1);
@@ -120,19 +118,18 @@ public class Model {
     /**
      * Returns the lines of the model from the given area, prepared for the 
      * size of the given viewer component
-     * @param area The area to find roads inside and constrain the rendering to
-     * @param target The area of the view the coordinates should be mapped to
+     * @param p the projection to get the lines of
      * @param windowHeight The height of the target window
      * @param instructions The instructions for coloring/rendering of the lines
      * @param prioritized A list of roads to be prioritized, from highest to lowest
      * @return A list of lines converted to local coordinates for the view
      */
-    public Line[] getLines(Rect area, Rect target, double windowHeight, 
+    public Line[] getLines(Viewport.Projection p, double windowHeight, 
             RenderInstructions instructions, ArrayList<RoadType> prioritized) {
        long t1 = System.nanoTime();
 
         RoadType[] types = instructions.getRenderedTypes();
-        RoadPart[] roadArr = tree.getSelectedIn(area, types);
+        RoadPart[] roadArr = tree.getSelectedIn(p.source, types);
         if (roadArr.length == 0) {
             return new Line[0];
         }
@@ -147,10 +144,10 @@ public class Model {
         System.out.println("Constructing lines");
         long lineT1 = System.nanoTime();
         
-        double ppu = target.height / area.height;
-        double heightFac = windowHeight - target.y;
-        double x1 = area.x;
-        double y1 = area.y;
+        double ppu = p.target.height / p.source.height;
+        double heightFac = windowHeight - p.target.y;
+        double x1 = p.source.x;
+        double y1 = p.source.y;
         int i = 0;
         for(RoadPart road: roadArr) {
             if (instructions.getColor(road.type) == instructions.getVoidColor()) {
@@ -158,9 +155,9 @@ public class Model {
             }
             
             if (prioritized.contains(road.type)) {
-                prioLines.get(road.type).add(road.asLine(x1, y1, target, ppu, heightFac, instructions));
+                prioLines.get(road.type).add(road.asLine(x1, y1, p.target, ppu, heightFac, instructions));
             } else {
-                lineArr[i++] = road.asLine(x1, y1, target, ppu, heightFac, instructions);
+                lineArr[i++] = road.asLine(x1, y1, p.target, ppu, heightFac, instructions);
             }
         }
         double lineDelta = (System.nanoTime()-lineT1)/1e9;
@@ -180,21 +177,21 @@ public class Model {
         return lineArr;
     }
     
-    // Without <target height> or <priorities>
-    public Line[] getLines(Rect area, Rect target, RenderInstructions instructions) {
-        return getLines(area, target, target.height, instructions, new ArrayList<RoadType>());
+    // Without <target height> and <priorities>
+    public Line[] getLines(Viewport.Projection p, RenderInstructions instructions) {
+        return getLines(p, p.target.height, instructions, new ArrayList<RoadType>());
     }
     
     // Without <target height>
-    public Line[] getLines(Rect area, Rect target, RenderInstructions instructions, 
+    public Line[] getLines(Viewport.Projection p, RenderInstructions instructions, 
             ArrayList<RoadType> priorities) {
-        return getLines(area, target, target.height, instructions, priorities);
+        return getLines(p, p.target.height, instructions, priorities);
     }
     
     // Without <priorities>
-    public Line[] getLines(Rect area, Rect target, int windowHeight, 
+    public Line[] getLines(Viewport.Projection p, int windowHeight, 
             RenderInstructions instructions) {
-        return getLines(area, target, windowHeight, instructions, new ArrayList<RoadType>());
+        return getLines(p, windowHeight, instructions, new ArrayList<RoadType>());
     }
     
     /**

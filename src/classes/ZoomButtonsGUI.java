@@ -12,7 +12,6 @@ import javax.swing.SpringLayout;
  * @author Isabella
  */
 public class ZoomButtonsGUI extends JPanel {
-    private final CResizeHandler resizeHandler;
     private final Controller controller;
     private final JPanel panel;
     private int numberOfButtons = 0;
@@ -28,24 +27,23 @@ public class ZoomButtonsGUI extends JPanel {
         panel.add(button);
     }
 
-    public ZoomButtonsGUI(final CResizeHandler resizeHandler, final Controller controller) {
+    public ZoomButtonsGUI(final Controller controller) {
         super();
-        this.controller = controller;
-        this.resizeHandler = resizeHandler;    
+        this.controller = controller; 
         panel = new JPanel(new SpringLayout());
         
         String zoomTip = "You can also zoom in by clicking '+' on your keyboard.";
         addButton("Zoom +", zoomTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                resizeHandler.zoomIn();
+                controller.draw(controller.viewport.zoomBy(0.2));
             }
         });
         String zoomOutTip = "You can also zoom out by clicking '-' on your keyboard";
         addButton("Zoom -", zoomOutTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                resizeHandler.zoomOut();
+                controller.draw(controller.viewport.zoomBy(-0.2));
             }
             
         });
@@ -53,7 +51,7 @@ public class ZoomButtonsGUI extends JPanel {
         addButton("Reset", resetTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                controller.resetView();
+                controller.draw(controller.viewport.zoomTo(1));
             }
         });
         // NOTE: change the 2nd parameter to the amount of buttons added!

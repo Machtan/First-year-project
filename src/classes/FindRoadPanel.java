@@ -63,8 +63,7 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
     * @param double p = (pX, pY).
     * @return double distance.
     */
-    private double pointToLineDistance(
-        double aX, double aY, double bX, double bY, double pX, double pY) {
+    private double pointToLineDistance( double aX, double aY, double bX, double bY, double pX, double pY) {
         //return Math.abs((bX-aX)*(aY-pY)-(aX-pX)*(bY-aY)) / Math.sqrt((bX-aX)*(bX-aX)+(bY-aY)*(bY-aY));
         
         double centerx, centery;
@@ -86,15 +85,13 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         cPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);      
         
         // Retrieve active rect area
-        Rect activeRect = controller.getActiveRect();
-        double x = cPos.x; 
-        double y = cPos.y; 
+        Viewport port = controller.viewport;
         
         // Change position from screen coordinates to map coordinates.
         // Create a new small Rect with the mouseposition as midpoint with mapcoordinates.
-        double modelX = activeRect.x + (x/view.getWidth())*activeRect.width;
-        double modelY = activeRect.y + (1-(y/view.getHeight()))*activeRect.height;
-        Rect cursorRect = new Rect(modelX-width/2, modelY-height/2, width, height);
+        double x = port.getMapX(cPos.x);
+        double y = port.getMapY(cPos.y);
+        Rect cursorRect = new Rect(x-width/2, y-height/2, width, height);
         
         // Get a HashSet containing RoadParts within the cursorRect.
         RoadPart[] roads = controller.getRoads(cursorRect);
@@ -122,7 +119,7 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
             double areaX2 = r.x + r.width;
             double areaY2 = r.y + r.height;  
             
-            double distance = pointToLineDistance(areaX1, areaY1, areaX2, areaY2, modelX, modelY); 
+            double distance = pointToLineDistance(areaX1, areaY1, areaX2, areaY2, x, y); 
             if (distance < minDist) {
                 nearest = road;
                 minDist = distance;
