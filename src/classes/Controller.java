@@ -4,6 +4,8 @@ import enums.RoadType;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -95,10 +97,32 @@ public class Controller extends JFrame {
         view.setMarkerRect(markerRect);
     }
     
+    /**
+     * Tells the view to draw the lines of the given projection
+     * @param p The projection to draw
+     */
     public void draw(Viewport.Projection p) {
-        view.renewImage(model.getLines(viewport.getProjection(), ins, prioritized));
+        view.renewImage(model.getLines(viewport.getProjection(), view.getHeight(), ins, prioritized));
     }
     
+    /**
+     * Moves the map by the given pixel values
+     * @param dx The x-axis movement
+     * @param dy The y-axis movement
+     */
+    public void moveMap(int dx, int dy) {
+        ArrayList<Line[]> lines = new ArrayList<>();
+        for (Viewport.Projection p: viewport.movePixels(dx, dy)) {
+            lines.add(model.getLines(p, view.getHeight(), ins, prioritized));
+        }
+        view.offsetImage(dx, dy, lines.toArray(new Line[lines.size()][]));
+    }
+    
+    /**
+     * Returns the roads with the given area
+     * @param area The area to look in
+     * @return A list of roads in the area
+     */
     public RoadPart[] getRoads(Rect area){
         return model.getRoads(area, ins);
     }
@@ -108,9 +132,9 @@ public class Controller extends JFrame {
      */
     public void redraw() {
         long t1 = System.nanoTime();
-   //     System.out.println("Preparing the image...");
-        view.renewImage(model.getLines(viewport.getProjection(), ins, prioritized));
-   //     System.out.println("Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec)");
+        System.out.println("Executing a full redraw of the View");
+        view.renewImage(model.getLines(viewport.getProjection(), view.getHeight(), ins, prioritized));
+        System.out.println("- Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec) -");
     }
     
     /**
@@ -119,7 +143,8 @@ public class Controller extends JFrame {
      */
     public static void main(String[] args) throws InterruptedException {
         ProgressBar progbar = new ProgressBar(); // Create the progress bar
-        OptimizedView view = new OptimizedView(new Dimension(600,400));
+        Dimension viewSize = new Dimension(600,400);
+        OptimizedView view = new OptimizedView(viewSize);
         
         // Load everything with the optional progressbar on :U
         Datafile krakRoads = new Datafile("resources/roads.txt", 812301, 
@@ -131,24 +156,9 @@ public class Controller extends JFrame {
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
         controller.pack();
-        controller.redraw();
         progbar.close();
+        
+        controller.draw(controller.viewport.getProjection(viewSize));
         controller.setVisible(true);
-        
-        RoadPart[] roadTemp = model.getRoads(model.getBoundingArea());
-        for(RoadPart r : roadTemp) {
-            //System.out.println("Roads: " +r.name);
-            r.setPoints(r.p1,r.p2);
-        }
-        
-        Graph graph = new Graph(model.intersectionCount(), roadTemp);
-
-        ShortestPath SP = new ShortestPath(graph);
-        
-        RoadPart[] RoadPartArray = SP.findPath(603585, 659617);
-        System.out.println("The found path is:");
-        for (RoadPart road : RoadPartArray) {
-            System.out.println("- " + road.name);
-        }
     }
 }

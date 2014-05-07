@@ -118,6 +118,24 @@ public class DataLine {
 			throw new IllegalArgumentException(s + " is not a double!");
 		}
 	}
+        
+        public float getFloat() {
+            String s = nextToken();
+            try {
+                    return Float.parseFloat(s);
+            } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(s + " is not a float!");
+            }
+        }
+        
+        public short getShort() {
+            String s = nextToken();
+            try {
+                    return Short.parseShort(s);
+            } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(s + " is not a short!");
+            }
+        }
 
 	/**
 	 * Returns the next token as a string
@@ -126,6 +144,18 @@ public class DataLine {
 	public String getString(){
 		return intern(nextToken());
 	}
+        
+        public char getChar() {
+            String s = nextToken();
+            try {
+                return s.charAt(0);
+            } catch (IndexOutOfBoundsException e) {
+                return 'n'; // Default value!!!
+                //throw new IllegalArgumentException(s + " is not a char!");
+            }
+        }
+        
+        
 
 	/**
 	 * Discard the current token

@@ -13,17 +13,17 @@ import java.awt.Color;
  */
 public class Line {
 
-    public final int x1;
-    public final int y1;
-    public final int x2;
-    public final int y2;
+    public final short x1;
+    public final short y1;
+    public final short x2;
+    public final short y2;
     public final Color color;
 
-    public Line(double x1, double y1, double x2, double y2, Color color) {
-        this.x1 = (int)x1;
-        this.x2 = (int)x2;
-        this.y1 = (int)y1;
-        this.y2 = (int)y2;
+    public Line(float x1, float y1, float x2, float y2, Color color) {
+        this.x1 = (short)x1;
+        this.x2 = (short)x2;
+        this.y1 = (short)y1;
+        this.y2 = (short)y2;
         this.color = color;
         
     }

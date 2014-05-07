@@ -36,14 +36,14 @@ public class ZoomButtonsGUI extends JPanel {
         addButton("Zoom +", zoomTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                controller.draw(controller.viewport.zoomBy(0.2));
+                controller.draw(controller.viewport.zoomBy(0.2f));
             }
         });
         String zoomOutTip = "You can also zoom out by clicking '-' on your keyboard";
         addButton("Zoom -", zoomOutTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                controller.draw(controller.viewport.zoomBy(-0.2));
+                controller.draw(controller.viewport.zoomBy(-0.2f));
             }
             
         });

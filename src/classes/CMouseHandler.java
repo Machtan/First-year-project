@@ -1,5 +1,6 @@
 package classes;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -15,14 +16,23 @@ import javax.swing.JPanel;
 
 public class CMouseHandler implements MouseListener, MouseMotionListener {
     
+    // ======== CONFIGURATION ========
+    private static final int dragButton = MouseEvent.BUTTON1;
+    private static final int markButton = MouseEvent.BUTTON3;    
+    
+    // ===============================
     private Point startPos;
     private Point endPos;
+    private Point lastDragPoint;
     private Rect markRect;
     private final Controller controller;
     private final JPanel view;
+    private boolean isMarking;
+    private boolean isDragging;
     
     public CMouseHandler(Controller controller, JPanel target) {
         this.controller = controller;
+        isMarking = false;
         view = target;
         view.addMouseListener(this);
         view.addMouseMotionListener(this);
@@ -30,18 +40,45 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
     
     @Override
     public void mousePressed(MouseEvent e) {
-        startPos = e.getLocationOnScreen();
-        startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-        markRect = new Rect(startPos.x, startPos.y, 0, 0);
+        switch(e.getButton()) {
+            case markButton:
+                System.out.println("Mark start");
+                isMarking = true;
+                startPos = e.getLocationOnScreen();
+                startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+                markRect = new Rect(startPos.x, startPos.y, 0, 0);
+                break;
+            case dragButton:
+                System.out.println("Drag start");
+                lastDragPoint = e.getLocationOnScreen();
+                lastDragPoint.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+                isDragging = true;
+                break;
+        }
+    }
+    
+    /**
+     * Returns a given value restricted by the passed min and max values
+     * @param val The value to restrict
+     * @param min The smallest it may be
+     * @param max The biggest it may be
+     * @return The restricted value
+     */
+    private float clamp(float val, float min, float max) {
+        return Math.max(min, Math.min(val, max));
     }
     
     private Rect getMarkRect(Point startPos, Point endPos) {
-        double width = Math.abs(startPos.x - endPos.x);
-        double height = Math.abs(startPos.y - endPos.y);
-        double wperh = controller.viewport.ratio();
+        Viewport port = controller.viewport;
+        endPos.x = (int)clamp(endPos.x, 0, port.getSize().width);
+        endPos.y = (int)clamp(endPos.y, 0, port.getSize().height);
+        
+        float width = Math.abs(startPos.x - endPos.x);
+        float height = Math.abs(startPos.y - endPos.y);
+        float wperh = controller.viewport.ratio();
         
         // Restrict the ratio
-        double expectedWidth = height*wperh;
+        float expectedWidth = height*wperh;
         if (width < expectedWidth) { // Height is larger
             height = width/wperh; // The smaller is used
             
@@ -51,13 +88,13 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
             //height = width/wperh; // The bigger is used
         }
 
-        double x;
+        float x;
         if (endPos.x < startPos.x) {
             x = startPos.x-width;
         } else {
             x = startPos.x;
         }
-        double y;
+        float y;
         if (endPos.y < startPos.y) {
             y = startPos.y;
         } else {
@@ -69,34 +106,68 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (startPos == null) { return; }
-        endPos = e.getLocationOnScreen();
-        endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-        controller.setMarkerRect(getMarkRect(startPos, endPos));
-        view.repaint();
+        switch (e.getButton()) {
+            case dragButton:
+                if (isDragging) {
+                    Point newPos = e.getLocationOnScreen();
+                    newPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+                    Dimension viewSize = controller.viewport.getSize();
+                    newPos.x = (int)clamp(newPos.x, 0, viewSize.width);
+                    newPos.y = (int)clamp(newPos.y, 0, viewSize.height);
+                    int dx = newPos.x - lastDragPoint.x;
+                    int dy = -1 * (newPos.y - lastDragPoint.y);
+                    lastDragPoint = newPos;
+                    if ((dx+dy)==0) { return; } // No allowed movement, no drag
+                    controller.moveMap(dx, dy);
+                    
+                }
+                break;
+            case markButton:
+                System.out.println("Markbutton dragged");
+                if (isMarking && (startPos != null)) {
+                    endPos = e.getLocationOnScreen();
+                    endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+                    controller.setMarkerRect(getMarkRect(startPos, endPos));
+                    view.repaint();
+                }
+                break;
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        Viewport port = controller.viewport;
-        markRect = getMarkRect(startPos, endPos);
-        double rHeight = markRect.height;
-        double rWidth = markRect.width;
-        double rX = markRect.x;
-        double rY = markRect.y;
-        if (rHeight < 15) { // Default zoom-ish
-            System.out.println("Using default zoom");
-            rHeight = 120;
-            rWidth = rHeight*port.ratio();
-            rX = markRect.x - (rWidth - (markRect.width))/2;
-            rY = markRect.y + (rHeight - (markRect.height))/2;
+        switch(e.getButton()) {
+            case dragButton:
+                if (isDragging) {
+                    // Some easing movement here or something...
+                }
+                isDragging = false;
+                break;
+            case markButton:
+                if (isMarking && (startPos != null)) { // Don't attempt to zoom before clicking :u
+                    Viewport port = controller.viewport;
+                    markRect = getMarkRect(startPos, endPos);
+                    float rHeight = markRect.height;
+                    float rWidth = markRect.width;
+                    float rX = markRect.x;
+                    float rY = markRect.y;
+                    if (rHeight < 15) { // Default zoom-ish
+                        System.out.println("Using default zoom");
+                        rHeight = 120;
+                        rWidth = rHeight*port.ratio();
+                        rX = markRect.x - (rWidth - (markRect.width))/2;
+                        rY = markRect.y + (rHeight - (markRect.height))/2;
+                    }
+                    controller.setMarkerRect(null);
+
+                    Rect mapArea = port.getMapArea(new Rect(rX, rY, rWidth, rHeight));
+                    float mapRatio = mapArea.width/mapArea.height;
+
+                    controller.draw(port.setSource(mapArea));
+                }
+                isMarking = false;
+                break;
         }
-        controller.setMarkerRect(null);
-        
-        Rect mapArea = port.getMapArea(new Rect(rX, rY, rWidth, rHeight));
-        double mapRatio = mapArea.width/mapArea.height;
-        
-        controller.draw(port.setSource(mapArea));
     }
 
     @Override

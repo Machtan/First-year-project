@@ -103,6 +103,9 @@ public class Utils {
         public static int getInt() { return line.getInt(); }
         public static double getDouble() { return line.getDouble(); }
         public static long getLong() { return line.getLong(); }
+        public static float getFloat() { return line.getFloat(); }
+        public static char getChar() { return line.getChar(); }
+        public static short getShort() { return line.getShort(); }
     }
     
      /**

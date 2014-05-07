@@ -45,10 +45,10 @@ public class Model {
      * @return 
      */
     private Rect getRect(Intersection one, Intersection two) {
-        double x = Math.min(one.x, two.x);
-        double y = Math.min(one.y, two.y);
-        double width = Math.abs(one.x - two.x);
-        double height = Math.abs(one.y - two.y);
+        float x = (float)Math.min(one.x, two.x);
+        float y = (float)Math.min(one.y, two.y);
+        float width = (float)Math.abs(one.x - two.x);
+        float height = (float)Math.abs(one.y - two.y);
         return new Rect(x,y,width,height);
     }
     
@@ -71,18 +71,18 @@ public class Model {
             progbar.setTarget("Populating Quad Tree...", 812301);
         }
         // Find the bounding area of the intersections
-        double minX = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE;
-        double minY = Double.MAX_VALUE;
-        double maxY = Double.MIN_VALUE;
+        float minX = Float.MAX_VALUE;
+        float maxX = Float.MIN_VALUE;
+        float minY = Float.MAX_VALUE;
+        float maxY = Float.MIN_VALUE;
         
         inMap = new HashMap<>();
         for (Intersection i : inters) {
             inMap.put(i.id, i); // Add intersections to the map
-            minX = Math.min(i.x, minX);
-            maxX = Math.max(i.x, maxX);
-            minY = Math.min(i.y, minY);
-            maxY = Math.max(i.y, maxY);
+            minX = (float)Math.min(i.x, minX);
+            maxX = (float)Math.max(i.x, maxX);
+            minY = (float)Math.min(i.y, minY);
+            maxY = (float)Math.max(i.y, maxY);
         }
         
         // Create the quad tree
@@ -128,7 +128,7 @@ public class Model {
      * @param prioritized A list of roads to be prioritized, from highest to lowest
      * @return A list of lines converted to local coordinates for the view
      */
-    public Line[] getLines(Viewport.Projection p, double windowHeight, 
+    public Line[] getLines(Viewport.Projection p, float windowHeight, 
             RenderInstructions instructions, ArrayList<RoadType> prioritized) {
        long t1 = System.nanoTime();
 
@@ -148,10 +148,10 @@ public class Model {
         System.out.println("Constructing lines");
         long lineT1 = System.nanoTime();
         
-        double ppu = p.target.height / p.source.height;
-        double heightFac = windowHeight - p.target.y;
-        double x1 = p.source.x;
-        double y1 = p.source.y;
+        float ppu = p.target.height / p.source.height;
+        float heightFac = windowHeight - p.target.y;
+        float x1 = p.source.x;
+        float y1 = p.source.y;
         int i = 0;
         for(RoadPart road: roadArr) {
             if (instructions.getColor(road.type) == instructions.getVoidColor()) {
@@ -179,17 +179,6 @@ public class Model {
         double deltaTime = (System.nanoTime()-t1)/1e9;
         System.out.println("Returned "+lineArr.length+" drawlines in "+deltaTime+" secs.");
         return lineArr;
-    }
-    
-    // Without <target height> and <priorities>
-    public Line[] getLines(Viewport.Projection p, RenderInstructions instructions) {
-        return getLines(p, p.target.height, instructions, new ArrayList<RoadType>());
-    }
-    
-    // Without <target height>
-    public Line[] getLines(Viewport.Projection p, RenderInstructions instructions, 
-            ArrayList<RoadType> priorities) {
-        return getLines(p, p.target.height, instructions, priorities);
     }
     
     // Without <priorities>

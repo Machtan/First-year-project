@@ -11,8 +11,8 @@ import krak.NodeData;
 public class Intersection implements CharSequence {
     
     public final long id;
-    public final double x;
-    public final double y;
+    public final float x;
+    public final float y;
          
     
     /**
@@ -20,15 +20,15 @@ public class Intersection implements CharSequence {
      */
     public Intersection (NodeData data) {
         id = data.KDV_ID;
-        x = data.X_COORD;
-        y = data.Y_COORD;
+        x = (float)data.X_COORD;
+        y = (float)data.Y_COORD;
     }
     
     public Intersection (String line) {
         Tokenizer.setLine(line);
         id = Tokenizer.getLong();
-        x = Tokenizer.getDouble();
-        y = Tokenizer.getDouble();
+        x = Tokenizer.getFloat();
+        y = Tokenizer.getFloat();
     }
     
     @Override

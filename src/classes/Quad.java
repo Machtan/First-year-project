@@ -149,12 +149,12 @@ public class Quad {
      */
     public void split() {
         if (bottom == true && depth < maxDepth) {
-            double hw = 0.5 * area.width; // Half width
-            double hh = 0.5 * area.height; // Half height
+            float hw = 0.5f * area.width; // Half width
+            float hh = 0.5f * area.height; // Half height
             Rect swRect = new Rect(area.x, area.y, hw, hh);
-            Rect nwRect = new Rect(area.x, area.y + 0.5 * area.height, hw, hh);
-            Rect seRect = new Rect(area.x + 0.5 * area.width, area.y, hw, hh);
-            Rect neRect = new Rect(area.x + 0.5 * area.width, area.y + hh, hw, hh);
+            Rect nwRect = new Rect(area.x, area.y + 0.5f * area.height, hw, hh);
+            Rect seRect = new Rect(area.x + 0.5f * area.width, area.y, hw, hh);
+            Rect neRect = new Rect(area.x + 0.5f * area.width, area.y + hh, hw, hh);
             
             Quad sw = new Quad(swRect, maxNodes, maxDepth, this.depth+1);
             Quad nw = new Quad(nwRect, maxNodes, maxDepth, this.depth+1);

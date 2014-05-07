@@ -62,7 +62,7 @@ public class OptimizedView extends JPanel  {
      * @param newLines The new lines to patch up 
      * @param newSize The new dimension of the image
      */
-    public void offsetImage(int x, int y, Line[] newLines, Dimension newSize) { // Takes roughly 0.0016 secs at worst
+    public void offsetImage(int x, int y, Dimension newSize, Line[]... newLines) { // Takes roughly 0.0016 secs at worst
         long t1 = System.nanoTime();
         scaleSource = gfx_config.createCompatibleImage(newSize.width, newSize.height);
         clear(scaleSource); // Clear the whole image
@@ -70,10 +70,13 @@ public class OptimizedView extends JPanel  {
         g2d.drawImage(image, x, -y, this); // Draw the old image offset
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
         long t2 = System.nanoTime();
-        for (Line line : newLines) {
-            g2d.setColor(line.color);
-            g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
+        for (Line[] arr: newLines) {
+            for (Line line : arr) {
+                g2d.setColor(line.color);
+                g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
+            }
         }
+        
         g2d.dispose();
         /*
         System.out.println("Offsetting by "+x+", "+y+" ("+newLines.length+" lines)");
@@ -97,8 +100,8 @@ public class OptimizedView extends JPanel  {
      * @param y The Nortward offset 
      * @param newLines The new lines to patch up 
      */
-    public void offsetImage(int x, int y, Line[] newLines) {
-        offsetImage(x, y, newLines, getSize());
+    public void offsetImage(int x, int y, Line[]... newLines) {
+        offsetImage(x, y, getSize(), newLines);
     }
         
     /**

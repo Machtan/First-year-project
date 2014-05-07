@@ -58,15 +58,15 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
     /**
     * private method to calculate the distance from a point P(pX, pY)
     * to the middle of a line with ends at point A(aX, aY) and point B(bX, bY).
-    * @param double a = (aX, aY).
-    * @param double b = (bX, bY).
-    * @param double p = (pX, pY).
-    * @return double distance.
+    * @param float a = (aX, aY).
+    * @param float b = (bX, bY).
+    * @param float p = (pX, pY).
+    * @return float distance.
     */
-    private double pointToLineDistance( double aX, double aY, double bX, double bY, double pX, double pY) {
+    private double pointToLineDistance( float aX, float aY, float bX, float bY, float pX, float pY) {
         //return Math.abs((bX-aX)*(aY-pY)-(aX-pX)*(bY-aY)) / Math.sqrt((bX-aX)*(bX-aX)+(bY-aY)*(bY-aY));
         
-        double centerx, centery;
+        float centerx, centery;
         centerx = aX+(bX-aX)/2;
         centery = aY+(bY-aY)/2;
         return Math.sqrt((pX-centerx)*(pX-centerx)+(pY-centery)*(pY-centery));
@@ -89,21 +89,21 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         
         // Change position from screen coordinates to map coordinates.
         // Create a new small Rect with the mouseposition as midpoint with mapcoordinates.
-        double x = port.getMapX(cPos.x);
-        double y = port.getMapY(cPos.y);
+        float x = port.getMapX(cPos.x);
+        float y = port.getMapY(cPos.y);
         Rect cursorRect = new Rect(x-width/2, y-height/2, width, height);
         
         // Get a HashSet containing RoadParts within the cursorRect.
         RoadPart[] roads = controller.getRoads(cursorRect);
   
-        // If no RoadParts are found within the area, double size of cursorRect until 
+        // If no RoadParts are found within the area, float size of cursorRect until 
         // at least one has been found.
         while (roads.length == 0) {
 
-            double rectX = cursorRect.x-cursorRect.width/2;
-            double rectY = cursorRect.y-cursorRect.height/2;
-            double rectWidth = cursorRect.width*2;
-            double rectHeight = cursorRect.height*2;
+            float rectX = cursorRect.x-cursorRect.width/2;
+            float rectY = cursorRect.y-cursorRect.height/2;
+            float rectWidth = cursorRect.width*2;
+            float rectHeight = cursorRect.height*2;
             
             cursorRect = new Rect(rectX, rectY, rectWidth, rectHeight);
             roads = controller.getRoads(cursorRect);
@@ -114,10 +114,10 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         RoadPart nearest = null;
         for(RoadPart road : roads) {
             Rect r = road.getRect();
-            double areaX1 = r.x;
-            double areaY1 = r.y;
-            double areaX2 = r.x + r.width;
-            double areaY2 = r.y + r.height;  
+            float areaX1 = r.x;
+            float areaY1 = r.y;
+            float areaX2 = r.x + r.width;
+            float areaY2 = r.y + r.height;  
             
             double distance = pointToLineDistance(areaX1, areaY1, areaX2, areaY2, x, y); 
             if (distance < minDist) {
@@ -132,10 +132,10 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         Draw the rect containing the nearest RoadPart r.
         
         Rect roadRect = r.getRect();
-        double mx = (roadRect.x - activeRect.x)/activeRect.width * view.getWidth();
-        double my = view.getHeight()-((roadRect.y - activeRect.y)/activeRect.height * view.getHeight());
-        double mw = (roadRect.width / activeRect.width) * view.getWidth();
-        double mh = (roadRect.height / activeRect.height) * view.getHeight();
+        float mx = (roadRect.x - activeRect.x)/activeRect.width * view.getWidth();
+        float my = view.getHeight()-((roadRect.y - activeRect.y)/activeRect.height * view.getHeight());
+        float mw = (roadRect.width / activeRect.width) * view.getWidth();
+        float mh = (roadRect.height / activeRect.height) * view.getHeight();
         Rect markerRect = new Rect(mx, my, mw, mh);
         controller.getView().setMarkerRect(markerRect);
         controller.refresh();
