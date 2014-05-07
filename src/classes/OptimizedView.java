@@ -25,7 +25,6 @@ public class OptimizedView extends JPanel  {
 		getLocalGraphicsEnvironment().getDefaultScreenDevice().
 		getDefaultConfiguration(); // Voodoo
     Rect markerRect = null;
-    public final static double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
     
     /**
      * Constructor for the OptimizedView class

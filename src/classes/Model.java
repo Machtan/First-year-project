@@ -18,8 +18,6 @@ import java.util.HashMap;
  */
 public class Model {
     private Model model;
-    private HashMap<Long, Intersection> inMap;
-    //private RoadPart[] roadPartArr;
     private Rect boundingArea; // The area the model encloses
     private final QuadTree tree;
     private static int quadCounter; //Used for loading
@@ -60,10 +58,6 @@ public class Model {
         return tree;
     }
     
-    public int intersectionCount() {
-        return inMap.size();
-    }
-    
     public Model(Intersection[] inters, RoadPart[] roads, IProgressBar... bar) {
         IProgressBar progbar = null; // Optional progress bar
         if (bar.length != 0) { 
@@ -76,7 +70,7 @@ public class Model {
         float minY = Float.MAX_VALUE;
         float maxY = Float.MIN_VALUE;
         
-        inMap = new HashMap<>();
+        HashMap<Long, Intersection> inMap = new HashMap<>();
         for (Intersection i : inters) {
             inMap.put(i.id, i); // Add intersections to the map
             minX = (float)Math.min(i.x, minX);
@@ -87,7 +81,7 @@ public class Model {
         
         // Create the quad tree
         boundingArea = new Rect(minX, minY, maxX-minX, maxY-minY);
-        tree = new QuadTree(boundingArea, 400, 30);
+        tree = new QuadTree(boundingArea, (short)400, (short)30);
         
         // Fill the quad tree
         System.out.println("Populating the Quad Tree...");
@@ -109,6 +103,7 @@ public class Model {
         double secs = (System.nanoTime()-t1)/1000000000.0;
         System.out.println("Finished!");
         System.out.println("Populating the tree took "+secs+" seconds");
+        inMap = null;
     }
     
     /**

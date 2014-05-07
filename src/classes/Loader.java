@@ -243,6 +243,12 @@ public class Loader implements ILoader {
             roads = loadRoads(roadFile.filename);
             model = new Model(ins, roads);
         }
+        ins = null;
+        roads = null;
+        System.gc();
+        MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
+        System.out.printf("Heap memory usage: %d MB%n",
+                mxbean.getHeapMemoryUsage().getUsed() / (1000000));
         return model;
     }
 
