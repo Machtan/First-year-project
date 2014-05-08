@@ -14,8 +14,8 @@ import java.util.HashSet;
  */
 public class QuadTree extends Quad {
     boolean frozen = false;
-    public QuadTree(Rect area, int maxNodes, int maxDepth) {
-        super(area, maxNodes, maxDepth, 1);
+    public QuadTree(Rect area, short maxNodes, short maxDepth) {
+        super(area, maxNodes, maxDepth, (short)1);
     }
     
     public RoadPart[] getSelectedIn(Rect rect, RoadType... types) {

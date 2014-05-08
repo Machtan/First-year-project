@@ -36,25 +36,6 @@ public class Loader implements ILoader {
     protected static final String encoding = "iso8859-1";
 
     /**
-     * Loads roads from a krak file
-     *
-     * @param krakFilePath
-     * @return
-     */
-    public static RoadPart[] loadKrakRoads(String krakFilePath) {
-        System.out.println("Loading roads from Krak data...");
-        EdgeData[] edges = KrakLoader.loadEdges(krakFilePath);
-        System.out.println("Converting to the internal data types...");
-        RoadPart[] roads = new RoadPart[edges.length];
-        for (int i = 0; i < edges.length; i++) {
-            roads[i] = new RoadPart(edges[i]);
-        }
-        System.out.println("Finished converting!");
-        System.out.println("Roads loaded! (" + roads.length + " nodes)");
-        return roads;
-    }
-
-    /**
      * Loads a list of reformatted RoadPart data from a file
      *
      * @param roadFilePath The path to the file
@@ -262,6 +243,12 @@ public class Loader implements ILoader {
             roads = loadRoads(roadFile.filename);
             model = new Model(ins, roads);
         }
+        ins = null;
+        roads = null;
+        System.gc();
+        MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
+        System.out.printf("Heap memory usage: %d MB%n",
+                mxbean.getHeapMemoryUsage().getUsed() / (1000000));
         return model;
     }
 

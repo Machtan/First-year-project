@@ -7,13 +7,12 @@ package classes;
  */
 import java.awt.Dimension;
 import static java.lang.Math.abs;
+import javax.swing.JComponent;
 
 public class Viewport {
     private Rect activeRect;
     private Rect bounds;
-    private double widthFactor = 1; // How big the width is relatively to the correct scaling ratio
-    private OptimizedView target;
-    private final double wperh;
+    private JComponent target;
     
     /**
      * Projection is a class that represents the projection of a part of the map
@@ -29,13 +28,17 @@ public class Viewport {
         public Projection(Rect source, Dimension dim) {
             this(source, new Rect(dim));
         }
+        @Override
+        public String toString() {
+            return "P["+source+" -> "+target+"]";
+        }
     }
     
-    public Viewport(Rect bounds, double zoomLevel, OptimizedView target) {
+    public Viewport(Rect bounds, float zoomLevel, OptimizedView target) {
         this.bounds = bounds;
-        this.activeRect = bounds;
         this.target = target;
-        wperh = bounds.height / bounds.width;
+        activeRect = bounds;
+        refit();
         zoomBy(1-zoomLevel);
     }
     
@@ -44,11 +47,28 @@ public class Viewport {
     }
     
     /**
+     * Returns the size of the viewport's view space
+     * @return the size of the viewport's view space
+     */
+    public Dimension getSize() {
+        return target.getSize();
+    }
+    
+    /**
+     * Returns the projection of the viewport on the given dimension
+     * @param dim The dimension to use
+     * @return The projection of the viewport
+     */
+    public Projection getProjection(Dimension dim) {
+        return new Projection(activeRect, dim);
+    }
+    
+    /**
      * Returns the current projection of the viewport
      * @return the current projection of the viewport
      */
     public Projection getProjection() {
-        return new Projection(activeRect, target.getSize());
+        return getProjection(target.getSize());
     }
     
     /**
@@ -58,9 +78,9 @@ public class Viewport {
      * @return The resulting projection
      */
     public Projection setSource(Rect source) {
-        System.out.println("Changing the viewport source to "+source);
+        //System.out.println("Changing the viewport source to "+source);
         activeRect = source;
-        return getProjection();
+        return refit();
     }
     
     /**
@@ -68,27 +88,24 @@ public class Viewport {
      * @param pixelX The pixel x-coordinate
      * @return The map x-coordinate at the pixel
      */
-    public double getMapX(int pixelX) {
-        double relX = (double)pixelX / target.getWidth();
-        double deltaW = activeRect.width * relX;
+    public float getMapX(int pixelX) {
+        float relX = (float)pixelX / target.getWidth();
+        float deltaW = activeRect.width * relX;
         return activeRect.x + deltaW;
     }
     
-    public double ratio() { // width per height
+    public float ratio() { // width per height
         Dimension dim = target.getSize();
-        return (double)dim.width / dim.height;
+        return (float)dim.width / dim.height;
     }
     
     public Rect getMapArea(Rect screenRect) {
-        System.out.println("Getting the map rect for screen rect @ "+screenRect);
-        double x = getMapX((int)screenRect.left);
-        double y = getMapY((int)screenRect.bottom);
+        //System.out.println("Getting the map rect for screen rect @ "+screenRect);
+        float x = getMapX((int)screenRect.x);
+        float y = getMapY((int)screenRect.y);
         
-        double width = (screenRect.width/target.getWidth()) * activeRect.width;
-        double height = (screenRect.height/target.getHeight()) * activeRect.height;
-        
-        System.out.println("x,y,w,h: "+x+" "+y+" "+width+" "+height);
-        System.out.println("Ratio: "+width/height);
+        float width = (screenRect.width/target.getWidth()) * activeRect.width;
+        float height = (screenRect.height/target.getHeight()) * activeRect.height;
         
         return new Rect(x, y, width, height);
     }
@@ -98,13 +115,13 @@ public class Viewport {
      * @param pixelY The pixel y-coordinate
      * @return The map y-coordinate at the pixel
      */
-    public double getMapY(int pixelY) {
-        double relY = (double)pixelY / target.getHeight();
-        double deltaH = activeRect.height * relY;
+    public float getMapY(int pixelY) {
+        float relY = (float)pixelY / target.getHeight();
+        float deltaH = activeRect.height * relY;
         return activeRect.y + (activeRect.height - deltaH);
     }
     
-    private void changeWidth(double deltaWidth) {
+    private void changeWidth(float deltaWidth) {
         
     }
     
@@ -119,18 +136,18 @@ public class Viewport {
     }
     
     // Returns a rectangle scaled by factor relatively to its center
-    private Rect getScaled(Rect rect, double factor) {
-        double rw = rect.width * factor;
-        double rh = rect.height * factor;
-        double hdw = (rect.width - rw) / 2; // half delta width
-        double hdh = (rect.height - rh) / 2; // ~ height
-        double rx = rect.x + hdw;
-        double ry = rect.y + hdh;
+    private Rect getScaled(Rect rect, float factor) {
+        float rw = rect.width * factor;
+        float rh = rect.height * factor;
+        float hdw = (rect.width - rw) / 2; // half delta width
+        float hdh = (rect.height - rh) / 2; // ~ height
+        float rx = rect.x + hdw;
+        float ry = rect.y + hdh;
         return new Rect(rx, ry, rw, rh);
     }
     
     // Zooms by a relative factor
-    public Projection zoomBy(double part) { 
+    public Projection zoomBy(float part) { 
         if (part <= -1) {
             throw new RuntimeException("The zoom factor should be greater than -1");
         }
@@ -143,11 +160,10 @@ public class Viewport {
      * @return Returns the new projection
      */
     public Projection refit() {
-        double wperh = ratio();
+        float wperh = ratio();
         if ((activeRect.width / activeRect.height) != wperh) {
-            System.out.println("Refitting the viewport... :)");
-            double width = activeRect.height * wperh;
-            setSource(new Rect(activeRect.x, activeRect.y, width, activeRect.height));
+            float width = activeRect.height * wperh;
+            activeRect = new Rect(activeRect.x, activeRect.y, width, activeRect.height);
         }
         return getProjection();
     }
@@ -158,7 +174,7 @@ public class Viewport {
      * @param part The zoom level between 0 and 1
      * @return The new projection
      */
-    public Projection zoomTo(double part) {
+    public Projection zoomTo(float part) {
         if (part < 0 || part > 1) {
             throw new RuntimeException("Absolute zoom must be between 0 and 1");
         }
@@ -173,19 +189,19 @@ public class Viewport {
      * @param dy How much to move on the y-axis
      * @return An array with the projections of the newly visible area
      */
-    public Projection[] move(double dx, double dy) { 
+    public Projection[] move(float dx, float dy) { 
         if (dx+dy == 0) {
             return new Projection[]{}; // No movement :u
         }
         
         // Copy code from resizeHandler here and refit
        
-        double width = target.getWidth();
-        double height = target.getHeight();
+        float width = target.getWidth();
+        float height = target.getHeight();
         
         // Pixels per unit
-        double ppu = target.getHeight()/activeRect.height;
-        double upp = 1.0 / ppu;
+        float ppu = target.getHeight()/activeRect.height;
+        float upp = 1f / ppu;
 
         // Potentially add restriction here?
 
@@ -202,21 +218,21 @@ public class Viewport {
         Rect horTarget = null;
         // Find out which parts of the map should be redrawn
         if (dx > 0) { // (render)Left pressed -> map goes right 
-            verArea = new Rect(na.left, na.bottom, Math.abs(dx*upp), a.height); // <-- not working
+            verArea = new Rect(na.x, na.y, Math.abs(dx*upp), a.height); // <-- not working
             verTarget = new Rect(0, 0, width, height);
         } else if (dx < 0) { // (render)Right pressed -> map goes left
-            verArea = new Rect(a.right, na.bottom, Math.abs(dx*upp), a.height);
+            verArea = new Rect(a.right(), na.y, Math.abs(dx*upp), a.height);
             verTarget = new Rect(width-abs(dx), 0, width, height);
         }
-        if (dx > 0) { // (render)Down -> map up
-            horArea = new Rect(na.left, na.bottom, a.width, Math.abs(dy*upp)); // <-- not working
+        if (dy > 0) { // (render)Down -> map up
+            horArea = new Rect(na.x, na.y, a.width, Math.abs(dy*upp)); // <-- not working
             horTarget = new Rect(0, 0, width, abs(dy)); // 
         } else if (dy < 0) { // (render)Up -> map down
-            horArea = new Rect(na.left, a.top, a.width, Math.abs(dy*upp));
+            horArea = new Rect(na.x, a.top(), a.width, Math.abs(dy*upp));
             horTarget = new Rect(0, height-abs(dy), width, abs(dy)); // 
         }
         
-        a = na; // Assign the new active rect
+        activeRect = na; // Assign the new active rect
 
         // Create and return the projections :)
         if ((verTarget != null) && (horTarget != null)) {
@@ -237,8 +253,8 @@ public class Viewport {
      * @return an array with the projections of the newly visible areas
      */
     public Projection[] movePixels(int dx, int dy) {
-        double upp = activeRect.height / target.getHeight();
-        return move(dx * upp, dy * upp);
+        float upp = activeRect.height / target.getHeight();
+        return move(dx, dy); // Currently... unprepared
     }
     
     /**
@@ -247,8 +263,8 @@ public class Viewport {
      * @param y The y-axis coordinate
      */
     public void centerOn(int x, int y) { // Rect coords
-        double hw = activeRect.width / 2;
-        double hh = activeRect.height / 2;
+        float hw = activeRect.width / 2;
+        float hh = activeRect.height / 2;
         activeRect = new Rect(x-hw, y+hh, activeRect.width, activeRect.height);
     }
 }

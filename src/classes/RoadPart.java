@@ -21,34 +21,34 @@ public class RoadPart implements CharSequence, QuadNode {
 
     
     // Address numbering on sides of the road
-    public final int sLeftNum;
-    public final int eLeftNum;
-    public final int sRightNum;
-    public final int eRightNum;
+    public final short sLeftNum;
+    public final short eLeftNum;
+    public final short sRightNum;
+    public final short eRightNum;
     
     // House address lettering mumbo jumbo
-    public final String sLeftLetter;
-    public final String eLeftLetter;
-    public final String sRightLetter;
-    public final String eRightLetter;
+    public final char sLeftLetter;
+    public final char eLeftLetter;
+    public final char sRightLetter;
+    public final char eRightLetter;
     
     // The postal code at each side
     // (What is this even used for... post area borders?)
-    public final int rightZip;
-    public final int leftZip;
+    public final short rightZip;
+    public final short leftZip;
     
     // Highway turn-off number (?)
     public final int turnoffNumber;
     
     // What type of zone is the road in (residential, industrial etc.)
     public final ZoneType zone;
-    public final int speedLimit;
-    public final double driveTime;
+    public final short  speedLimit;
+    public final float driveTime;
     
     // Info related to driveability
-    public final String oneWay;
-    public final String fTurn;
-    public final String tTurn;
+    public final char oneWay;
+    public final char fTurn;
+    public final char tTurn;
     
     // The area this road is in
     public Intersection p1;
@@ -80,10 +80,10 @@ public class RoadPart implements CharSequence, QuadNode {
     public void setPoints(Intersection p1, Intersection p2) {
         this.p1 = p1;
         this.p2 = p2;
-        double x = Math.min(p1.x, p2.x);
-        double y = Math.min(p1.y, p2.y);
-        double width = Math.abs(p1.x - p2.x);
-        double height = Math.abs(p1.y - p2.y);
+        float x = (float)Math.min(p1.x, p2.x);
+        float y = (float)Math.min(p1.y, p2.y);
+        float width = (float)Math.abs(p1.x - p2.x);
+        float height = (float)Math.abs(p1.y - p2.y);
         area = new Rect(x,y,width,height);
     }
 
@@ -98,7 +98,7 @@ public class RoadPart implements CharSequence, QuadNode {
      * @param ins Render instructions
      * @return The roadPart as a drawable line
      */
-    public Line asLine(double x1, double y1, Rect target, double ppu, double heightFac, RenderInstructions ins) {
+    public Line asLine(float x1, float y1, Rect target, float ppu, float heightFac, RenderInstructions ins) {
         Line line = new Line(
             target.x+(p1.x-x1)*ppu, 
             heightFac - (p1.y-y1)*ppu, 
@@ -109,10 +109,10 @@ public class RoadPart implements CharSequence, QuadNode {
         return line;
     }
     
-    public double x1() { return p1.x; }
-    public double y1() { return p1.y; }
-    public double x2() { return p2.x; }
-    public double y2() { return p2.y; }
+    public float x1() { return p1.x; }
+    public float y1() { return p1.y; }
+    public float x2() { return p2.x; }
+    public float y2() { return p2.y; }
     
     /**
      * Returns the bounding area of this road part
@@ -158,54 +158,23 @@ public class RoadPart implements CharSequence, QuadNode {
         // Special case handling :u
         name = convertName(Tokenizer.getString());
         
-        sLeftNum = Tokenizer.getInt();
-        eLeftNum = Tokenizer.getInt();
-        sRightNum = Tokenizer.getInt();
-        eRightNum = Tokenizer.getInt();
-        sLeftLetter = Tokenizer.getString();
-        eLeftLetter = Tokenizer.getString();
-        sRightLetter = Tokenizer.getString();
-        eRightLetter = Tokenizer.getString();
-        rightZip = Tokenizer.getInt();
-        leftZip = Tokenizer.getInt();
+        sLeftNum = Tokenizer.getShort();
+        eLeftNum = Tokenizer.getShort();
+        sRightNum = Tokenizer.getShort();
+        eRightNum = Tokenizer.getShort();
+        sLeftLetter = Tokenizer.getChar();
+        eLeftLetter = Tokenizer.getChar();
+        sRightLetter = Tokenizer.getChar();
+        eRightLetter = Tokenizer.getChar();
+        rightZip = Tokenizer.getShort();
+        leftZip = Tokenizer.getShort();
         turnoffNumber = Tokenizer.getInt();
         zone = ZoneType.TEMP; // TODO fix
-        speedLimit = Tokenizer.getInt();
-        driveTime = Tokenizer.getDouble();
-        oneWay = Tokenizer.getString();
-        fTurn = Tokenizer.getString();
-        tTurn = Tokenizer.getString();
-    }
-    
-    /**
-        Constructor taking an EdgeData entity
-        @param data An EdgeData entity
-    */
-    public RoadPart(EdgeData data) {
-        
-        sourceID = data.FNODE;
-        targetID = data.TNODE;
-        sLeftNum = data.FROMLEFT;
-        eLeftNum = data.TOLEFT;
-        sRightNum = data.FROMRIGHT;
-        eRightNum = data.TORIGHT;
-        sLeftLetter = data.FROMLEFT_BOGSTAV;
-        eLeftLetter = data.TOLEFT_BOGSTAV;
-        sRightLetter = data.FROMRIGHT_BOGSTAV;
-        eRightLetter = data.TORIGHT_BOGSTAV;
-        turnoffNumber = data.FRAKOERSEL;
-        zone = ZoneType.TEMP; // TODO permananent fix
-        speedLimit = data.SPEED;
-        driveTime = data.DRIVETIME;
-        type = RoadType.fromValue(data.TYP);
-        
-        name = convertName(data.VEJNAVN);
-        
-        rightZip = data.H_POSTNR;
-        leftZip = data.V_POSTNR;
-        oneWay = data.ONE_WAY;
-        fTurn = data.F_TURN;
-        tTurn = data.T_TURN;
+        speedLimit = Tokenizer.getShort();
+        driveTime = Tokenizer.getFloat();
+        oneWay = Tokenizer.getChar();
+        fTurn = Tokenizer.getChar();
+        tTurn = Tokenizer.getChar();
     }
     
     /**

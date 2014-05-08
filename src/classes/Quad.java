@@ -15,22 +15,20 @@ public class Quad {
 
     private Quad[] subquads; // 4 subquads if necessarry. Empty if not.
     private boolean bottom; // True if the element is the bottommost element.
-    private int maxNodes = 400; // Number of nodes a quad can hold before it splits.
-    private final int depth; // The depth of the quad
+    private short maxNodes = 400; // Number of nodes a quad can hold before it splits.
+    private final short depth; // The depth of the quad
     public final Rect area; // The area of the Quad
     private FastArList<RoadPart> nodeList; // The elements in the Quad.
     private RoadPart[] nodes;
-    private final int maxDepth; // The max depth
-    private int subCount; // The nodes below this one
+    private final short maxDepth; // The max depth
     
-    public Quad(Rect area, int maxNodes, int maxDepth, int depth) {
+    public Quad(Rect area, short maxNodes, short maxDepth, short depth) {
         this.area = area;
         this.maxNodes = maxNodes;
         this.maxDepth = maxDepth;
         this.depth = depth;
         nodeList = new FastArList<>();
         bottom = true;
-        subCount = 0;
     }
     
     /**
@@ -39,7 +37,6 @@ public class Quad {
      * @param node 
      */
     public void add(RoadPart node) {
-        subCount++;
         if (bottom) {
             //System.out.println("Adding "+node+" to "+this);
             nodeList.add(node);
@@ -119,14 +116,6 @@ public class Quad {
     }
     
     /**
-     * Returns the amount of nodes in or below this quad
-     * @return the amount of nodes in or below this quad
-     */
-    public int getSubCount() {
-        return subCount;
-    }
-    
-    /**
      * Freezes the tree, preventing further addition to it and improving its 
      * performance by converting lists to arrays
      */
@@ -149,17 +138,17 @@ public class Quad {
      */
     public void split() {
         if (bottom == true && depth < maxDepth) {
-            double hw = 0.5 * area.width; // Half width
-            double hh = 0.5 * area.height; // Half height
+            float hw = 0.5f * area.width; // Half width
+            float hh = 0.5f * area.height; // Half height
             Rect swRect = new Rect(area.x, area.y, hw, hh);
-            Rect nwRect = new Rect(area.x, area.y + 0.5 * area.height, hw, hh);
-            Rect seRect = new Rect(area.x + 0.5 * area.width, area.y, hw, hh);
-            Rect neRect = new Rect(area.x + 0.5 * area.width, area.y + hh, hw, hh);
+            Rect nwRect = new Rect(area.x, area.y + 0.5f * area.height, hw, hh);
+            Rect seRect = new Rect(area.x + 0.5f * area.width, area.y, hw, hh);
+            Rect neRect = new Rect(area.x + 0.5f * area.width, area.y + hh, hw, hh);
             
-            Quad sw = new Quad(swRect, maxNodes, maxDepth, this.depth+1);
-            Quad nw = new Quad(nwRect, maxNodes, maxDepth, this.depth+1);
-            Quad se = new Quad(seRect, maxNodes, maxDepth, this.depth+1);
-            Quad ne = new Quad(neRect, maxNodes, maxDepth, this.depth+1);
+            Quad sw = new Quad(swRect, maxNodes, maxDepth, (short)(this.depth+1));
+            Quad nw = new Quad(nwRect, maxNodes, maxDepth, (short)(this.depth+1));
+            Quad se = new Quad(seRect, maxNodes, maxDepth, (short)(this.depth+1));
+            Quad ne = new Quad(neRect, maxNodes, maxDepth, (short)(this.depth+1));
             
             subquads = new Quad[] {sw, nw, se, ne};
             bottom = false;
@@ -178,6 +167,6 @@ public class Quad {
     
     @Override
     public String toString() {
-        return "Quad( Depth: "+depth+" subCount: "+subCount+" Bottom: "+bottom+" @ "+area+")";
+        return "Quad( Depth: "+depth+" Bottom: "+bottom+" @ "+area+")";
     }
 }

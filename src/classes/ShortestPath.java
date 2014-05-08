@@ -146,7 +146,7 @@ public class ShortestPath {
             r.setPoints(r.p1, r.p2);
         }
 
-        Graph graph = new Graph(model.intersectionCount(), roadTemp);
+        Graph graph = new Graph(model.intersections, roadTemp);
 
         ShortestPath SP = new ShortestPath(graph);
 

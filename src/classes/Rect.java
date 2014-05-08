@@ -9,14 +9,10 @@ import java.awt.Dimension;
  */
 public class Rect {
     
-    public final double x;
-    public final double y;
-    public final double width;
-    public final double height;
-    public final double left;
-    public final double right;
-    public final double top;
-    public final double bottom;
+    public final float x;
+    public final float y;
+    public final float width;
+    public final float height;
     
     /**
      * Constructor for the Rect class
@@ -25,19 +21,22 @@ public class Rect {
      * @param width The width of the rectangle
      * @param height The height of the rectangle
      */
-    public Rect (double x, double y, double width, double height) {
+    public Rect (float x, float y, float width, float height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.left = x;
-        this.right = x+width;
-        this.top = y+height;
-        this.bottom = y;
     }
     
     public Rect(Dimension dim) {
         this(0, 0, dim.width, dim.height);
+    }
+    
+    public float right() {
+        return x+width;
+    }
+    public float top() {
+        return y+height;
     }
     
     /**
@@ -46,7 +45,8 @@ public class Rect {
      * @return Whether the rectangles overlap
      */
     public boolean collidesWith(Rect other) {
-        return this.right > other.left && this.left < other.right && this.top > other.bottom && this.bottom < other.top;
+        return this.right() > other.x && this.x < other.right() && 
+                this.top() > other.y && this.y < other.top();
     }
     
     /**
@@ -55,7 +55,8 @@ public class Rect {
      * @return whether the other rect is fully contained by this rect
      */
     public boolean contains(Rect other) {
-        return !((other.top > this.top)||(other.bottom < this.bottom)||(other.left < this.left)||(other.right > this.right));
+        return !((other.top() > this.top())||(other.y < this.y)|| 
+                (other.x < this.x)||(other.right() > this.right()));
     }
     
     @Override
@@ -69,7 +70,7 @@ public class Rect {
      * @param y
      * @return A new rect shifted by the given amount
      */
-    public Rect shift(double x, double y) {
+    public Rect shift(float x, float y) {
         return new Rect(this.x+x, this.y+y, this.width, this.height);
     }
     
@@ -78,16 +79,16 @@ public class Rect {
      * @param factor The factor to scale by
      * @return A new rect scaled by the factor.
      */
-    public Rect getScaled(double factor) {
+    public Rect getScaled(float factor) {
         if (factor < 0) {
             throw new RuntimeException("The scale factor may not be negative! ("+factor+")");
         }
-        double rw = width * factor;
-        double rh = height * factor;
-        double hdw = (width - rw) / 2; // half delta width
-        double hdh = (height - rh) / 2; // ~ height
-        double rx = x + hdw;
-        double ry = y + hdh;
+        float rw = width * factor;
+        float rh = height * factor;
+        float hdw = (width - rw) / 2; // half delta width
+        float hdh = (height - rh) / 2; // ~ height
+        float rx = x + hdw;
+        float ry = y + hdh;
         return new Rect(rx, ry, rw, rh);
     }
     
@@ -97,7 +98,7 @@ public class Rect {
      * @param y
      * @return 
      */
-    public Rect shiftTo(double x, double y) {
+    public Rect shiftTo(float x, float y) {
         return new Rect(x, y, width, height);
     }
 }
