@@ -4,9 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -32,14 +29,16 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
     
     FindRoadPanel(Controller controller, JPanel target) {
         super(new BorderLayout());
+        
+        this.controller = controller;
+        target.addMouseMotionListener(this);
+        view = target;
+        
         Border padding = BorderFactory.createEmptyBorder(5,5,5,5);
         Border bevel = BorderFactory.createBevelBorder(BevelBorder.LOWERED);
         setBorder(BorderFactory.createCompoundBorder(bevel, padding));
         roadLabel = new JLabel(description + "Undefined");
         add(roadLabel, BorderLayout.WEST);
-        this.controller = controller;;
-        target.addMouseMotionListener(this);
-        view = target;
     }
     
     /**

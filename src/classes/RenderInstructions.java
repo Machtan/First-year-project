@@ -16,6 +16,7 @@ public class RenderInstructions {
     private final Color voidColor;
     private Color defaultColor;
     private HashMap<RoadType, Color> colorMap;
+    private RoadType[] renderedTypes;
     
     /**
      * Constructor for the RenderInstructions class
@@ -24,11 +25,17 @@ public class RenderInstructions {
         defaultColor = new Color(0,0,0);
         voidColor = new Color(200,200,255);
         colorMap = new HashMap<>();
+        renderedTypes = RoadType.values();
     }
     
-    public void setColor(RoadType type, Color color) {
-        colorMap.remove(type);
-        colorMap.put(type,color);
+    private void recalcRendered() {
+        FastArList<RoadType> types = new FastArList<>();
+        for (RoadType type : RoadType.values()) {
+            if (getColor(type) != voidColor) {
+                types.add(type);
+            }
+        }
+        renderedTypes = types.toArray(new RoadType[types.size()]);
     }
     
     public Color getVoidColor() {
@@ -51,12 +58,15 @@ public class RenderInstructions {
   
     
     /**
-     * Sets a new color for the given type of road
+     * Sets a new color for the given road types
      * @param color The color the road shall be drawn with
-     * @param type The type of road
+     * @param types The types of roads to use this color
      */
-    public void addMapping(Color color, RoadType type) { 
-        colorMap.put(type, color);
+    public void addMapping(Color color, RoadType... types) { 
+        for (RoadType type : types) {
+            colorMap.put(type, color);
+        }
+        recalcRendered();
     }
     
     /**
@@ -73,6 +83,7 @@ public class RenderInstructions {
      */
     public void setDefaultColor(Color color) {
         defaultColor = color;
+        recalcRendered();
     }
     
     /**
@@ -80,13 +91,7 @@ public class RenderInstructions {
      * @return the types of roads rendered with these instructions
      */
     public RoadType[] getRenderedTypes() {
-        FastArList<RoadType> types = new FastArList<>();
-        for (RoadType type : colorMap.keySet()) {
-            if (colorMap.get(type) != voidColor) {
-                types.add(type);
-            }
-        }
-        return types.toArray(new RoadType[types.size()]);
+        return renderedTypes;
     }
     
     /**

@@ -73,14 +73,14 @@ public class RenderPanel extends JPanel {
         
         private void onChecked(Object source) {
             for (RoadType type : types) {
-                ins.setColor(type, selected);
+                ins.addMapping(selected, type);
             }
             refresh();
         }
         
         private void onUnchecked(Object source) {
             for (RoadType type : types) {
-                ins.setColor(type, deselected);
+                ins.addMapping(deselected, type);
             }
             refresh();
         }

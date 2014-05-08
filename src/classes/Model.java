@@ -125,10 +125,13 @@ public class Model {
      */
     public Line[] getLines(Viewport.Projection p, float windowHeight, 
             RenderInstructions instructions, ArrayList<RoadType> prioritized) {
-       long t1 = System.nanoTime();
+        if (p.equals(Viewport.Projection.Empty)) { 
+            return new Line[0]; // Don't waste time on the empty projection ;)
+        }
+        long t1 = System.nanoTime();
 
         RoadType[] types = instructions.getRenderedTypes();
-        RoadPart[] roadArr = tree.getSelectedIn(p.source, types);
+        RoadPart[] roadArr = tree.getIn(p.source); //tree.getSelectedIn(p.source, types); // TODO fix
         if (roadArr.length == 0) {
             return new Line[0];
         }
@@ -206,7 +209,7 @@ public class Model {
      * @return Road parts in the area
      */
     public RoadPart[] getRoads(Rect area, RenderInstructions ins) {
-        return tree.getSelectedIn(area, ins.getRenderedTypes());
+        return tree.getIn(area);//tree.getSelectedIn(area, ins.getRenderedTypes()); //TODO fix
     }
     
 }

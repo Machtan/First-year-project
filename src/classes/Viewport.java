@@ -7,12 +7,12 @@ package classes;
  */
 import java.awt.Dimension;
 import static java.lang.Math.abs;
-import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 public class Viewport {
     private Rect activeRect;
     private Rect bounds;
-    private JComponent target;
+    private JPanel target;
     
     /**
      * Projection is a class that represents the projection of a part of the map
@@ -21,6 +21,10 @@ public class Viewport {
     public static class Projection {
         public final Rect source; // The map space to draw
         public final Rect target; // The window space to draw on
+        /**
+         * An empty projection.
+         */
+        public final static Projection Empty = new Projection(new Rect(0,0,0,0), new Rect(0,0,0,0));
         public Projection(Rect source, Rect target) {
             this.source = source;
             this.target = target;
@@ -34,7 +38,7 @@ public class Viewport {
         }
     }
     
-    public Viewport(Rect bounds, float zoomLevel, OptimizedView target) {
+    public Viewport(Rect bounds, float zoomLevel, JPanel target) {
         this.bounds = bounds;
         this.target = target;
         activeRect = bounds;
@@ -68,7 +72,7 @@ public class Viewport {
      * @return the current projection of the viewport
      */
     public Projection getProjection() {
-        return getProjection(target.getSize());
+        return refit();
     }
     
     /**
@@ -94,6 +98,10 @@ public class Viewport {
         return activeRect.x + deltaW;
     }
     
+    /**
+     * Returns the current width/height ratio
+     * @return the current width/height ratio
+     */
     public float ratio() { // width per height
         Dimension dim = target.getSize();
         return (float)dim.width / dim.height;
@@ -121,18 +129,38 @@ public class Viewport {
         return activeRect.y + (activeRect.height - deltaH);
     }
     
-    private void changeWidth(float deltaWidth) {
-        
+    /**
+     * Returns how long the given pixel range is in map coordinates
+     * @param pixels
+     * @return 
+     */
+    public float getLength(int pixels) {
+        float upp = activeRect.width / target.getWidth();
+        return upp * pixels;
     }
     
     /**
-     * Resizes the physical window of the viewport and returns the new projection
-     * @param dim The new dimension of the window
-     * @return The resulting projection
+     * Returns the projection changes that would result from changing from the
+     * given source width to the given target width
+     * @param width The new width
+     * @return A projection of the lines now visible by the width change
      */
-    public Projection resize(Dimension dim) {
-        
-        return null;
+    public Projection widen(int width) {
+        /*int oldWidth = target.getWidth();
+        target.getWidth() = width;
+        if (width <= oldWidth) { // The same or smaller => No new lines
+            System.out.println("<--");
+            return Projection.Empty;
+        }
+        System.out.println("-->");
+        int height = target.getHeight();
+        int dw = width - oldWidth;
+        Rect a = activeRect;
+        Rect targetArea = new Rect(oldWidth, 0, width-oldWidth, height);
+        Rect sourceArea = new Rect(a.right(), a.y, getLength(dw), a.height);      
+        refit(); // Fit to the new width
+        return new Projection(sourceArea, targetArea);*/
+        return Projection.Empty;
     }
     
     // Returns a rectangle scaled by factor relatively to its center
@@ -165,7 +193,7 @@ public class Viewport {
             float width = activeRect.height * wperh;
             activeRect = new Rect(activeRect.x, activeRect.y, width, activeRect.height);
         }
-        return getProjection();
+        return getProjection(target.getSize()); // Beware, breaks without the param
     }
     
     /**
@@ -194,8 +222,6 @@ public class Viewport {
             return new Projection[]{}; // No movement :u
         }
         
-        // Copy code from resizeHandler here and refit
-       
         float width = target.getWidth();
         float height = target.getHeight();
         
@@ -204,7 +230,6 @@ public class Viewport {
         float upp = 1f / ppu;
 
         // Potentially add restriction here?
-
 
         // Prepare the visual changes
         Rect verArea = null;
@@ -218,17 +243,17 @@ public class Viewport {
         Rect horTarget = null;
         // Find out which parts of the map should be redrawn
         if (dx > 0) { // (render)Left pressed -> map goes right 
-            verArea = new Rect(na.x, na.y, Math.abs(dx*upp), a.height); // <-- not working
+            verArea = new Rect(na.x, na.y, abs(dx*upp), a.height); // <-- not working
             verTarget = new Rect(0, 0, width, height);
         } else if (dx < 0) { // (render)Right pressed -> map goes left
-            verArea = new Rect(a.right(), na.y, Math.abs(dx*upp), a.height);
+            verArea = new Rect(a.right(), na.y, abs(dx*upp), a.height);
             verTarget = new Rect(width-abs(dx), 0, width, height);
         }
         if (dy > 0) { // (render)Down -> map up
-            horArea = new Rect(na.x, na.y, a.width, Math.abs(dy*upp)); // <-- not working
+            horArea = new Rect(na.x, na.y, a.width, abs(dy*upp)); // <-- not working
             horTarget = new Rect(0, 0, width, abs(dy)); // 
         } else if (dy < 0) { // (render)Up -> map down
-            horArea = new Rect(na.x, a.top(), a.width, Math.abs(dy*upp));
+            horArea = new Rect(na.x, a.top(), a.width, abs(dy*upp));
             horTarget = new Rect(0, height-abs(dy), width, abs(dy)); // 
         }
         

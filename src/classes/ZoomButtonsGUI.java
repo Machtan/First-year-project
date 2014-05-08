@@ -12,24 +12,20 @@ import javax.swing.SpringLayout;
  * @author Isabella
  */
 public class ZoomButtonsGUI extends JPanel {
-    private final Controller controller;
     private final JPanel panel;
     private int numberOfButtons = 0;
     
     private void addButton(String text, String tooltip, ActionListener listener) {
         JButton button = new JButton(text);
         button.setFocusable(false);
-        //button.setFont(new Font("Verdana", Font.BOLD, 18));
         button.setToolTipText(tooltip);
         button.addActionListener(listener);
-        //button.setBorder(BorderFactory.createBevelBorder(5, Color.lightGray, Color.yellow));
         numberOfButtons++;
         panel.add(button);
     }
 
     public ZoomButtonsGUI(final Controller controller) {
         super();
-        this.controller = controller; 
         panel = new JPanel(new SpringLayout());
         
         String zoomTip = "You can also zoom in by clicking '+' on your keyboard.";

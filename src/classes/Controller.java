@@ -4,8 +4,6 @@ import enums.RoadType;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -26,8 +24,7 @@ public class Controller extends JFrame {
     private final OptimizedView view;
     private final Model model;
     private final CMouseHandler mouseHandler;
-    /*private final CKeyHandler keyHandler;
-    private final CResizeHandler resizeHandler;*/
+    private final CResizeHandler resizeHandler;
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
     private ArrayList<RoadType> prioritized;
     private SearchStuff searchStuff;
@@ -36,7 +33,7 @@ public class Controller extends JFrame {
     private DefaultListModel listModel;
     
     // Dynamic fields
-    public Viewport viewport;
+    public final Viewport viewport;
     private RenderInstructions ins;
     
     /**
@@ -72,14 +69,13 @@ public class Controller extends JFrame {
         // Key handling
         setFocusTraversalKeysEnabled(false);
         setFocusable(true);
-        /*keyHandler = new CKeyHandler(this, view);
-        resizeHandler = new CResizeHandler(this, view);*/
+        resizeHandler = new CResizeHandler(this, view);
         mouseHandler = new CMouseHandler(this, view);
         
         contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
-        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
+        //contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
         contentPanel.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
                 BorderLayout.WEST);
         
@@ -103,6 +99,16 @@ public class Controller extends JFrame {
      */
     public void draw(Viewport.Projection p) {
         view.renewImage(model.getLines(viewport.getProjection(), view.getHeight(), ins, prioritized));
+    }
+    
+    /**
+     * Draws the lines of the given projection on top of the current image
+     * @param p The projection to draw
+     */
+    public void addLines(Viewport.Projection p) {
+        //if (p.equals(Viewport.Projection.Empty)) { return; }
+        System.out.println("Adding the lines of projection "+p+" to the view!");
+        view.offsetImage(0,0,model.getLines(p, view.getHeight(), ins, prioritized));
     }
     
     /**
@@ -133,7 +139,9 @@ public class Controller extends JFrame {
     public void redraw() {
         long t1 = System.nanoTime();
         System.out.println("Executing a full redraw of the View");
-        view.renewImage(model.getLines(viewport.getProjection(), view.getHeight(), ins, prioritized));
+        view.renewImage(
+                model.getLines(viewport.getProjection(), 
+                view.getHeight(), ins, prioritized));
         System.out.println("- Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec) -");
     }
     
@@ -152,12 +160,20 @@ public class Controller extends JFrame {
         Datafile krakInters = new Datafile("resources/intersections.txt", 
             675902, "Loading intersection data...");
         Model model = new Loader().loadData(progbar, krakInters, krakRoads);
+        progbar.close();
+        
+        /*boolean loop = true;
+        while (loop) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                loop = false;
+            }
+        }*/
         
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
         controller.pack();
-        progbar.close();
-        
         controller.draw(controller.viewport.getProjection(viewSize));
         controller.setVisible(true);
     }

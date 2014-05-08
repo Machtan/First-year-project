@@ -78,43 +78,7 @@ public class Quad {
             }
         }
     }
-    
-    /**
-     * Adds any nodes of the selected types to the given list
-     * @param area The area to find nodes in
-     * @param list The list to add nodes to
-     * @param types The types of nodes to add
-     */
-    protected void getSelectedIn(Rect area, FastArList<RoadPart> list, RoadType... types) {
-        if (bottom) {
-            if (area.contains(this.area)) { // If all nodes are contained
-                for (RoadPart node : nodes) {
-                    for (RoadType type : types) {
-                        if (node.type == type) {
-                            list.add(node);
-                        }
-                    }
-                }
-            } else {
-                for (RoadPart node : nodes) { // Check both for containment and type
-                    if (node.getRect().collidesWith(area)) {
-                        for (RoadType type : types) {
-                            if (node.type == type) {
-                                list.add(node);
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            for (Quad subquad : subquads) {
-                if (subquad.area.collidesWith(area)) {
-                    subquad.getSelectedIn(area, list, types);
-                }
-            }
-        }
-    }
-    
+        
     /**
      * Freezes the tree, preventing further addition to it and improving its 
      * performance by converting lists to arrays

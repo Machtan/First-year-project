@@ -18,17 +18,6 @@ public class QuadTree extends Quad {
         super(area, maxNodes, maxDepth, (short)1);
     }
     
-    public RoadPart[] getSelectedIn(Rect rect, RoadType... types) {
-        assureFrozen();
-        long t1 = System.nanoTime();
-        FastArList<RoadPart> result = new FastArList<>();
-        super.getSelectedIn(rect, result, types);
-        RoadPart[] resArr = result.toArray(new RoadPart[result.size()]);
-        double s = (System.nanoTime()-t1)/1e9;
-        //System.out.println("'getSelectedIn' returned "+result.size()+" roads from the QuadTree in "+s+"sec");
-        return resArr;
-    }
-    
     /**
      * Assure that the tree is frozen :)
      */

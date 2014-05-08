@@ -18,17 +18,14 @@ import javax.swing.Timer;
  */
 public class CResizeHandler implements ComponentListener, ActionListener, WindowStateListener {
     private final Timer resizeTimer;
-    private final Rect limitRect;
     private Dimension prevSize;
     private Dimension startResizeSize; // The size when a resize is started
     private Controller controller;
     private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
     
     // Tweakable values
     private final static int resizeDelay = 300; // milliseconds
     private final static int margin = 40; // The amount of pixels to load to the right when resizing
-    public final static double zoomFactor = 0.7;
     private Rect lastRect;
     private OptimizedView view;
     
@@ -39,76 +36,19 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
         this.view = view;
         view.addComponentListener(this);
         controller.addWindowStateListener(this);
-        lastRect = controller.getActiveRect();
         resizeTimer = new Timer(resizeDelay, this);
         resizeTimer.setRepeats(false);
-        Rect activeRect = controller.getActiveRect();
-        double lw = activeRect.width * 1.2;
-        double lx = activeRect.x - 0.1 * activeRect.width;
-        double lh = activeRect.height * 1.2;
-        double ly = activeRect.y - 0.1 * activeRect.height;
-        limitRect = new Rect(lx, ly, lw, lh);
         prevSize = view.getSize(); // prepare for scaling
-    }
-    
-    /**
-     * Sets the last active rect
-     * @param area The last area
-     */
-    public void setLastRect(Rect area) {
-        lastRect = area;
-    }
-    
-    /**
-     * Zooms the view in
-     */
-    public void zoomIn() {
-        Rect activeRect = controller.getActiveRect();
-        double newWidth = activeRect.width*zoomFactor;
-        double newHeight = activeRect.height*zoomFactor;
-        double newX = activeRect.x + (activeRect.width-newWidth)/2;
-        double newY = activeRect.y + (activeRect.height-newHeight)/2;
-        System.out.println("Zooming...");
-        controller.setActiveRect(new Rect(newX, newY, newWidth, newHeight));
-        controller.redraw();
-        System.out.println("Zoomed!");
-    }
-
-    /**
-     * Zooms the view out
-     */
-    public void zoomOut() {
-        Rect activeRect = controller.getActiveRect();
-        System.out.println("Zooming out!");
-        double zOutFactor = 1/zoomFactor;
-        double newWidth = activeRect.width*zOutFactor;
-        double newHeight = activeRect.height*zOutFactor;
-        double newX = activeRect.x - (newWidth-activeRect.width)/2;
-        double newY = activeRect.y - (newHeight-activeRect.height)/2;
-        if (newHeight > limitRect.height) {
-            newHeight = limitRect.height;
-            newWidth = limitRect.width;
-            newX = limitRect.x;
-            newY = limitRect.y;
-            System.out.println("Restricted the zooming out");
-        }
-
-        if (activeRect.height != limitRect.height) {
-            controller.setActiveRect(new Rect(newX, newY, newWidth, newHeight));
-            controller.redraw();
-        } else {
-            System.out.println("No size change, ignoring...");
-        }
     }
     
     @Override
     public void componentResized(ComponentEvent e) {
-        Rect activeRect = controller.getActiveRect();
-        
         if (prevSize == null) { return; } // You're too fast ;)
         if (!view.initialized()) { return; } // You're still too fast ;)
+        Viewport port = controller.viewport;
         
         Dimension newSize = view.getSize();
+        //double maxWidth = Math.min(view.getSourceWidth()-margin, screenSize.width);
         if (newSize.height == 0 || newSize.width == 0) { return; } // This cannot be resized ;)
         if (newSize.height != prevSize.height) {
             if (!resizeTimer.isRunning()) { // Start the 'draw it prettily' timer
@@ -117,39 +57,17 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
             } else {
                 resizeTimer.restart(); // Interrupt the timer
             }
-            view.scaleMap(newSize);
-            prevSize = newSize;
-        // Widen the window
-        } else if (newSize.width > Math.min(view.getSourceWidth()-margin, screenSize.width)) { // The windows is wider now
-            int prevRightLimit = view.getSourceWidth();
-            int newRightLimit = Math.max(prevRightLimit+margin, view.getWidth()+margin);
-
-            System.out.println("Moving the right limit to "+newRightLimit);
-            controller.resizeActiveArea(newSize);
-
-            double sx = lastRect.right;
-            double sy = lastRect.y;
-            double sw = (newRightLimit-prevRightLimit) * (activeRect.width / view.getWidth());
-            double sh = lastRect.height;
-            Rect source = new Rect(sx, sy, sw, sh);
-
-            double tx = prevRightLimit;
-            double ty = 0;
-            double tw = newRightLimit;
-            double th = newSize.height;
-            Rect target = new Rect(tx, ty, tw, th);
-
-            // Update the image to show the new content ;)
-            view.offsetImage(0, 0, controller.getLines(source, target), 
-                    new Dimension(newRightLimit, view.getHeight()));
-            lastRect = source;
+            view.scaleMap(Utils.clampDimension(newSize, port.getSize()));
+        } else if (newSize.width != prevSize.width) { // The windows is wider now
+            controller.addLines(port.widen(newSize.width));
         }
+        prevSize = newSize;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) { // Once the user has finished redrawing
         // Only redraw if it is needed, plx
-        if (controller.getViewSize().height != startResizeSize.height) {
+        if (view.getHeight() != startResizeSize.height) {
             System.out.println("Redrawing after resizing...");
             controller.redraw();
         }
@@ -168,7 +86,7 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
             String msg = "Window "+ ((e.getNewState() == 6)? "maximized!": "restored!");
             System.out.println(msg);
             controller.redraw();
-            prevSize = controller.getViewSize();
+            prevSize = view.getSize();
         } 
     }
 }

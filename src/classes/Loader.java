@@ -11,14 +11,11 @@ import interfaces.ILoader;
 import interfaces.IProgressBar;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.nio.charset.Charset;
-import krak.EdgeData;
-import krak.KrakLoader;
-import java.util.ArrayList;
-import krak.NodeData;
 
 /*
  // This might be a better idea for the road numbering stuff :i
@@ -42,33 +39,29 @@ public class Loader implements ILoader {
      * @param bar An optional progress bar
      * @return An array of RoadPart elements
      */
-    public static RoadPart[] loadRoads(String roadFilePath, IProgressBar bar) {
+    public static RoadPart[] loadRoads(Datafile file, IProgressBar bar) {
         System.out.println("Loading road data...");
         long t1 = System.nanoTime();
-        ArrayList<RoadPart> list = new ArrayList<>();
-
-        BufferedReader br;
-        try {
-            
-            br = new BufferedReader(new InputStreamReader(Utils.getFileStream(roadFilePath),
-                    Charset.forName(encoding)));
+        RoadPart[] roads = new RoadPart[(int)file.lines];
+        int i = 0;
+        try (InputStream stream = Utils.getFileStream(file.filename);
+            InputStreamReader is = new InputStreamReader(stream, Charset.forName(encoding));
+            BufferedReader br = new BufferedReader(is)) {
 
             String line;
             // Do the long loading without if-statements inside ;)
             if (bar != null) {
                 while ((line = br.readLine()) != null) {
-                    list.add(new RoadPart(line));
+                    roads[i++] = new RoadPart(line);
                     bar.update(1);
                 }
             } else {
                 while ((line = br.readLine()) != null) {
-                    list.add(new RoadPart(line));
+                    roads[i++] = new RoadPart(line);
                 }
             }
-            
-            br.close();
         } catch (IOException ex) {
-            throw new RuntimeException("Could not load road data from '" + roadFilePath + "'");
+            throw new RuntimeException("Could not load road data from '" + file.filename + "'");
         } catch (LoadFileException ex) {
             System.out.println("Could not load the file. Error: "+ex);
             if (bar != null) {
@@ -76,17 +69,18 @@ public class Loader implements ILoader {
             }
             return new RoadPart[0];
         }
-        System.gc();
+        
         System.out.println("Road data loaded!");
         double elapsed = (System.nanoTime() - t1) / (1000000000.0);
         System.out.printf("Loaded the roads in %.3f seconds\n", elapsed);
-        return list.toArray(new RoadPart[list.size()]);
+        System.gc();
+        return roads; //arr;
     }
     
-    public static RoadPart[] loadRoads(String roadFilePath) {
-        return loadRoads(roadFilePath, null);
+    public static RoadPart[] loadRoads(Datafile file) {
+        return loadRoads(file, null);
     }
-
+    
     /**
      * Loads a list of intersections in the new format from a file
      * @param intersectionFilePath The relative file path from this project's 
@@ -94,32 +88,29 @@ public class Loader implements ILoader {
      * @param bar An optional progress bar
      * @return An array of intersections
      */
-    public static Intersection[] loadIntersections(String intersectionFilePath, IProgressBar bar) {        
+    public static Intersection[] loadIntersections(Datafile file, IProgressBar bar) {        
         System.out.println("Loading intersection data...");
         long t1 = System.nanoTime();
-        ArrayList<Intersection> list = new ArrayList<>();
-
-        BufferedReader br;
-        try {
-            //File file = Utils.getFile(intersectionFilePath);
-            br = new BufferedReader(new InputStreamReader(Utils.getFileStream(intersectionFilePath),
-                    Charset.forName(encoding)));
+        
+        Intersection[] intersections = new Intersection[(int)file.lines];
+        int i = 0;
+        try (InputStream stream = Utils.getFileStream(file.filename);
+            InputStreamReader is = new InputStreamReader(stream, Charset.forName(encoding));
+            BufferedReader br = new BufferedReader(is)){
 
             String line;
             if (bar != null) { // Conditional stuff here as well
                 while ((line = br.readLine()) != null) {
-                    list.add(new Intersection(line));
+                    intersections[i++] = new Intersection(line);
                     bar.update(1);
                 }
             } else {
                 while ((line = br.readLine()) != null) {
-                    list.add(new Intersection(line));
+                    intersections[i++] = new Intersection(line);
                 }
             }
-            
-            br.close();
         } catch (IOException ex) {
-            throw new RuntimeException("Could not load intersection data from '" + intersectionFilePath + "'");
+            throw new RuntimeException("Could not load intersection data from '" + file.filename + "'");
         } catch (LoadFileException ex) {
             System.out.println("Could not load the file. Error: "+ex);
             if (bar != null) {
@@ -127,29 +118,15 @@ public class Loader implements ILoader {
             }
             return new Intersection[0];
         }
-        System.gc();
-        System.out.println("Intersection data loaded!");
-        double elapsed = (System.nanoTime() - t1) / (1000000000.0);
-        System.out.printf("Loaded the intersections in %.3f seconds\n", elapsed);
-        return list.toArray(new Intersection[list.size()]);
-    }
-    
-    public static Intersection[] loadIntersections(String intersectionFilePath) {
-        return loadIntersections(intersectionFilePath, null);
-    }
-
-    public static Intersection[] loadKrakIntersections(String nodeFilePath) {
-        System.out.println("Loading intersection data...");
-        long t1 = System.nanoTime();
-        NodeData[] nodes = KrakLoader.loadNodes(nodeFilePath);
-        Intersection[] intersections = new Intersection[nodes.length];
-        for (int i = 0; i < nodes.length; i++) {
-            intersections[i] = new Intersection(nodes[i]);
-        }
+        
         System.out.println("Intersection data loaded!");
         double elapsed = (System.nanoTime() - t1) / (1000000000.0);
         System.out.printf("Loaded the intersections in %.3f seconds\n", elapsed);
         return intersections;
+    }
+    
+    public static Intersection[] loadIntersections(Datafile file) {
+        return loadIntersections(file, null);
     }
 
     /**
@@ -176,43 +153,6 @@ public class Loader implements ILoader {
         System.out.println("Intersection data saved! (" + intersections.length + " locations)");
     }
 
-    public static void main(String[] args) {
-        System.out.println("Testing...");
-
-        //RoadPart[] roads = loadKrakRoads("krak/kdv_unload.txt"); // 234MB heap ~2x size
-        //saveRoads(roads, p);       
-        //RoadPart[] roads = loadRoads("resources/roads.txt"); // ~100MB heap ~2x size //now 220 :d
-        //Intersection[] intersections = loadKrakIntersections("krak/kdv_node_unload.txt");
-        //saveIntersections(intersections, "resources/intersections.txt");
-        Intersection[] ints = loadIntersections("resources/intersections.txt"); // ~30MB
-        double minX = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE;
-        double minY = Double.MAX_VALUE;
-        double maxY = Double.MIN_VALUE;
-
-        for (Intersection i : ints) {
-            if (i.x < minX) {
-                minX = i.x;
-            }
-            if (i.x > maxX) {
-                maxX = i.x;
-            }
-            if (i.y < minY) {
-                minY = i.y;
-            }
-            if (i.y > maxY) {
-                maxY = i.y;
-            }
-        }
-
-        System.out.println("X ranges from " + minX + " to " + maxX + " (" + (maxX - minX) + ")");
-        System.out.println("Y ranges from " + minY + " to " + maxY + " (" + (maxY - minY) + ")");
-
-        MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
-        System.out.printf("Heap memory usage: %d MB%n",
-                mxbean.getHeapMemoryUsage().getUsed() / (1000000));
-    }
-
     /**
      * Loads data from the given files
      * @param bar A progress bar (can be null)
@@ -230,17 +170,15 @@ public class Loader implements ILoader {
         RoadPart[] roads;
         Model model;
         if (bar != null) {
-            System.out.println("Loading krak data with a progress bar :u!");
             bar.setTarget(insFile.progressDescription, insFile.lines);
-            ins = loadIntersections(insFile.filename, bar);
+            ins = loadIntersections(insFile, bar);
             bar.setTarget(roadFile.progressDescription, roadFile.lines);
-            roads = loadRoads(roadFile.filename, bar);
+            roads = loadRoads(roadFile, bar);
             model = new Model(ins, roads, bar);
             
         } else {
-            System.out.println("Nope, no progress bar here");
-            ins = loadIntersections(insFile.filename);
-            roads = loadRoads(roadFile.filename);
+            ins = loadIntersections(insFile);
+            roads = loadRoads(roadFile);
             model = new Model(ins, roads);
         }
         ins = null;

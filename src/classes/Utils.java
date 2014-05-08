@@ -20,10 +20,44 @@ import krak.DataLine;
 public class Utils {
     
     /**
-     * The amount of width unit for each height unit of the map = the ratio for 
-     * the map.
+     * Returns the first rect clamped to the biggest rect it contains, with the
+     * ratio of the second.
+     * @param rect The rect to be clamped
+     * @param ratioRect The rect with the ratio to use
+     * @return The first rect clamped to the biggest rect it contains, with the
+     * ratio of the second.
      */
-    public final static double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
+    public static Rect clampRect(Rect rect, Rect ratioRect) {
+        double ratio = ratioRect.width / ratioRect.height;
+        float w = rect.width;
+        float h = rect.height;
+        if (w < (h*ratio)) { // Height is larger
+            h = (float)(w / ratio);
+        } else {
+            w = (float)(h * ratio);
+        }
+        return new Rect(rect.x, rect.y, w, h);
+    }
+    
+    /**
+     * Returns the first rect clamped to the biggest rect it contains, with the
+     * ratio of the second.
+     * @param dim The dimension to be clamped
+     * @param ratioDim The dimension with the ratio to use
+     * @return The first rect clamped to the biggest rect it contains, with the
+     * ratio of the second.
+     */
+    public static Dimension clampDimension(Dimension dim, Dimension ratioDim) {
+        double ratio = (double)ratioDim.width / ratioDim.height;
+        int w = dim.width;
+        int h = dim.height;
+        if (w < (h*ratio)) {
+            h = (int)Math.round(w / ratio);
+        } else {
+            w = (int)Math.round(h * ratio);
+        }
+        return new Dimension(w, h);
+    }
     
     /**
      * Joins an array of strings with a given separator
@@ -128,26 +162,5 @@ public class Utils {
         } catch (IOException ex) {
             throw new RuntimeException("Error while saving data to '"+path+"'");
         }
-    }
-    
-    /**
-     * Returns a version of the given conversion restricted to keep the right 
-     * ratio for the map. This method returns the biggest contained dimension of
-     * the source dimension that has the right ratio between width height.
-     * @param dimension The source dimension
-     * @return The converted dimension (always smaller than the source)
-     */
-    public static Dimension convertDimension(Dimension dimension) {
-        int width, height;
-        if (dimension.width < dimension.height * wperh) { // height is larger
-            height = (int)Math.round(dimension.width/wperh);
-            width = dimension.width;
-            System.out.println("Height: "+dimension.height+" -> "+height);
-        } else { // width is larger
-            width = (int)Math.round(dimension.height*wperh);
-            height = dimension.height;
-            System.out.println("Width:  "+dimension.width+" -> "+width);
-        }
-        return new Dimension(width, height);
     }
 }
