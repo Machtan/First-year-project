@@ -6,7 +6,6 @@ import interfaces.QuadNode;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import krak.EdgeData;
 
 /**
  * The RoadPart class <More docs goes here>
@@ -53,7 +52,6 @@ public class RoadPart implements CharSequence, QuadNode {
     // The area this road is in
     public Intersection p1;
     public Intersection p2;
-    protected Rect area;
     
     // Probably unneeded
     //String leftParish;
@@ -61,12 +59,7 @@ public class RoadPart implements CharSequence, QuadNode {
     
     public static final Pattern exPattern = Pattern.compile("((?:[a-zâüäæöøåéèA-ZÂÛÆÄØÖÅ:\\-/'´&\\(\\)]+\\s*)+), Den");
     public static final HashMap<String, String> rep = new HashMap<>();
-    public static boolean initialized = false;
-    /**
-     * Initializes the static string replacement map
-     */
-    public static void createReplacementMap() {
-        if (initialized) { return; }
+    static {
         rep.put("Brøndby Haveby Afd. 6, Rosen", "Brøndby Haveby Afd. 6");
         rep.put(", P.PLADS", "");
         rep.put(",P.PLADS","");
@@ -74,17 +67,11 @@ public class RoadPart implements CharSequence, QuadNode {
         rep.put(",HAVEFORENING", " HAVEFORENING");
         rep.put(",HAVEF"," HAVEFORENING");
         rep.put("KRATHUS, SKOVALLEEN", "SKOVALLEEN");
-        initialized = true;
     }
     
     public void setPoints(Intersection p1, Intersection p2) {
         this.p1 = p1;
         this.p2 = p2;
-        float x = (float)Math.min(p1.x, p2.x);
-        float y = (float)Math.min(p1.y, p2.y);
-        float width = (float)Math.abs(p1.x - p2.x);
-        float height = (float)Math.abs(p1.y - p2.y);
-        area = new Rect(x,y,width,height);
     }
 
     /**
@@ -118,8 +105,16 @@ public class RoadPart implements CharSequence, QuadNode {
      * Returns the bounding area of this road part
      * @return the bounding area of this road part
      */
-    public Rect getRect() {
-        return area;
+    public Rect getRect() { // Less memory, more calculation time
+        float x = Math.min(p1.x, p2.x);
+        float y = Math.min(p1.y, p2.y);
+        float width = Math.abs(p1.x - p2.x);
+        float height = Math.abs(p1.y - p2.y);
+        return new Rect(x,y,width,height);
+    }
+    
+    public double getLength() {
+        return Math.sqrt(Math.pow(p1.x-p2.x, 2) + Math.pow(p1.y-p2.y, 2));
     }
     
     /**
@@ -128,7 +123,6 @@ public class RoadPart implements CharSequence, QuadNode {
      * @return The converted road name .
      */
     private static String convertName(String name) {
-        if (!initialized) { createReplacementMap(); }
         if (name.contains(",")) {
             //System.out.println("Converting name '"+name+"'");
             for (String r : rep.keySet()) {

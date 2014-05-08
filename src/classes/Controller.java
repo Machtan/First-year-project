@@ -78,7 +78,7 @@ public class Controller extends JFrame {
         //contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
         contentPanel.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
                 BorderLayout.WEST);
-        contentPanel.add(new RouteDesc(model.getRoads(model.getBoundingArea())));
+        //contentPanel.add(new RouteDescriptionPanel());
         
         setTitle("First-year Project - Visualization of Denmark");
         
@@ -175,7 +175,9 @@ public class Controller extends JFrame {
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
         controller.pack();
+        System.out.println("View size previs:  "+view.getSize());
         controller.draw(controller.viewport.getProjection(viewSize));
         controller.setVisible(true);
+        System.out.println("View size postvis: "+view.getSize());
     }
 }

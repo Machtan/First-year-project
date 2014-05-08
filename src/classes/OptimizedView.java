@@ -33,6 +33,7 @@ public class OptimizedView extends JPanel  {
     public OptimizedView (Dimension dimension) {
         super();
         setMinimumSize(dimension);
+        setSize(dimension);
     }
     
     /**
