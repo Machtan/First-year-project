@@ -134,21 +134,5 @@ public class Controller extends JFrame {
         controller.redraw();
         progbar.close();
         controller.setVisible(true);
-        
-        RoadPart[] roadTemp = model.getRoads(model.getBoundingArea());
-        for(RoadPart r : roadTemp) {
-            //System.out.println("Roads: " +r.name);
-            r.setPoints(r.p1,r.p2);
-        }
-        
-        Graph graph = new Graph(model.intersectionCount(), roadTemp);
-
-        ShortestPath SP = new ShortestPath(graph);
-        
-        RoadPart[] RoadPartArray = SP.findPath(603585, 659617);
-        System.out.println("The found path is:");
-        for (RoadPart road : RoadPartArray) {
-            System.out.println("- " + road.name);
-        }
     }
 }
