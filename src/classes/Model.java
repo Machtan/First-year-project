@@ -20,6 +20,7 @@ public class Model {
     private Model model;
     private Rect boundingArea; // The area the model encloses
     private final QuadTree tree;
+    public final int intersections;
     private static int quadCounter; //Used for loading
     
     public static final RenderInstructions defaultInstructions = new RenderInstructions();
@@ -103,6 +104,7 @@ public class Model {
         double secs = (System.nanoTime()-t1)/1000000000.0;
         System.out.println("Finished!");
         System.out.println("Populating the tree took "+secs+" seconds");
+        intersections = inMap.size();
         inMap = null;
     }
     

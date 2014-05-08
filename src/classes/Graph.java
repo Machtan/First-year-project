@@ -4,8 +4,6 @@
  */
 package classes;
 
-import classes.RoadPart;
-import classes.Intersection;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -94,14 +92,14 @@ public class Graph {
         return adj[v];
     }
 
-    public int other(RoadPart part, int firstIDIndex) {
+    public int other(RoadPart part, int firstIndex) {
         // System.out.println("Checking other index with indexes " + part.sourceID + " and " + part.targetID);
-       // System.out.println("Road:" + part);
+        // System.out.println("Road:" + part);
         //System.out.println("RoadPart: " + part.name);
         //System.out.println("SourceID: " + part.sourceID + "\n"
-          //      + "FirstIDIndex: " + firstIDIndex);
+        //      + "FirstIDIndex: " + firstIDIndex);
         if (part != null) {
-            if (IDToIndex.get(part.sourceID) == firstIDIndex) {
+            if (IDToIndex.get(part.sourceID) == firstIndex) {
                 return IDToIndex.get(part.targetID);
             } else {
                 return IDToIndex.get(part.sourceID);

@@ -63,7 +63,7 @@ public class RouteDesc extends JPanel {
         for (int i = 0; i < 10; i++) {
             int j = 0;
             for (String name : new String[]{"Kildevej", "Rodevej", "Pærevej"}) {
-                RoadPart road = new RoadPart("0,0,0,"+name+",0,0,0,0,,,,,0,0,0,"+80+","+i*3+",0,,,");
+                RoadPart road = new RoadPart("0,0,0,"+name+",0,0,0,0,,,,,0,0,0,80,"+i*3+",0,,,");
                 Intersection i2 = new Intersection("1,0,"+i*3+j);
                 road.setPoints(i1, i2);
                 testRoads.add(road);

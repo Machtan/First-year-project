@@ -78,6 +78,7 @@ public class Controller extends JFrame {
         //contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
         contentPanel.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
                 BorderLayout.WEST);
+        contentPanel.add(new RouteDesc(model.getRoads(model.getBoundingArea())));
         
         setTitle("First-year Project - Visualization of Denmark");
         
