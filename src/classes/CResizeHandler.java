@@ -24,7 +24,7 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
     private static final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     
     // Tweakable values
-    private final static int resizeDelay = 300; // milliseconds
+    private final static int resizeDelay = 400; // milliseconds
     private final static int margin = 40; // The amount of pixels to load to the right when resizing
     private Rect lastRect;
     private OptimizedView view;
@@ -43,12 +43,10 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
     
     @Override
     public void componentResized(ComponentEvent e) {
-        if (prevSize == null) { return; } // You're too fast ;)
         if (!view.initialized()) { return; } // You're still too fast ;)
-        Viewport port = controller.viewport;
+        if (prevSize == null) { return; } // You're too fast ;)
         
         Dimension newSize = view.getSize();
-        //double maxWidth = Math.min(view.getSourceWidth()-margin, screenSize.width);
         if (newSize.height == 0 || newSize.width == 0) { return; } // This cannot be resized ;)
         if (newSize.height != prevSize.height) {
             if (!resizeTimer.isRunning()) { // Start the 'draw it prettily' timer
@@ -57,9 +55,9 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
             } else {
                 resizeTimer.restart(); // Interrupt the timer
             }
-            view.scaleMap(Utils.clampDimension(newSize, port.getSize()));
+            view.scaleMap(newSize);
         } else if (newSize.width != prevSize.width) { // The windows is wider now
-            controller.addLines(port.widen(newSize.width));
+            controller.extend(newSize.width - prevSize.width);
         }
         prevSize = newSize;
     }

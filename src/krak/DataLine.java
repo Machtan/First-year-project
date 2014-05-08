@@ -5,37 +5,39 @@ import java.util.HashMap;
 /**
  * This class parses a line of comma-separated lines of data, with
  * strings delimited by single-quotes and optionally containing
- * commas. 
+ * commas.
  *
- * String values are manually interned, i.e., each string in the 
- * parsed data will be represented in-core only once. 
+ * String values are manually interned, i.e., each string in the
+ * parsed data will be represented in-core only once.
  *
  * @author Peter Tiedemann petert@itu.dk
  *
- * Peter Sestoft 2008: Modified to avoid building and 
+ * Peter Sestoft 2008: Modified to avoid building and
  * destroying a LinkedList.
  *
- * Søren Debois 2014: Moved Peter Sestoft's manual string interning 
- * here. 
+ * Søren Debois 2014: Moved Peter Sestoft's manual string interning
+ * here.
+ * 
+ * Now heavily modified by Jakob Lautrup nysom. (Who needs safety anyway)
  */
 public class DataLine {
 
-	private static HashMap<String,String> interner = 
-		new HashMap<>();
+	private static HashMap<String,String> interner =
+            new HashMap<>();
 
 	private String intern(String s){
-		String interned = interner.get(s);
-		if (interned != null) 
-			return interned;
-		else {
-			interner.put(s, s);
-			return s;
-		}
+            String interned = interner.get(s);
+            if (interned != null)
+                    return interned;
+            else {
+                    interner.put(s, s);
+                    return s;
+            }
 	}
 
 	/**
 	 * Reset the interner map. This may conserve space if not all
-	 * strings in the input data set are used. 
+	 * strings in the input data set are used.
 	 */
 	public static void resetInterner() {
 		interner = new HashMap<>();
@@ -69,9 +71,9 @@ public class DataLine {
 			} else {          // This is the last data field
 				token = line.substring(next);
 				next = line.length();
-			}      
+			}
 			return token;
-		} else { 
+		} else {
 			int quote = line.indexOf('\'', next+1);
 			String token;
 			if (quote >= 0) { // End of string found
@@ -80,7 +82,7 @@ public class DataLine {
 			} else {          // Malformed string
 				next = line.length();
 				throw new IllegalArgumentException("Cannot parse: " + line.substring(next));
-			}      
+			}
 			return token;
 		}
 	}
@@ -89,52 +91,27 @@ public class DataLine {
 	 * Attempts to parse the next token as an integer
 	 */
 	public int getInt() {
-		String s = nextToken();
-		try {
-			return Integer.parseInt(s);
-		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException(s + " is not a integer!");
-		}
+            return Integer.parseInt(nextToken());
 	}
-        
+
         public long getLong() {
-            String s = nextToken();
-            try {
-                return Long.parseLong(s);
-            } catch (NumberFormatException e) {
-                if (s.charAt(0) == '*') return -1;
-                throw new IllegalArgumentException(s + " is not a long!");
-            }
+            return Long.parseLong(nextToken());
         }
 
 	/**
 	 * Attempts to parse the next token as a double
 	 */
 	public double getDouble() {
-		String s = nextToken();
-		try {
-			return Double.parseDouble(s);
-		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException(s + " is not a double!");
-		}
+            return Double.parseDouble(nextToken());
 	}
-        
+
         public float getFloat() {
-            String s = nextToken();
-            try {
-                    return Float.parseFloat(s);
-            } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException(s + " is not a float!");
-            }
+            return Float.parseFloat(nextToken());
+
         }
-        
+
         public short getShort() {
-            String s = nextToken();
-            try {
-                    return Short.parseShort(s);
-            } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException(s + " is not a short!");
-            }
+            return Short.parseShort(nextToken());
         }
 
 	/**
@@ -144,18 +121,17 @@ public class DataLine {
 	public String getString(){
 		return intern(nextToken());
 	}
-        
+
         public char getChar() {
             String s = nextToken();
-            try {
+            if (s.length() > 0) {
                 return s.charAt(0);
-            } catch (IndexOutOfBoundsException e) {
+            } else {
                 return 'n'; // Default value!!!
-                //throw new IllegalArgumentException(s + " is not a char!");
             }
         }
-        
-        
+
+
 
 	/**
 	 * Discard the current token

@@ -11,6 +11,7 @@ import interfaces.IProgressBar;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  *
@@ -130,8 +131,7 @@ public class Model {
         if (p.equals(Viewport.Projection.Empty)) { 
             return new Line[0]; // Don't waste time on the empty projection ;)
         }
-        long t1 = System.nanoTime();
-
+        
         RoadType[] types = instructions.getRenderedTypes();
         RoadPart[] roadArr = tree.getIn(p.source); //tree.getSelectedIn(p.source, types); // TODO fix
         if (roadArr.length == 0) {
@@ -144,10 +144,9 @@ public class Model {
         for (RoadType type : prioritized) {
             prioLines.put(type, new ArrayList<Line>());
         }
-        
-        System.out.println("Constructing lines");
-        long lineT1 = System.nanoTime();
-        
+        // Make a HashSet for faster containment checks
+        HashSet<RoadType> prio = new HashSet<>(prioritized);
+                
         float ppu = p.target.height / p.source.height;
         float heightFac = windowHeight - p.target.y;
         float x1 = p.source.x;
@@ -158,14 +157,12 @@ public class Model {
                 continue; // Ignore undrawn roads
             }
             
-            if (prioritized.contains(road.type)) {
+            if (prio.contains(road.type)) {
                 prioLines.get(road.type).add(road.asLine(x1, y1, p.target, ppu, heightFac, instructions));
             } else {
                 lineArr[i++] = road.asLine(x1, y1, p.target, ppu, heightFac, instructions);
             }
         }
-        double lineDelta = (System.nanoTime()-lineT1)/1e9;
-        System.out.println("The line construction loop took "+lineDelta+"s");
 
         // Add the prioritized lines in order
         int insert = i;
@@ -175,9 +172,7 @@ public class Model {
                 lineArr[insert++] = pLines.get(k);
             }
         }
-
-        double deltaTime = (System.nanoTime()-t1)/1e9;
-        System.out.println("Returned "+lineArr.length+" drawlines in "+deltaTime+" secs.");
+        
         return lineArr;
     }
     

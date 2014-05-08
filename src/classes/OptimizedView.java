@@ -7,19 +7,20 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
-import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 /**
- * The OptimizedView class <More docs goes here>
+ * The OptimizedView class is a faster view using an underlying buffered image
+ * to optimize its draw calls when the map is moved.
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 10-Mar-2014
  */
 public class OptimizedView extends JPanel  {
     private BufferedImage image;
-    private BufferedImage scaleSource;
+    private BufferedImage backbuffer;
+    private boolean scaled;
     public static final Color clearColor = Color.WHITE;
     GraphicsConfiguration gfx_config = GraphicsEnvironment.
 		getLocalGraphicsEnvironment().getDefaultScreenDevice().
@@ -32,6 +33,7 @@ public class OptimizedView extends JPanel  {
      */
     public OptimizedView (Dimension dimension) {
         super();
+        scaled = false;
         setMinimumSize(dimension);
         setSize(dimension);
     }
@@ -47,50 +49,12 @@ public class OptimizedView extends JPanel  {
     }
     
     /**
-     * Returns the width of the view's scale source
-     * @return The width of the view's scale source
+     * Swaps the buffer images
      */
-    public int getSourceWidth() {
-        return scaleSource.getWidth();
-    }
-    
-    /**
-     * Moves the current image based on the offset, then draws the given array
-     * of lines. Used for panning.
-     * @param x The Eastward offset 
-     * @param y The Nortward offset 
-     * @param newLines The new lines to patch up 
-     * @param newSize The new dimension of the image
-     */
-    public void offsetImage(int x, int y, Dimension newSize, Line[]... newLines) { // Takes roughly 0.0016 secs at worst
-        long t1 = System.nanoTime();
-        scaleSource = gfx_config.createCompatibleImage(newSize.width, newSize.height);
-        clear(scaleSource); // Clear the whole image
-        Graphics2D g2d = scaleSource.createGraphics();
-        g2d.drawImage(image, x, -y, this); // Draw the old image offset
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        long t2 = System.nanoTime();
-        for (Line[] arr: newLines) {
-            for (Line line : arr) {
-                g2d.setColor(line.color);
-                g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
-            }
-        }
-        
-        g2d.dispose();
-        /*
-        System.out.println("Offsetting by "+x+", "+y+" ("+newLines.length+" lines)");
-        long t3 = System.nanoTime();
-        
-        double stampTime = (t2-t1)/nFac;
-        double drawTime = (t3-t2)/nFac;
-        double total = (t3-t1)/nFac;
-        System.out.println("Offsetting took "+total+" secs (image: "+stampTime+" secs, lines: "+drawTime+" secs)");
-        */
-        double nFac = 1000000000.0;
-        System.out.println("Offset in "+(System.nanoTime()-t1)/nFac+" secs");
-        image = scaleSource;
-        repaint();
+    private void swapBuffers() {
+        BufferedImage previous = image;
+        image = backbuffer;
+        backbuffer = previous;
     }
     
     /**
@@ -101,7 +65,37 @@ public class OptimizedView extends JPanel  {
      * @param newLines The new lines to patch up 
      */
     public void offsetImage(int x, int y, Line[]... newLines) {
-        offsetImage(x, y, getSize(), newLines);
+        swapBuffers();
+        clear(image); // Clear the whole image
+        Graphics2D g2d = image.createGraphics();
+        g2d.drawImage(backbuffer, x, -y, this); // Draw the old image offset
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+        for (Line[] arr: newLines) {
+            for (Line line : arr) {
+                g2d.setColor(line.color);
+                g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
+            }
+        }
+        g2d.dispose();
+        repaint();
+    }
+    
+    public void extend(Line[]...newLines) {
+        backbuffer = gfx_config.createCompatibleImage(getWidth(), getHeight());
+        Graphics2D g2d = backbuffer.createGraphics();
+        g2d.setColor(clearColor);
+        g2d.fillRect(image.getWidth(), 0, getWidth() - image.getWidth(), getHeight());
+        g2d.drawImage(image, 0, 0, null);
+        for (Line[] arr: newLines) {
+            for (Line line : arr) {
+                g2d.setColor(line.color);
+                g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
+            }
+        }
+        g2d.dispose();
+        image = gfx_config.createCompatibleImage(getWidth(), getHeight());
+        swapBuffers();
+        repaint();
     }
         
     /**
@@ -109,19 +103,28 @@ public class OptimizedView extends JPanel  {
      * @param newSize 
      */
     public void scaleMap(Dimension newSize) {
-        if (scaleSource != null) {
-            // Calculate the dimensions of the new image
-            double ratio = newSize.height / (double)scaleSource.getHeight();
-            Dimension size = new Dimension((int)Math.round(scaleSource.getWidth()*ratio), newSize.height);
-            System.out.println("Resizing to "+size);
-            int width = size.width; int height = size.height;
-            Image scaledImage = scaleSource.getScaledInstance(width, height, Image.SCALE_FAST);
-            BufferedImage imageBuff = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            Graphics g = imageBuff.createGraphics();
-            g.drawImage(scaledImage, 0, 0, clearColor, null);
-            image = imageBuff;
-            g.dispose();
+        if (!initialized()) { return; }
+        if (!scaled) { // The scaling is starting
+            swapBuffers(); // Ensure that the backbuffer holds the scaling source
         }
+        // Calculate the dimensions of the new image
+        Dimension size = Utils.clampDimension(newSize, 
+                new Dimension(backbuffer.getWidth(), backbuffer.getHeight()), 
+                true);
+        image = gfx_config.createCompatibleImage(newSize.width, newSize.height);
+        Graphics2D g2d = image.createGraphics();
+        // Find out what to clear
+        g2d.setColor(clearColor);
+        if (size.width < newSize.width) { // different width
+            g2d.fillRect(size.width, 0, newSize.width-size.width, size.height);
+        } else {
+            g2d.fillRect(0, size.height, size.width, newSize.height-size.height);
+        }
+        
+        g2d.drawImage(backbuffer, 0, 0, size.width, size.height, null);
+        g2d.dispose();
+        scaled = true;
+        repaint();
     }
     
     /**
@@ -133,7 +136,6 @@ public class OptimizedView extends JPanel  {
         if (dim.height == 0 || dim.width == 0) { 
             dim = this.getMinimumSize(); 
         }
-        System.out.println("Creating an image with the size "+dim);
         BufferedImage img = gfx_config.createCompatibleImage(dim.width, dim.height);
         clear(img);
         Graphics2D g2d = img.createGraphics();
@@ -147,8 +149,9 @@ public class OptimizedView extends JPanel  {
     }
     
     public void renewImage(Line[] lines) {
-        scaleSource = createImage(lines, getSize());
-        image = scaleSource;
+        image = createImage(lines, getSize());
+        backbuffer = gfx_config.createCompatibleImage(getWidth(), getHeight());
+        scaled = false;
         repaint();
     }
     
@@ -180,7 +183,6 @@ public class OptimizedView extends JPanel  {
             g.fillRect(0,0,getWidth(),getHeight());
             g.drawImage(image, 0, 0, this);
             double delay = (System.nanoTime()-t1)/1000000000.0;
-            System.out.println("Drawing the Optimized View took "+delay+" secs");
             if (markerRect != null) { // Draw the rect used for marking 
                 BasicStroke str = new BasicStroke(2, BasicStroke.CAP_BUTT, 
                         BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);

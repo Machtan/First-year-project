@@ -44,17 +44,29 @@ public class Utils {
      * ratio of the second.
      * @param dim The dimension to be clamped
      * @param ratioDim The dimension with the ratio to use
+     * @param downsize Whether it should be downsized or upsized to fit
      * @return The first rect clamped to the biggest rect it contains, with the
      * ratio of the second.
      */
-    public static Dimension clampDimension(Dimension dim, Dimension ratioDim) {
+    public static Dimension clampDimension(Dimension dim, Dimension ratioDim, boolean downsize) {
         double ratio = (double)ratioDim.width / ratioDim.height;
         int w = dim.width;
         int h = dim.height;
-        if (w < (h*ratio)) {
-            h = (int)Math.round(w / ratio);
+        
+        if (w < (h*ratio)) { // The height is larger
+            if (downsize) {
+                h = (int)Math.round(w / ratio);
+            } else {
+                w = (int)Math.round(h * ratio);
+            }
+            
         } else {
-            w = (int)Math.round(h * ratio);
+            if (downsize) {
+                w = (int)Math.round(h * ratio);
+            }else {
+                h = (int)Math.round(w / ratio);
+            }
+            
         }
         return new Dimension(w, h);
     }

@@ -142,7 +142,7 @@ public class RoadPart implements CharSequence, QuadNode {
         Constructor taking a revised line of data and parsing it
         @param line The line of data to parse
     */
-    public RoadPart(String line) {
+    public RoadPart(String line) throws NumberFormatException{
         // TOKENIZE DATA SHIT
         Tokenizer.setLine(line);
         sourceID = Tokenizer.getLong();

@@ -99,17 +99,15 @@ public class Controller extends JFrame {
      * @param p The projection to draw
      */
     public void draw(Viewport.Projection p) {
-        view.renewImage(model.getLines(viewport.getProjection(), view.getHeight(), ins, prioritized));
+        view.renewImage(model.getLines(p, view.getHeight(), ins, prioritized));
     }
     
     /**
-     * Draws the lines of the given projection on top of the current image
-     * @param p The projection to draw
+     * Extends the view by the given width
+     * @param deltaWidth
      */
-    public void addLines(Viewport.Projection p) {
-        //if (p.equals(Viewport.Projection.Empty)) { return; }
-        System.out.println("Adding the lines of projection "+p+" to the view!");
-        view.offsetImage(0,0,model.getLines(p, view.getHeight(), ins, prioritized));
+    public void extend(int deltaWidth) {
+        view.extend(model.getLines(viewport.widen(deltaWidth), view.getHeight(), ins, prioritized));
     }
     
     /**
@@ -176,7 +174,7 @@ public class Controller extends JFrame {
         controller.setMinimumSize(new Dimension(800,600));
         controller.pack();
         System.out.println("View size previs:  "+view.getSize());
-        controller.draw(controller.viewport.getProjection(viewSize));
+        controller.draw(controller.viewport.zoomTo(1));
         controller.setVisible(true);
         System.out.println("View size postvis: "+view.getSize());
     }

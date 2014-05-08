@@ -141,26 +141,24 @@ public class Viewport {
     
     /**
      * Returns the projection changes that would result from changing from the
-     * given source width to the given target width
-     * @param width The new width
+     * given source width by the given amount
+     * @param deltaWidth The change in width
      * @return A projection of the lines now visible by the width change
      */
-    public Projection widen(int width) {
-        /*int oldWidth = target.getWidth();
-        target.getWidth() = width;
-        if (width <= oldWidth) { // The same or smaller => No new lines
-            System.out.println("<--");
+    public Projection widen(int deltaWidth) {
+        if (deltaWidth <= 0) {
             return Projection.Empty;
         }
-        System.out.println("-->");
+        refit();
         int height = target.getHeight();
-        int dw = width - oldWidth;
         Rect a = activeRect;
-        Rect targetArea = new Rect(oldWidth, 0, width-oldWidth, height);
-        Rect sourceArea = new Rect(a.right(), a.y, getLength(dw), a.height);      
-        refit(); // Fit to the new width
-        return new Projection(sourceArea, targetArea);*/
-        return Projection.Empty;
+        System.out.println("Widening with window size "+target.getSize());
+        Rect targetArea = new Rect(target.getWidth()-deltaWidth, 0, deltaWidth, height);
+        Rect sourceArea = new Rect(a.right()-getLength(deltaWidth), a.y, getLength(deltaWidth), a.height);      
+        //refit(); // Fit to the new width
+        Projection proj = new Projection(sourceArea, targetArea);
+        System.out.println("-> "+proj);
+        return proj;
     }
     
     // Returns a rectangle scaled by factor relatively to its center
