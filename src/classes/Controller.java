@@ -68,7 +68,7 @@ public class Controller extends JFrame {
         
         // Key handling
         setFocusTraversalKeysEnabled(false);
-        setFocusable(true);
+        setFocusable(false);
         resizeHandler = new CResizeHandler(this, view);
         mouseHandler = new CMouseHandler(this, view);
         
