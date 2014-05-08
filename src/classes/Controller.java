@@ -75,7 +75,7 @@ public class Controller extends JFrame {
         contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
-        //contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
+        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
         contentPanel.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
                 BorderLayout.WEST);
         //contentPanel.add(new RouteDescriptionPanel());
