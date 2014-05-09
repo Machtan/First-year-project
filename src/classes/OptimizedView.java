@@ -9,6 +9,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import javax.swing.JPanel;
 
 /**
@@ -64,33 +65,29 @@ public class OptimizedView extends JPanel  {
      * @param y The Nortward offset 
      * @param newLines The new lines to patch up 
      */
-    public void offsetImage(int x, int y, Line[]... newLines) {
+    public void offsetImage(int x, int y, ArrayList<Line> lines) {
         swapBuffers();
         clear(image); // Clear the whole image
         Graphics2D g2d = image.createGraphics();
         g2d.drawImage(backbuffer, x, -y, this); // Draw the old image offset
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        for (Line[] arr: newLines) {
-            for (Line line : arr) {
-                g2d.setColor(line.color);
-                g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
-            }
+        for (Line line : lines) {
+            g2d.setColor(line.color);
+            g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
         }
         g2d.dispose();
         repaint();
     }
     
-    public void extend(Line[]...newLines) {
+    public void extend(ArrayList<Line> newLines) {
         backbuffer = gfx_config.createCompatibleImage(getWidth(), getHeight());
         Graphics2D g2d = backbuffer.createGraphics();
         g2d.setColor(clearColor);
         g2d.fillRect(image.getWidth(), 0, getWidth() - image.getWidth(), getHeight());
         g2d.drawImage(image, 0, 0, null);
-        for (Line[] arr: newLines) {
-            for (Line line : arr) {
-                g2d.setColor(line.color);
-                g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
-            }
+        for (Line line: newLines) {
+            g2d.setColor(line.color);
+            g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
         }
         g2d.dispose();
         image = gfx_config.createCompatibleImage(getWidth(), getHeight());
@@ -132,7 +129,7 @@ public class OptimizedView extends JPanel  {
      * @param lineArr The lines to draw
      * @return A buffered image containing the drawn lines
      */
-    private BufferedImage createImage(Line[] lineArr, Dimension dim) {
+    private BufferedImage createImage(ArrayList<Line> lineArr, Dimension dim) {
         if (dim.height == 0 || dim.width == 0) { 
             dim = this.getMinimumSize(); 
         }
@@ -140,7 +137,7 @@ public class OptimizedView extends JPanel  {
         clear(img);
         Graphics2D g2d = img.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        for (Line line : lineArr) {
+        for (Line line : lineArr) { // Current error: line is null
             g2d.setColor(line.color);
             g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
         }
@@ -148,7 +145,7 @@ public class OptimizedView extends JPanel  {
         return img;
     }
     
-    public void renewImage(Line[] lines) {
+    public void renewImage(ArrayList<Line> lines) {
         image = createImage(lines, getSize());
         backbuffer = gfx_config.createCompatibleImage(getWidth(), getHeight());
         scaled = false;

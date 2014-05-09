@@ -116,11 +116,11 @@ public class Controller extends JFrame {
      * @param dy The y-axis movement
      */
     public void moveMap(int dx, int dy) {
-        ArrayList<Line[]> lines = new ArrayList<>();
+        ArrayList<Line> lines = new ArrayList<>();
         for (Viewport.Projection p: viewport.movePixels(dx, dy)) {
-            lines.add(model.getLines(p, view.getHeight(), ins, prioritized));
+            lines.addAll(model.getLines(p, view.getHeight(), ins, prioritized));
         }
-        view.offsetImage(dx, dy, lines.toArray(new Line[lines.size()][]));
+        view.offsetImage(dx, dy, lines);
     }
     
     /**
@@ -138,9 +138,8 @@ public class Controller extends JFrame {
     public void redraw() {
         long t1 = System.nanoTime();
         System.out.println("Executing a full redraw of the View");
-        view.renewImage(
-                model.getLines(viewport.getProjection(), 
-                view.getHeight(), ins, prioritized));
+        System.out.println("The projection is "+viewport.getProjection());
+        view.renewImage(model.getLines(viewport.getProjection(), view.getHeight(), ins, prioritized));
         System.out.println("- Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec) -");
     }
     

@@ -1,6 +1,7 @@
 package classes;
 
 import external.SpringUtilities;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -21,6 +22,7 @@ public class ZoomButtonsGUI extends JPanel {
     private JButton addButton(String tooltip, ActionListener listener) {
         JButton button = new JButton();
         button.setFocusable(false);
+        button.setPreferredSize(new Dimension(42,42));
         button.setToolTipText(tooltip);
         button.addActionListener(listener);
         numberOfButtons++;
@@ -41,7 +43,7 @@ public class ZoomButtonsGUI extends JPanel {
             ImageIcon image = new ImageIcon(ImageIO.read(getClass().getResource(filepath)));
             return image;
         } catch (IOException ex) {
-            System.out.println("Nope!");
+            System.out.println("Couldn't load images from filepath: "+filepath);
         }
         return null;
     }

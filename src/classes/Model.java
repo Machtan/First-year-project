@@ -126,18 +126,18 @@ public class Model {
      * @param prioritized A list of roads to be prioritized, from highest to lowest
      * @return A list of lines converted to local coordinates for the view
      */
-    public Line[] getLines(Viewport.Projection p, float windowHeight, 
+    public ArrayList<Line> getLines(Viewport.Projection p, float windowHeight, 
             RenderInstructions instructions, ArrayList<RoadType> prioritized) {
         if (p.equals(Viewport.Projection.Empty)) { 
-            return new Line[0]; // Don't waste time on the empty projection ;)
+            return new ArrayList<>(); // Don't waste time on the empty projection ;)
         }
         
         RoadType[] types = instructions.getRenderedTypes();
         RoadPart[] roadArr = tree.getIn(p.source); //tree.getSelectedIn(p.source, types); // TODO fix
         if (roadArr.length == 0) {
-            return new Line[0];
+            return new ArrayList<>();
         }
-        Line[] lineArr = new Line[roadArr.length];
+        ArrayList<Line> lines = new ArrayList<>();
 
         // Prepare the prioritized lists
         HashMap<RoadType, ArrayList<Line>> prioLines = new HashMap<>();
@@ -160,7 +160,7 @@ public class Model {
             if (prio.contains(road.type)) {
                 prioLines.get(road.type).add(road.asLine(x1, y1, p.target, ppu, heightFac, instructions));
             } else {
-                lineArr[i++] = road.asLine(x1, y1, p.target, ppu, heightFac, instructions);
+                lines.add(road.asLine(x1, y1, p.target, ppu, heightFac, instructions));
             }
         }
 
@@ -169,15 +169,15 @@ public class Model {
         for (int j = prioLines.size()-1; j >= 0; j--) {
             ArrayList<Line> pLines = prioLines.get(prioritized.get(j));
             for (int k = 0; k < pLines.size(); k++) {
-                lineArr[insert++] = pLines.get(k);
+                lines.add(pLines.get(k));
             }
         }
         
-        return lineArr;
+        return lines;
     }
     
     // Without <priorities>
-    public Line[] getLines(Viewport.Projection p, int windowHeight, 
+    public ArrayList<Line> getLines(Viewport.Projection p, int windowHeight, 
             RenderInstructions instructions) {
         return getLines(p, windowHeight, instructions, new ArrayList<RoadType>());
     }

@@ -17,8 +17,8 @@ import javax.swing.JPanel;
 public class CMouseHandler implements MouseListener, MouseMotionListener {
     
     // ======== CONFIGURATION ========
-    private static final int dragButton = MouseEvent.BUTTON1;
-    private static final int markButton = MouseEvent.BUTTON3;    
+    private static final int dragButton = MouseEvent.BUTTON3;
+    private static final int markButton = MouseEvent.BUTTON1;    
     
     // ===============================
     private Point startPos;
