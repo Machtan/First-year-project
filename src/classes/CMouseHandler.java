@@ -136,6 +136,9 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        if (endPos == null) {
+            endPos = startPos;
+        }
         switch(e.getButton()) {
             case dragButton:
                 if (isDragging) {
