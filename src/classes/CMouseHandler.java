@@ -42,17 +42,17 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
     public void mousePressed(MouseEvent e) {
         switch(e.getButton()) {
             case markButton:
-                System.out.println("Mark start");
                 isMarking = true;
+                isDragging = false;
                 startPos = e.getLocationOnScreen();
                 startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
                 markRect = new Rect(startPos.x, startPos.y, 0, 0);
                 break;
             case dragButton:
-                System.out.println("Drag start");
                 lastDragPoint = e.getLocationOnScreen();
                 lastDragPoint.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
                 isDragging = true;
+                isMarking = false;
                 break;
         }
     }
@@ -106,31 +106,23 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        switch (e.getButton()) {
-            case dragButton:
-                if (isDragging) {
-                    Point newPos = e.getLocationOnScreen();
-                    newPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-                    Dimension viewSize = controller.viewport.getSize();
-                    newPos.x = (int)clamp(newPos.x, 0, viewSize.width);
-                    newPos.y = (int)clamp(newPos.y, 0, viewSize.height);
-                    int dx = newPos.x - lastDragPoint.x;
-                    int dy = -1 * (newPos.y - lastDragPoint.y);
-                    lastDragPoint = newPos;
-                    if ((dx+dy)==0) { return; } // No allowed movement, no drag
-                    controller.moveMap(dx, dy);
-                    
-                }
-                break;
-            case markButton:
-                System.out.println("Markbutton dragged");
-                if (isMarking && (startPos != null)) {
-                    endPos = e.getLocationOnScreen();
-                    endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-                    controller.setMarkerRect(getMarkRect(startPos, endPos));
-                    view.repaint();
-                }
-                break;
+        if (isDragging) {
+            Point newPos = e.getLocationOnScreen();
+            newPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+            Dimension viewSize = controller.viewport.getSize();
+            newPos.x = (int)clamp(newPos.x, 0, viewSize.width);
+            newPos.y = (int)clamp(newPos.y, 0, viewSize.height);
+            int dx = newPos.x - lastDragPoint.x;
+            int dy = -1 * (newPos.y - lastDragPoint.y);
+            lastDragPoint = newPos;
+            if ((dx+dy)==0) { return; } // No allowed movement, no drag
+            controller.moveMap(dx, dy);
+        }
+        if (isMarking && (startPos != null)) {
+            endPos = e.getLocationOnScreen();
+            endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+            controller.setMarkerRect(getMarkRect(startPos, endPos));
+            view.repaint();
         }
     }
 
