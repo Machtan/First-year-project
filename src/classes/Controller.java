@@ -72,21 +72,22 @@ public class Controller extends JFrame {
         resizeHandler = new CResizeHandler(this, view);
         mouseHandler = new CMouseHandler(this, view);
         
+        
         JPanel westContent = new JPanel();
-        westContent.setLayout(new GridLayout(2,2));
-        westContent.add(new FindAsYouSearchPanel(model.getRoads(model.getBoundingArea())), 
-                BorderLayout.WEST);
-        westContent.add(new RouteDescriptionPanel());
+        JPanel routeDesc = new RouteDescriptionPanel();
+        westContent.setLayout(new GridLayout(1,2));
+        westContent.add(new FindAsYouSearchPanel(model.getRoads(model.getBoundingArea())));
+        westContent.add(routeDesc);
+        
+        
+        
 
         
         contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
-        contentPanel.add(new FindAsYouSearchPanel(model.getRoads(model.getBoundingArea())), 
-                BorderLayout.WEST);
-        //contentPanel.add(new RouteDescriptionPanel());
-        //contentPanel.add(westContent); //Panel for if when we want to add both FindAsYouSearchPanel and RouteDesc
+        contentPanel.add(westContent, BorderLayout.WEST); //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
         
         setTitle("First-year Project - Visualization of Denmark");
         

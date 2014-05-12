@@ -4,6 +4,7 @@
  */
 package classes;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -23,6 +24,7 @@ public class RouteDescriptionPanel extends JPanel {
     public RouteDescriptionPanel() {
         super();
         initComponents();
+        this.setMaximumSize(new Dimension(600,100));
     }
     
     private void initComponents() {

@@ -44,10 +44,9 @@ public class FindAsYouSearchPanel extends JPanel {
         listModel = new DefaultListModel();
         roadJList = new JList(listModel);
         inputField = new JTextField("Search Field");
-        inputField.setPreferredSize(new Dimension(130, 50));
+        inputField.setMaximumSize(new Dimension(130, 50));
         roadListName = new ArrayList<>();
         this.setLayout(new GridLayout(2,2));
-        this.add(inputField);
         this.add(inputField);
         this.add(roadJList);
         setTimer();

@@ -4,9 +4,6 @@
  */
 package classes;
 
-import enums.RoadType;
-import java.util.HashSet;
-
 /**
  *
  * @author Alekxander
