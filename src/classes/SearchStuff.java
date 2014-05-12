@@ -46,7 +46,8 @@ public class SearchStuff extends JPanel {
         inputField = new JTextField("Search Field");
         inputField.setPreferredSize(new Dimension(130, 50));
         roadListName = new ArrayList<>();
-        this.setLayout(new GridLayout(1,2));
+        this.setLayout(new GridLayout(2,2));
+        this.add(inputField);
         this.add(inputField);
         this.add(roadJList);
         setTimer();

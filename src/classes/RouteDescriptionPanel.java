@@ -19,7 +19,7 @@ public class RouteDescriptionPanel extends JPanel {
 
     private JList<String> descList;
     double roadLength;
-
+    
     public RouteDescriptionPanel() {
         super();
         initComponents();

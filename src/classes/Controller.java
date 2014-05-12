@@ -72,13 +72,21 @@ public class Controller extends JFrame {
         resizeHandler = new CResizeHandler(this, view);
         mouseHandler = new CMouseHandler(this, view);
         
+        JPanel westContent = new JPanel();
+        westContent.setLayout(new GridLayout(2,2));
+        westContent.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
+                BorderLayout.WEST);
+        westContent.add(new RouteDescriptionPanel());
+
+        
         contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
-        contentPanel.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
-                BorderLayout.WEST);
+        //contentPanel.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
+          //      BorderLayout.WEST);
         //contentPanel.add(new RouteDescriptionPanel());
+        contentPanel.add(westContent);
         
         setTitle("First-year Project - Visualization of Denmark");
         
