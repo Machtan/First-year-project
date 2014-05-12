@@ -27,7 +27,7 @@ public class Controller extends JFrame {
     private final CResizeHandler resizeHandler;
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
     private ArrayList<RoadType> prioritized;
-    private SearchStuff searchStuff;
+    private FindAsYouSearchPanel searchStuff;
     private JTextField inputField;
     private JList adressList;
     private DefaultListModel listModel;
@@ -74,7 +74,7 @@ public class Controller extends JFrame {
         
         JPanel westContent = new JPanel();
         westContent.setLayout(new GridLayout(2,2));
-        westContent.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
+        westContent.add(new FindAsYouSearchPanel(model.getRoads(model.getBoundingArea())), 
                 BorderLayout.WEST);
         westContent.add(new RouteDescriptionPanel());
 
@@ -83,10 +83,10 @@ public class Controller extends JFrame {
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
-        //contentPanel.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
-          //      BorderLayout.WEST);
+        contentPanel.add(new FindAsYouSearchPanel(model.getRoads(model.getBoundingArea())), 
+                BorderLayout.WEST);
         //contentPanel.add(new RouteDescriptionPanel());
-        contentPanel.add(westContent);
+        //contentPanel.add(westContent); //Panel for if when we want to add both FindAsYouSearchPanel and RouteDesc
         
         setTitle("First-year Project - Visualization of Denmark");
         

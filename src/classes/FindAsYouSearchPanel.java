@@ -26,7 +26,7 @@ import javax.swing.event.ListSelectionListener;
  *
  * @author Daniel
  */
-public class SearchStuff extends JPanel {
+public class FindAsYouSearchPanel extends JPanel {
 
     private JTextField inputField; //Text Field for searching capabilities
     private static final int searchDelay = 200; //Milliseconds
@@ -39,7 +39,7 @@ public class SearchStuff extends JPanel {
     private ArrayList<String> roadListName;
     private int letterCount = 0; //Value to check if letters in textfield is written by us, and not a road taken from the list
 
-    public SearchStuff(RoadPart[] roads) {
+    public FindAsYouSearchPanel(RoadPart[] roads) {
         edges = roads;
         listModel = new DefaultListModel();
         roadJList = new JList(listModel);
