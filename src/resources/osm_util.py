@@ -260,24 +260,6 @@ def clear_files(*files):
         if os.path.exists(fname): 
             os.remove(fname)
 
-def clean_intersections(interfile, roadfile, progress_mark=10000):
-    used_inters = set()
-    splat = interfile.split(".") if "." in interfile else [interfile, "txt"]
-    temp_interfile = ".".join(splat[:-1])+"_temp."+splat[-1]
-    count = 0
-    with open(roadfile, "r") as f:
-        for road in f:
-            if (count % progress_mark) == 0: print("Parsed {0}...".format(count))
-            i = 0
-            s = 0
-            for j in range(2):
-                while road[i] != ",": i += 1 # Proceed until comma
-                used_inters.add(int(road[s:i])) # use previous as int
-                i += 1
-                s = i
-            count += 1
-    print("Found {0} distinct intersections!".format(len(used_inters)))
-
 def main():
     filename        = "denmark-latest.osm"
     progressfile    = "progress.txt"
@@ -285,11 +267,7 @@ def main():
     road_outfile    = "osm_roads.txt"
     clear           = 0
     
-    if clear: 
-         clear_files(progressfile, inter_outfile, road_outfile)
-         
-    #parse_files(filename, progressfile, inter_outfile, road_outfile)
-    clean_intersections(inter_outfile, road_outfile)
+    parse_files(filename, progressfile, inter_outfile, road_outfile)
    
     
 if __name__ == '__main__':
