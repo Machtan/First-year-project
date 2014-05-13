@@ -34,24 +34,16 @@ public class AutoCompleter extends JTextField {
     private Timer typeTimer;
     private RoadPart[] edges;
     private String selectedRoad;
-    private int letterCount = 0; //Value to check if letters in textfield is written by us, and not a road taken from the list
     private JPopupMenu pop;
 
     public AutoCompleter(RoadPart[] roads) {
         edges = roads;
         inputField = this;
         inputField.setMaximumSize(new Dimension(130,22));
-        inputField.setPreferredSize(new Dimension(100, inputField.getPreferredSize().height));
-        System.out.println("Fieldsize height: " +inputField.getPreferredSize().height + " width: "+
-                inputField.getPreferredSize().width);
-        //inputField.setHorizontalAlignment(JTextField.CENTER);
         pop = new JPopupMenu();
         pop.setVisible(false);
         pop.setFocusable(false);
-        //this.setLayout(new GridLayout(1, 2));
-        //is.add(inputField);
         addListeners();
-        //this.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED, Color.red, Color.yellow));
         setTimer();
     }
 
@@ -118,14 +110,14 @@ public class AutoCompleter extends JTextField {
 
     private void setPopMenu() {
         inputField.setComponentPopupMenu(pop);
-        pop.show(inputField, inputField.getX(), inputField.getY() + inputField.getHeight());
+        pop.show(inputField, 0,0 + inputField.getHeight());
         pop.setFocusable(false);
         pop.setVisible(false);
         resizePopMenu();
     }
 
     private void resizePopMenu() {
-        pop.setPreferredSize(new Dimension(inputField.getWidth(), inputField.getHeight() * pop.getSubElements().length / 2));
+        pop.setPreferredSize(new Dimension(inputField.getWidth(), inputField.getHeight() * pop.getSubElements().length /2));
     }
 
     private MenuItem createMenuItem(RoadPart r, String text) {
