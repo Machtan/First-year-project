@@ -21,6 +21,8 @@ public class Viewport {
     public static class Projection {
         public final Rect source; // The map space to draw
         public final Rect target; // The window space to draw on
+        public final float ppu; // Pixels per unit
+        public final float upp; // Units per pixel
         /**
          * An empty projection.
          */
@@ -28,6 +30,8 @@ public class Viewport {
         public Projection(Rect source, Rect target) {
             this.source = source;
             this.target = target;
+            ppu = target.width / source.width;
+            upp = 1 / ppu;
         }
         public Projection(Rect source, Dimension dim) {
             this(source, new Rect(dim));

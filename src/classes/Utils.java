@@ -1,6 +1,5 @@
 package classes;
 
-import static classes.Loader.encoding;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
@@ -161,7 +160,7 @@ public class Utils {
      * @param data The list of CharSequence-implementing objects
      * @param filepath The path to the file eg: resources/roads.txt
      */
-    public static <T extends CharSequence> void save(T[] data, String filepath) {
+    /*public static <T extends CharSequence> void save(T[] data, String filepath) {
         Path srcdir = Paths.get(Paths.get(getcwd()).getParent().getParent()+"","src");
         String path = Paths.get(srcdir.toString(), filepath).toString();
         File file = new File(path);
@@ -174,5 +173,5 @@ public class Utils {
         } catch (IOException ex) {
             throw new RuntimeException("Error while saving data to '"+path+"'");
         }
-    }
+    }*/
 }

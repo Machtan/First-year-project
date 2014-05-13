@@ -43,7 +43,6 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
     
     @Override
     public void componentResized(ComponentEvent e) {
-        if (!view.initialized()) { return; } // You're still too fast ;)
         if (prevSize == null) { return; } // You're too fast ;)
         
         Dimension newSize = view.getSize();

@@ -1,4 +1,4 @@
-package classes;
+package experiments;
 import enums.ZoneType;
 import classes.Utils.Tokenizer;
 import enums.RoadType;

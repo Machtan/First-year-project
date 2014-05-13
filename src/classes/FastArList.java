@@ -2,6 +2,7 @@ package classes;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * The FastArList class is a simpler and thus hopefully faster array-based list
@@ -9,7 +10,7 @@ import java.util.Arrays;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 27-Mar-2014
  */
-public class FastArList<T> {
+public class FastArList<T> implements Iterable<T>{
     
     private T[] arr;
     private int N;
@@ -42,12 +43,6 @@ public class FastArList<T> {
      */
     private T[] resized(T[] arr, int newSize) {
         T[] newArr = (T[])new Object[newSize];
-        int iterations;
-        if (newSize > arr.length) { // Make it larger
-            iterations = arr.length;
-        } else { // Make it smaller
-            iterations = newSize;
-        }
         System.arraycopy(arr, 0, newArr, 0, N);
         return newArr;
     }
@@ -87,6 +82,10 @@ public class FastArList<T> {
         N += items.length;
     }
     
+    public void addAll(FastArList list) {
+        addAll((T[])list.arr);
+    }
+    
     /**
      * Returns the length of the list
      * @return the length of the list
@@ -124,5 +123,30 @@ public class FastArList<T> {
         for (int i = 0; i< list.size(); i++) {
             ints[i] = (int)arr[i];
         }*/
+    }
+    
+    private class ArIter implements Iterator<T> {
+        int index;
+        public ArIter() {
+            index = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < FastArList.this.N;
+        }
+
+        @Override
+        public T next() {
+            return FastArList.this.arr[index++]; // Unsafe :u
+        }
+
+        @Override
+        public void remove() {throw new UnsupportedOperationException("Removal not supported");}
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new ArIter();
     }
 }

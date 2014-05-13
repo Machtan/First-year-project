@@ -1,5 +1,8 @@
 package classes;
 
+import classes.Viewport.Projection;
+import interfaces.IProgressBar;
+import interfaces.StreamedContainer;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -18,11 +21,17 @@ import javax.swing.JPanel;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 10-Mar-2014
  */
-public class OptimizedView extends JPanel  {
+public class OptimizedView extends JPanel implements StreamedContainer<Road> {
     private BufferedImage image;
     private BufferedImage backbuffer;
     private boolean scaled;
-    public static final Color clearColor = Color.WHITE;
+    
+    // Values used for the streamed image drawing
+    private Graphics2D activeGraphics;
+    private Projection activeProjection;
+    
+    private RenderInstructions ins;
+    public static Color clearColor = Color.WHITE;
     GraphicsConfiguration gfx_config = GraphicsEnvironment.
 		getLocalGraphicsEnvironment().getDefaultScreenDevice().
 		getDefaultConfiguration(); // Voodoo
@@ -63,34 +72,24 @@ public class OptimizedView extends JPanel  {
      * of lines. Used for panning.
      * @param x The Eastward offset 
      * @param y The Nortward offset 
-     * @param newLines The new lines to patch up 
      */
-    public void offsetImage(int x, int y, ArrayList<Line> lines) {
+    public void offsetImage(int x, int y) {
         swapBuffers();
         clear(image); // Clear the whole image
         Graphics2D g2d = image.createGraphics();
         g2d.drawImage(backbuffer, x, -y, this); // Draw the old image offset
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        for (Line line : lines) {
-            g2d.setColor(line.color);
-            g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
-        }
         g2d.dispose();
         repaint();
     }
     
-    public void extend(ArrayList<Line> newLines) {
-        backbuffer = gfx_config.createCompatibleImage(getWidth(), getHeight());
+    public void extend() {
+        backbuffer = createImage(getSize(), false);
         Graphics2D g2d = backbuffer.createGraphics();
         g2d.setColor(clearColor);
         g2d.fillRect(image.getWidth(), 0, getWidth() - image.getWidth(), getHeight());
         g2d.drawImage(image, 0, 0, null);
-        for (Line line: newLines) {
-            g2d.setColor(line.color);
-            g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
-        }
         g2d.dispose();
-        image = gfx_config.createCompatibleImage(getWidth(), getHeight());
+        image = createImage(getSize(), false);
         swapBuffers();
         repaint();
     }
@@ -100,7 +99,7 @@ public class OptimizedView extends JPanel  {
      * @param newSize 
      */
     public void scaleMap(Dimension newSize) {
-        if (!initialized()) { return; }
+        if (image == null) { return; }
         if (!scaled) { // The scaling is starting
             swapBuffers(); // Ensure that the backbuffer holds the scaling source
         }
@@ -125,39 +124,28 @@ public class OptimizedView extends JPanel  {
     }
     
     /**
-     * Creates a buffered image from the given list of lines
-     * @param lineArr The lines to draw
-     * @return A buffered image containing the drawn lines
+     * Creates a new compatible BufferedImage with the given size and optionally
+     * clears it
+     * @param dim The dimension of the image
+     * @param clear Whether it should be filled with the clearColor
+     * @return A potentially cleared buffered image of the given size
      */
-    private BufferedImage createImage(ArrayList<Line> lineArr, Dimension dim) {
-        if (dim.height == 0 || dim.width == 0) { 
-            dim = this.getMinimumSize(); 
-        }
+    public BufferedImage createImage(Dimension dim, boolean clear) {
         BufferedImage img = gfx_config.createCompatibleImage(dim.width, dim.height);
-        clear(img);
-        Graphics2D g2d = img.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        for (Line line : lineArr) { // Current error: line is null
-            g2d.setColor(line.color);
-            g2d.drawLine(line.x1, line.y1, line.x2, line.y2);
+        if (clear) {
+            Graphics2D g2d = img.createGraphics();
+            g2d.setColor(clearColor);
+            g2d.fillRect(0, 0, img.getWidth(), img.getHeight());
+            g2d.dispose();
         }
-        g2d.dispose();
         return img;
     }
     
-    public void renewImage(ArrayList<Line> lines) {
-        image = createImage(lines, getSize());
-        backbuffer = gfx_config.createCompatibleImage(getWidth(), getHeight());
+    public void renewImage(Projection p) {
+        image = createImage(getSize(), true);
+        backbuffer = createImage(getSize(), false);
         scaled = false;
         repaint();
-    }
-    
-    /**
-     * Returns whether the view is initialized and can be used
-     * @return True if the view is initialized
-     */
-    public boolean initialized() {
-        return image != null;
     }
     
     /**
@@ -169,32 +157,98 @@ public class OptimizedView extends JPanel  {
     }
     
     /**
+     * Draws the rect used for marking where to zoom
+     * @param g2d The graphics2D object to draw it unto
+     */
+    private void drawMarker(Graphics2D g2d) {
+        if (markerRect == null) {return;}
+        BasicStroke str = new BasicStroke(2, BasicStroke.CAP_BUTT, 
+                BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);
+        g2d.setColor(new Color(200,200,255,90));
+        g2d.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
+                (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
+        g2d.setColor(Color.BLUE);
+        g2d.setStroke(str);
+        g2d.drawRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
+                (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
+
+    }
+    
+    /**
      * What happens at the default render (on resize etc.)
      * @param g 
      */
     @Override
     public void paintComponent(Graphics g) {
         if (image != null) {
-            long t1 = System.nanoTime();
             g.setColor(clearColor);
             g.fillRect(0,0,getWidth(),getHeight());
             g.drawImage(image, 0, 0, this);
-            double delay = (System.nanoTime()-t1)/1000000000.0;
-            if (markerRect != null) { // Draw the rect used for marking 
-                BasicStroke str = new BasicStroke(2, BasicStroke.CAP_BUTT, 
-                        BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);
-                Graphics2D g2d = (Graphics2D)g;
-                g2d.setColor(new Color(200,200,255,90));
-                g2d.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
-                        (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
-                g2d.setColor(Color.BLUE);
-                g2d.setStroke(str);
-                g2d.drawRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
-                        (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
-            }
+            drawMarker((Graphics2D)g);
+            g.dispose();
             
         } else {
             System.out.println("No image set yet, so nothing to draw...");
         }
     } 
+    
+    public void setInstructions(RenderInstructions ins) {
+        this.ins = ins;
+    }
+
+    @Override
+    public void startStream() {
+        System.out.println("Starting View paint routine...");
+        activeGraphics = image.createGraphics();
+        activeGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+    }
+
+    @Override
+    public void startStream(IProgressBar bar) {
+        throw new UnsupportedOperationException("Progressbar unsupported");
+    }
+    
+    /**
+     * Draws all edges of a road as a poly line
+     * @param road The road to draw
+     */
+    private void drawPolyline(Road road) {
+        activeGraphics.setColor(ins.getColor(road.type));
+        int l = road.nodes.length;
+        int h = getHeight();
+        int[] xVals = new int[l];
+        int[] yVals = new int[l];
+        for (int i = 0; i < l; i++) {
+            Road.Node n = road.nodes[i];
+            xVals[i] = n.mappedX(activeProjection);
+            yVals[i] = n.mappedY(activeProjection, h);
+        }
+        activeGraphics.drawPolyline(xVals, yVals, l);
+    }
+    
+    /**
+     * Draws each edge of a road as a separate line
+     * @param road The road to draw
+     */
+    private void drawLines(Road road) {
+        activeGraphics.setColor(ins.getColor(road.type));
+        int h = getHeight();
+        for (Road.Edge edge: road) {
+            activeGraphics.drawLine(
+                    edge.p1.mappedX(activeProjection), 
+                    edge.p1.mappedY(activeProjection, h), 
+                    edge.p2.mappedX(activeProjection), 
+                    edge.p2.mappedY(activeProjection, h));
+        }
+    }
+
+    @Override
+    public void add(Road obj) {
+        drawLines(obj);
+    }
+
+    @Override
+    public void endStream() {
+        System.out.println("Painting finished");
+    }
 }

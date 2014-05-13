@@ -2,6 +2,7 @@ package classes;
 
 import enums.RoadType;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.ArrayList;
@@ -23,19 +24,25 @@ import javax.swing.border.Border;
 public class Controller extends JFrame {
     private final OptimizedView view;
     private final Model model;
-    private final CMouseHandler mouseHandler;
-    private final CResizeHandler resizeHandler;
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
-    private ArrayList<RoadType> prioritized;
-    private SearchStuff searchStuff;
-    private JTextField inputField;
-    private JList adressList;
-    private DefaultListModel listModel;
+    public ArrayList<RoadType> prioritized;
     
     // Dynamic fields
     public final Viewport viewport;
     private RenderInstructions ins;
-    
+    public static final RenderInstructions defaultInstructions = new RenderInstructions();
+    /**
+     * Initializes the static variables
+     */
+    static {
+        // Create the default render instructions :
+        defaultInstructions.addMapping(Color.red, RoadType.Highway);
+        defaultInstructions.addMapping(Color.red, RoadType.HighwayExit);
+        defaultInstructions.addMapping(new Color(255,170,100), RoadType.PrimeRoute);
+        defaultInstructions.addMapping(new Color(0,255,25,200), RoadType.Path);
+        defaultInstructions.addMapping(Color.blue, RoadType.Ferry);
+        defaultInstructions.addMapping(new Color(200,200,255), RoadType.Other);
+    }
     /**
      * Constructor for the TestController class
      * @param view The view to manage
@@ -45,8 +52,8 @@ public class Controller extends JFrame {
         super();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.model = model;
-        viewport = new Viewport(model.getBoundingArea(), 1, view);
-        this.ins = Model.defaultInstructions;
+        viewport = new Viewport(model.bounds, 1, view);
+        ins = defaultInstructions;
         
         prioritized = new ArrayList<>();
         prioritized.add(RoadType.Highway);
@@ -69,15 +76,15 @@ public class Controller extends JFrame {
         // Key handling
         setFocusTraversalKeysEnabled(false);
         setFocusable(false);
-        resizeHandler = new CResizeHandler(this, view);
-        mouseHandler = new CMouseHandler(this, view);
+        new CResizeHandler(this, view);
+        new CMouseHandler(this, view);
         
         contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
-        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
-        contentPanel.add(new SearchStuff(model.getRoads(model.getBoundingArea())), 
-                BorderLayout.WEST);
+        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
+        //contentPanel.add(new SearchStuff(), BorderLayout.WEST); //TODO compat
+                
         //contentPanel.add(new RouteDescriptionPanel());
         
         setTitle("First-year Project - Visualization of Denmark");
@@ -99,7 +106,8 @@ public class Controller extends JFrame {
      * @param p The projection to draw
      */
     public void draw(Viewport.Projection p) {
-        view.renewImage(model.getLines(p, view.getHeight(), ins, prioritized));
+        view.renewImage(p);
+        model.getRoads(view, p);
     }
     
     /**
@@ -107,7 +115,8 @@ public class Controller extends JFrame {
      * @param deltaWidth
      */
     public void extend(int deltaWidth) {
-        view.extend(model.getLines(viewport.widen(deltaWidth), view.getHeight(), ins, prioritized));
+        view.extend();
+        model.getRoads(view, viewport.widen(deltaWidth));
     }
     
     /**
@@ -116,20 +125,10 @@ public class Controller extends JFrame {
      * @param dy The y-axis movement
      */
     public void moveMap(int dx, int dy) {
-        ArrayList<Line> lines = new ArrayList<>();
+        view.offsetImage(dx, dy);
         for (Viewport.Projection p: viewport.movePixels(dx, dy)) {
-            lines.addAll(model.getLines(p, view.getHeight(), ins, prioritized));
+            model.getRoads(view, p);
         }
-        view.offsetImage(dx, dy, lines);
-    }
-    
-    /**
-     * Returns the roads with the given area
-     * @param area The area to look in
-     * @return A list of roads in the area
-     */
-    public RoadPart[] getRoads(Rect area){
-        return model.getRoads(area, ins);
     }
     
     /**
@@ -139,7 +138,8 @@ public class Controller extends JFrame {
         long t1 = System.nanoTime();
         System.out.println("Executing a full redraw of the View");
         System.out.println("The projection is "+viewport.getProjection());
-        view.renewImage(model.getLines(viewport.getProjection(), view.getHeight(), ins, prioritized));
+        view.renewImage(viewport.getProjection());
+        model.getRoads(view, viewport.getProjection());
         System.out.println("- Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec) -");
     }
     
@@ -157,7 +157,7 @@ public class Controller extends JFrame {
             "Loading road data...");
         Datafile krakInters = new Datafile("resources/intersections.txt", 
             675902, "Loading intersection data...");
-        Model model = new Loader().loadData(progbar, krakInters, krakRoads);
+       // Model model = new Loader().loadData(progbar, krakInters, krakRoads);
         progbar.close();
         
         /*boolean loop = true;
@@ -169,12 +169,12 @@ public class Controller extends JFrame {
             }
         }*/
         
-        Controller controller = new Controller(view, model); 
+        /*Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
         controller.pack();
         System.out.println("View size previs:  "+view.getSize());
         controller.draw(controller.viewport.zoomTo(1));
         controller.setVisible(true);
-        System.out.println("View size postvis: "+view.getSize());
+        System.out.println("View size postvis: "+view.getSize());*/
     }
 }
