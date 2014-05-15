@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.Arrays;
+import java.util.HashSet;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.MenuElement;
@@ -31,11 +33,13 @@ public class AutoCompleter extends JTextField {
     private int letterCount = 0; //Value to check if letters in textfield is written by us, and not a road taken from the list
     private JPopupMenu pop;
     private RoadPart foundRoad;
+    private HashSet<Integer> usedZips;
 
     public AutoCompleter(RoadPart[] roads) {
         edges = roads;
         inputField = this;
-        inputField.setMaximumSize(new Dimension(130, 22));
+        inputField.setMaximumSize(new Dimension(180, 22));
+        inputField.setPreferredSize(inputField.getMaximumSize());
         pop = new JPopupMenu();
         pop.setVisible(false);
         pop.setFocusable(false);
@@ -132,37 +136,64 @@ public class AutoCompleter extends JTextField {
             }
         });
     }
+    
+    /*private void checkRNo(RoadPart r){
+        r.
+    }*/
 
     //Searches through the list
     private void startSearch() {
-        if (inputField.getText().length() == 0) {
-            removeItems();
-        }
         if (inputField.getText().length() >= 3) {
-
+            //removeItems();
+            System.out.println("Starting search");
+            
+            usedZips = new HashSet<Integer>();
             String searchText = inputField.getText().toLowerCase();
+            //Trying to start something with regex...
+            searchText = searchText.replace(' ',',');
+            //searchText = searchText.replace(',', ':');
+            searchText.indexOf("\\d");
+            String search[] = searchText.split(",");
 
+            //Starting linear search through all the roads
             for (int i = 0; i < edges.length; i++) {
                 String edgeName = edges[i].name;
                 int edgeZip = edges[i].leftZip;
+                int loLNo = edges[i].sLeftNum; //Lowest house no. on the left
+                int hiLNo = edges[i].eLeftNum; //Highest house no. on the left
+                int loRNo = edges[i].sRightNum; //Lowest house no. on the right
+                int hiRNo = edges[i].eRightNum; //Highest house no. on the right
 
                 if (edgeName.toLowerCase().startsWith(searchText)) {
 
+                    //Just add it when there's no other elements
                     if (pop.getSubElements().length == 0) {
                         pop.add(createMenuItem(edges[i], edgeName + " - " + edgeZip));
+                        usedZips.add(edgeZip);
+                        
                     } else {
+                        Boolean didItMatch = true;
+
+                        //Check if the road already is added
                         for (MenuElement element : pop.getSubElements()) {
                             MenuItem item = (MenuItem) element;
-                            if (!edgeName.equals(item.roadPart.name) && edgeZip != item.roadPart.leftZip
-                                    || edgeName.equals(item.roadPart.name) && edgeZip != item.roadPart.leftZip) {
-                                pop.add(createMenuItem(edges[i], edgeName + " - " + edgeZip));
+                            if (edgeName.equalsIgnoreCase(item.roadPart.name) && usedZips.contains(edgeZip)) {
+                                //The road is already added
+                                didItMatch = true;
+                                break;
+                            } else {
+                                didItMatch = false;
                             }
+                        }
+                        //Add the road
+                        if (!didItMatch) {
+                            pop.add(createMenuItem(edges[i], edgeName + " - " + edgeZip));
+                            usedZips.add(edgeZip);
                         }
                     }
                     setPopMenu();
-                    pop.setVisible(true);
-
-                    if (pop.getSubElements().length >= 3) {
+                    //show up to 18 possible roads
+                    if (pop.getSubElements().length >= 18) {
                         pop.setVisible(true);
                         return;
 
@@ -182,8 +213,8 @@ public class AutoCompleter extends JTextField {
         inputField.revalidate();
         inputField.repaint();
     }
-    
-    public RoadPart getRoad(){
+
+    public RoadPart getRoad() {
         return foundRoad;
     }
 }

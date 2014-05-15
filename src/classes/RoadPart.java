@@ -36,7 +36,7 @@ public class RoadPart implements CharSequence, QuadNode {
     public final short rightZip;
     public final short leftZip;
     
-    // Highway turn-off number (?)
+    // Highway turn-off number 
     public final int turnoffNumber;
     
     // What type of zone is the road in (residential, industrial etc.)

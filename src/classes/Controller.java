@@ -84,7 +84,8 @@ public class Controller extends JFrame {
         mouseHandler = new CMouseHandler(this, view);
 
         JPanel westContent = new JPanel();
-        westContent.setLayout(new SpringLayout());
+        westContent.setLayout(new SpringLayout());        
+        final RouteDescriptionPanel routeP = new RouteDescriptionPanel();
         final AutoCompleter fromField = new AutoCompleter(model.getRoads(model.getBoundingArea()));
         final AutoCompleter toField = new AutoCompleter(model.getRoads(model.getBoundingArea()));
         westContent.add(fromField);
@@ -95,20 +96,14 @@ public class Controller extends JFrame {
                 //Make shortest path search
                 String prevRoadName = "";
                 if (toField.getRoad() == null || fromField.getRoad() == null) {
-                    JOptionPane.showMessageDialog(contentPanel, "Vælg venligst to veje", "Information", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(contentPanel, "Please choose two roads", "Information", JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    RoadPart[] result = SP.findPath(toField.getRoad().sourceID, fromField.getRoad().sourceID);
-                    //Printes omvendt ud
-                    for (RoadPart r : result) {
-                        if (!r.name.equals(prevRoadName)) {
-                            System.out.println(r.name + "\n");
-                            prevRoadName = r.name;
-                        }
-                    }
+                    RoadPart[] result = SP.findPath(fromField.getRoad().sourceID, toField.getRoad().sourceID);
+                    routeP.setRoute(result);
                 }
             }
         }));
-        westContent.add(new RouteDescriptionPanel());
+        westContent.add(routeP);
         SpringUtilities.makeCompactGrid(westContent, 4, 1, 0, 0, 1, 1);
 
         contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);

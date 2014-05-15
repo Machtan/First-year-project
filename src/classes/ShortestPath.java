@@ -56,8 +56,9 @@ public class ShortestPath {
                 //System.out.println("Checking the other intersection than "+current+" of "+currentRoad);
                 //System.out.println("Calling other() with: "+currentRoad+ " and current: " +current);
                 current = G.other(currentRoad, current);
-            }
+            } 
             RoadPart[] result = new RoadPart[path.size()];
+       
             for (int j = 0; j < path.size(); j++) {
                 result[j] = path.get(path.size() - j - 1);
             }
