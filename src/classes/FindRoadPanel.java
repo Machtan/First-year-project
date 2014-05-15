@@ -46,11 +46,11 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
      * If given string is empty, set roadLabel to UNKNOWN.
      * @param name of road
      */
-    public void setNearestRoad(String name) {
+    public void setNearestRoad(String name, float x, float y) {
         if (!name.equals("")) {
-            roadLabel.setText(description + name);
+            roadLabel.setText(description + name + " x :" + x + " y : " + y);
         } else {
-            roadLabel.setText(description + "UNKNOWN");
+            roadLabel.setText(description + "UNKNOWN, x : " + x + " y : " + y);
         }
     }
     
@@ -71,28 +71,8 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         return Math.sqrt((pX-centerx)*(pX-centerx)+(pY-centery)*(pY-centery));
        }
     
-    /**
-     * Find the road closest to the mousecursor. Is called whenever
-     * the cursor moves.
-     * @param e mousemovement.
-     */
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        // Mouse cursor on screen.
-        Point cPos = e.getLocationOnScreen();  
-        if (!view.isShowing()) { return; }
-        if ((view.getHeight() < 20) || (view.getWidth()< 20)) {
-            return; // Don't attempt to find a road if the view is too small
-        }
-        cPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);      
-        
-        // Retrieve active rect area
-        Viewport port = controller.viewport;
-        
-        // Change position from screen coordinates to map coordinates.
-        // Create a new small Rect with the mouseposition as midpoint with mapcoordinates.
-        float x = port.getMapX(cPos.x);
-        float y = port.getMapY(cPos.y);
+    
+    public RoadPart closestRoad(float x, float y) {
         Rect cursorRect = new Rect(x-width/2, y-height/2, width, height);
         
         // Get a HashSet containing RoadParts within the cursorRect.
@@ -128,7 +108,72 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
             }
         }
 
-        setNearestRoad(nearest.name);
+        return nearest;
+    }
+    
+    /**
+     * Find the road closest to the mousecursor. Is called whenever
+     * the cursor moves.
+     * @param e mousemovement.
+     */
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        // Mouse cursor on screen.
+        Point cPos = e.getLocationOnScreen();  
+        if (!view.isShowing()) { return; }
+        if ((view.getHeight() < 20) || (view.getWidth()< 20)) {
+            return; // Don't attempt to find a road if the view is too small
+        }
+        cPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);      
+        
+        // Retrieve active rect area
+        Viewport port = controller.viewport;
+        
+        // Change position from screen coordinates to map coordinates.
+        // Create a new small Rect with the mouseposition as midpoint with mapcoordinates.
+        float x = port.getMapX(cPos.x);
+        float y = port.getMapY(cPos.y);
+        
+        RoadPart closest = closestRoad(x, y);
+        
+        setNearestRoad(closest.name, x, y);
+        
+       /* Rect cursorRect = new Rect(x-width/2, y-height/2, width, height);
+        
+        // Get a HashSet containing RoadParts within the cursorRect.
+        RoadPart[] roads = controller.getRoads(cursorRect);
+  
+        // If no RoadParts are found within the area, float size of cursorRect until 
+        // at least one has been found.
+        while (roads.length == 0) {
+
+            float rectX = cursorRect.x-cursorRect.width/2;
+            float rectY = cursorRect.y-cursorRect.height/2;
+            float rectWidth = cursorRect.width*2;
+            float rectHeight = cursorRect.height*2;
+            
+            cursorRect = new Rect(rectX, rectY, rectWidth, rectHeight);
+            roads = controller.getRoads(cursorRect);
+        }
+        
+        // Calculate distance from mouse coordinates to all the RoadParts found.
+        double minDist = Integer.MAX_VALUE;
+        RoadPart nearest = null;
+        for(RoadPart road : roads) {
+            Rect r = road.getRect();
+            float areaX1 = r.x;
+            float areaY1 = r.y;
+            float areaX2 = r.x + r.width;
+            float areaY2 = r.y + r.height;  
+            
+            double distance = pointToLineDistance(areaX1, areaY1, areaX2, areaY2, x, y); 
+            if (distance < minDist) {
+                nearest = road;
+                minDist = distance;
+            }
+        }
+
+        setNearestRoad(nearest.name, x, y);
 
         /*Can be used if needed for DEBUGGING purposes.
         Draw the rect containing the nearest RoadPart r.
