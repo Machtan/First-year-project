@@ -1,6 +1,7 @@
 package classes;
 
 import classes.Viewport.Projection;
+import enums.RoadType;
 import interfaces.IProgressBar;
 import interfaces.StreamedContainer;
 import java.awt.BasicStroke;
@@ -12,7 +13,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.HashMap;
 import javax.swing.JPanel;
 
 /**
@@ -22,30 +23,79 @@ import javax.swing.JPanel;
  * @version 10-Mar-2014
  */
 public class OptimizedView extends JPanel implements StreamedContainer<Road> {
+    GraphicsConfiguration gfx_config = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration(); // Voodoo
+    
+    public final RenderInstructions ins;
+    public static Color clearColor = Color.WHITE;
+    
     private BufferedImage image;
     private BufferedImage backbuffer;
-    private boolean scaled;
+    private boolean scaled      = false;
+    private Rect markerRect     = null;
+    private Road.Edge[] path    = new Road.Edge[0];
+    private Road.Node fromNode  = null;
+    private Road.Node toNode    = null;
+    //private HashMap<RoadType, BufferedImage> layers = new HashMap<>();
     
     // Values used for the streamed image drawing
     private Graphics2D activeGraphics;
     private Projection activeProjection;
     
-    private RenderInstructions ins;
-    public static Color clearColor = Color.WHITE;
-    GraphicsConfiguration gfx_config = GraphicsEnvironment.
-		getLocalGraphicsEnvironment().getDefaultScreenDevice().
-		getDefaultConfiguration(); // Voodoo
-    Rect markerRect = null;
-    
     /**
      * Constructor for the OptimizedView class
      * @param dimension
      */
-    public OptimizedView (Dimension dimension) {
+    public OptimizedView (Dimension dimension, RenderInstructions ins) {
         super();
-        scaled = false;
+        this.ins = ins;
         setMinimumSize(dimension);
         setSize(dimension);
+    }
+    
+    /**
+     * Sets the shortest path to be drawn
+     * @param path The path to be drawn
+     */
+    public void setPath(Road.Edge[] path) {
+        if (path == null) {
+            throw new RuntimeException("Please use a Road.Edge[0] for clearing!");
+        }
+        this.path = path;
+    }
+    
+    /**
+     * Tells the view to draw the given node as the starting point of a path
+     * Use 'null' to clear.
+     * @param start The node to start at
+     */
+    public void setPathStart(Road.Node start) {
+        fromNode = start;
+    }
+    
+    /**
+     * Tells the view to draw the given node as the ending point of a path
+     * Use 'null' to clear.
+     * @param end The node to end at
+     */
+    public void setPathEnd(Road.Node end) {
+        toNode = end;
+    }
+    
+    /**
+     * Sets the projection of p
+     * @param p 
+     */
+    public void setProjection(Projection p) {
+        System.out.println("Setting the projection to "+p);
+        activeProjection = p;
+    }
+    
+    /**
+     * Set the marker rect to be drawn
+     * @param rect The rect
+     */
+    public void setMarkerRect(Rect rect) {
+        markerRect = rect;
     }
     
     /**
@@ -142,36 +192,52 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
     }
     
     public void renewImage(Projection p) {
+        activeProjection = p;
         image = createImage(getSize(), true);
         backbuffer = createImage(getSize(), false);
+        /*for (RoadType type : RoadType.values()) {
+            layers.put(type, createImage(getSize(), true));
+        }*/
         scaled = false;
         repaint();
     }
-    
+        
     /**
-     * Set the marker rect to be drawn
-     * @param rect The rect
-     */
-    public void setMarkerRect(Rect rect) {
-        markerRect = rect;
-    }
-    
-    /**
-     * Draws the rect used for marking where to zoom
+     * Draws all the extra overlays of the view
      * @param g2d The graphics2D object to draw it unto
      */
-    private void drawMarker(Graphics2D g2d) {
-        if (markerRect == null) {return;}
-        BasicStroke str = new BasicStroke(2, BasicStroke.CAP_BUTT, 
+    private void drawOverlays(Graphics2D g2d) {
+        if (markerRect != null) {
+            BasicStroke str = new BasicStroke(2, BasicStroke.CAP_BUTT, 
                 BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);
-        g2d.setColor(new Color(200,200,255,90));
-        g2d.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
-                (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
-        g2d.setColor(Color.BLUE);
-        g2d.setStroke(str);
-        g2d.drawRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
-                (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
-
+            g2d.setColor(new Color(200,200,255,90));
+            g2d.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
+                    (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
+            g2d.setColor(Color.BLUE);
+            g2d.setStroke(str);
+            g2d.drawRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
+                    (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
+        }
+        int h = getHeight();
+        if (fromNode != null) {
+            int x = fromNode.mappedX(activeProjection);
+            int y = fromNode.mappedY(activeProjection, h);
+            g2d.setColor(Color.PINK);
+            g2d.drawOval(x, y, 10, 10);
+        }
+        if (toNode != null) {
+            int x = toNode.mappedX(activeProjection);
+            int y = toNode.mappedY(activeProjection, h);
+            g2d.setColor(Color.BLACK);
+            g2d.drawOval(x, y, 10, 10);
+        }
+        for (Road.Edge edge : path) {
+            g2d.drawLine(
+                    edge.p1.mappedX(activeProjection), 
+                    edge.p1.mappedY(activeProjection, h), 
+                    edge.p2.mappedX(activeProjection), 
+                    edge.p2.mappedY(activeProjection, h));
+        }
     }
     
     /**
@@ -184,17 +250,13 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
             g.setColor(clearColor);
             g.fillRect(0,0,getWidth(),getHeight());
             g.drawImage(image, 0, 0, this);
-            drawMarker((Graphics2D)g);
+            drawOverlays((Graphics2D)g);
             g.dispose();
             
         } else {
             System.out.println("No image set yet, so nothing to draw...");
         }
     } 
-    
-    public void setInstructions(RenderInstructions ins) {
-        this.ins = ins;
-    }
 
     @Override
     public void startStream() {
@@ -210,9 +272,10 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
     
     /**
      * Draws all edges of a road as a poly line
+     * (This is a rather inefficient alternative to drawLines)
      * @param road The road to draw
      */
-    private void drawPolyline(Road road) {
+    private void drawPolyLine(Road road) {
         activeGraphics.setColor(ins.getColor(road.type));
         int l = road.nodes.length;
         int h = getHeight();
@@ -250,5 +313,6 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
     @Override
     public void endStream() {
         System.out.println("Painting finished");
+        repaint();
     }
 }

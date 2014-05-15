@@ -9,15 +9,17 @@ package classes;
 import enums.RoadType;
 import interfaces.IProgressBar;
 import interfaces.StreamedContainer;
-import java.awt.Color;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Model is the model handling the tree. It used to handle the retrieval of lines.
  * @author Jakob
  */
 public class Model implements StreamedContainer<Road> {
-    private QuadTree tree;
     public final Rect bounds;
+    private HashMap<RoadType, QuadTree> trees = new HashMap<>();
+    public ArrayList<RoadType> priorities;
     
     /* Krak boundaries
     x = [442254.35659 : 892658.21706]
@@ -25,6 +27,13 @@ public class Model implements StreamedContainer<Road> {
     */
     public Model(Rect boundingBox) {
         bounds = boundingBox;
+        priorities = new ArrayList<>();
+        priorities.add(RoadType.Other);
+        priorities.add(RoadType.Path);
+        priorities.add(RoadType.Ferry);
+        priorities.add(RoadType.PrimeRoute);
+        priorities.add(RoadType.HighwayExit);
+        priorities.add(RoadType.Highway);
     }
     
     /**
@@ -37,7 +46,9 @@ public class Model implements StreamedContainer<Road> {
             target.startStream();
             target.endStream();
         } else {
-            tree.getIn(p.source, target);
+            for (RoadType type : priorities) {
+                trees.get(type).getIn(p.source, target);
+            }
         }
     }
     
@@ -46,14 +57,18 @@ public class Model implements StreamedContainer<Road> {
      * @param target The target to stream roads to
      */
     public void getAllRoads(StreamedContainer<Road> target) {
-        tree.getIn(bounds, target);
+        for (RoadType type : priorities) {
+            trees.get(type).getIn(bounds, target);
+        }
     }
 
     @Override
     public void startStream() {
         // Find the bounding area of the intersections
         System.out.println("Populating the Quad Tree...");
-        tree = new QuadTree(bounds, (short)400, (short)30);
+        for (RoadType type : RoadType.values()) {
+            trees.put(type, new QuadTree(bounds, (short)400, (short)30));
+        }
     }
 
     @Override
@@ -68,7 +83,7 @@ public class Model implements StreamedContainer<Road> {
 
     @Override
     public void add(Road obj) {
-        tree.add(obj);
+        trees.get(obj.type).add(obj);
     }
     
 }

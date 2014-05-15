@@ -14,14 +14,9 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
 
     @Override
     public boolean collidesWith(Rect area) {
-        for (Edge edge : this) {
-            if (edge.getRect().collidesWith(area)) {
-                return true;
-            }
-        }
-        return false;
+        return bounds.collidesWith(area);
     }
-    public class Node {
+    public static class Node {
         public final long id;
         public final float x;
         public final float y;
@@ -34,7 +29,7 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
             return Math.round(p.target.x + (x - p.source.x) * p.ppu);
         }
         public int mappedY(Projection p, int windowHeight) {
-            return Math.round(windowHeight - (y - p.source.y) * p.ppu);
+            return Math.round(windowHeight - (p.target.y + (y - p.source.y) * p.ppu));
         }
     }
     public class Edge {
@@ -64,29 +59,36 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
             return Math.sqrt(Math.pow(p2.x - p1.x, 2)+Math.pow(p2.y - p1.y, 2));
         }
     }
-    public final String name;
-    public final char speedLimit;
-    public final short zipCode;
-    public final RoadType type; // Using int representation
-    public final boolean oneway;
-    public final Node[] nodes;
+    public final String     name;
+    public final RoadType   type; // Using int representation
+    public final short      zipCode;
+    public final short      speedLimit;
+    public final boolean    oneway;
+    public final Node[]     nodes;
+    public final float[]    drivetimes;
+    public final Rect       bounds;
     /**
      * Constructor for the Road class
      * @param name The name of the road
      * @param type The type of the road 
      * @param nodes The list of successive nodes in this road
      * @param zipCode The zipCode of the area this road is within
-     * @param oneway
+     * @param oneway Wether the road is one-way or bidirectional
      * @param speedLimit The speed limit for this road
+     * @param drivetimes The time it takes to pass the edges in the road
+     * @param bounds The bounding area of this road
      */
-    public Road (String name, char type, short zipCode, char speedLimit, 
-            boolean oneway, Node[] nodes) {
+    public Road (String name, RoadType type, short zipCode, short speedLimit, 
+            boolean oneway, Node[] nodes, float[] drivetimes, Rect bounds) {
         this.name = name;
-        this.type = RoadType.fromValue(type);
+        this.type = type;
         this.zipCode = zipCode;
         this.speedLimit = speedLimit;
         this.oneway = oneway;
         this.nodes = nodes;
+        this.drivetimes = drivetimes;
+        this.bounds = bounds;
+        
         
     }
     

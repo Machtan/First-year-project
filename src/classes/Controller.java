@@ -7,11 +7,8 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
@@ -29,7 +26,6 @@ public class Controller extends JFrame {
     
     // Dynamic fields
     public final Viewport viewport;
-    private RenderInstructions ins;
     public static final RenderInstructions defaultInstructions = new RenderInstructions();
     /**
      * Initializes the static variables
@@ -51,9 +47,10 @@ public class Controller extends JFrame {
     public Controller(OptimizedView view, Model model) {
         super();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setTitle("First-year Project - Visualization of Denmark");
+        
         this.model = model;
         viewport = new Viewport(model.bounds, 1, view);
-        ins = defaultInstructions;
         
         prioritized = new ArrayList<>();
         prioritized.add(RoadType.Highway);
@@ -79,18 +76,19 @@ public class Controller extends JFrame {
         new CResizeHandler(this, view);
         new CMouseHandler(this, view);
         
-        contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
-        contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
+        contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
+        /*
+        contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
+        */
         //contentPanel.add(new SearchStuff(), BorderLayout.WEST); //TODO compat
                 
         //contentPanel.add(new RouteDescriptionPanel());
         
-        setTitle("First-year Project - Visualization of Denmark");
-        
         // Pack the window
         this.setContentPane(contentPanel);
+        this.pack();
     }
     
     /**
@@ -127,6 +125,7 @@ public class Controller extends JFrame {
     public void moveMap(int dx, int dy) {
         view.offsetImage(dx, dy);
         for (Viewport.Projection p: viewport.movePixels(dx, dy)) {
+            view.setProjection(p);
             model.getRoads(view, p);
         }
     }
@@ -150,7 +149,7 @@ public class Controller extends JFrame {
     public static void main(String[] args) throws InterruptedException {
         ProgressBar progbar = new ProgressBar(); // Create the progress bar
         Dimension viewSize = new Dimension(600,400);
-        OptimizedView view = new OptimizedView(viewSize);
+        OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
         
         // Load everything with the optional progressbar on :U
         Datafile krakRoads = new Datafile("resources/roads.txt", 812301, 
@@ -168,13 +167,13 @@ public class Controller extends JFrame {
                 loop = false;
             }
         }*/
-        
-        /*Controller controller = new Controller(view, model); 
+        Model model = NewLoader.loadKrakData(NewLoader.krakdata);
+        Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
         controller.pack();
         System.out.println("View size previs:  "+view.getSize());
         controller.draw(controller.viewport.zoomTo(1));
         controller.setVisible(true);
-        System.out.println("View size postvis: "+view.getSize());*/
+        System.out.println("View size postvis: "+view.getSize());
     }
 }

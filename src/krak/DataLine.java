@@ -62,29 +62,16 @@ public class DataLine {
 	 * Returns the next token. If apostrophes surround the token, they overrule commas, and the token is returned without the apostrophes
 	 */
 	private String nextToken() {
-		if (line.charAt(next) != '\'') {
-			int comma = line.indexOf(',', next);
-			String token;
-			if (comma >= 0) { // Comma separator found
-				token = line.substring(next, comma);
-				next = comma + 1;
-			} else {          // This is the last data field
-				token = line.substring(next);
-				next = line.length();
-			}
-			return token;
-		} else {
-			int quote = line.indexOf('\'', next+1);
-			String token;
-			if (quote >= 0) { // End of string found
-				token = line.substring(next+1, quote);
-				next = quote + 2;
-			} else {          // Malformed string
-				next = line.length();
-				throw new IllegalArgumentException("Cannot parse: " + line.substring(next));
-			}
-			return token;
-		}
+            int comma = line.indexOf(',', next);
+            String token;
+            if (comma >= 0) { // Comma separator found
+                token = line.substring(next, comma);
+                next = comma + 1;
+            } else {          // This is the last data field
+                token = line.substring(next);
+                next = line.length();
+            }
+            return token;
 	}
 
 	/**
@@ -96,6 +83,10 @@ public class DataLine {
 
         public long getLong() {
             return Long.parseLong(nextToken());
+        }
+        
+        public boolean getBool() {
+            return getChar() == '1';
         }
 
 	/**

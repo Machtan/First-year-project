@@ -1,14 +1,9 @@
 package classes;
 
 import java.awt.Dimension;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import krak.DataLine;
 
 /**
@@ -151,6 +146,8 @@ public class Utils {
         public static float getFloat() { return line.getFloat(); }
         public static char getChar() { return line.getChar(); }
         public static short getShort() { return line.getShort(); }
+        public static boolean getBool() { return line.getBool(); }
+        public static boolean hasNext() { return line.hasMore(); }
     }
     
      /**
