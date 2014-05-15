@@ -15,6 +15,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
@@ -30,6 +31,7 @@ import javax.swing.border.Border;
  */
 public class Controller extends JFrame {
 
+    private static ShortestPath SP;
     private final OptimizedView view;
     private final Model model;
     private final CMouseHandler mouseHandler;
@@ -40,7 +42,6 @@ public class Controller extends JFrame {
     private JTextField inputField;
     private JList adressList;
     private DefaultListModel listModel;
-
     // Dynamic fields
     public final Viewport viewport;
     private RenderInstructions ins;
@@ -66,7 +67,7 @@ public class Controller extends JFrame {
         this.view = view;
 
         // Set the insets / padding of the window
-        JPanel contentPanel = new JPanel(new BorderLayout());
+        final JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Padding for the view (and unobstructing borders)
@@ -83,16 +84,26 @@ public class Controller extends JFrame {
         mouseHandler = new CMouseHandler(this, view);
 
         JPanel westContent = new JPanel();
-        westContent.setLayout(new SpringLayout());
-        westContent.add(new AutoCompleter(model.getRoads(model.getBoundingArea())));
-        westContent.add(new AutoCompleter(model.getRoads(model.getBoundingArea())));
+        westContent.setLayout(new SpringLayout());        
+        final RouteDescriptionPanel routeP = new RouteDescriptionPanel();
+        final AutoCompleter fromField = new AutoCompleter(model.getRoads(model.getBoundingArea()));
+        final AutoCompleter toField = new AutoCompleter(model.getRoads(model.getBoundingArea()));
+        westContent.add(fromField);
+        westContent.add(toField);
         westContent.add(new JButton(new AbstractAction("Search") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Make shortest path search");
+                //Make shortest path search
+                String prevRoadName = "";
+                if (toField.getRoad() == null || fromField.getRoad() == null) {
+                    JOptionPane.showMessageDialog(contentPanel, "Vælg venligst to veje", "Information", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    RoadPart[] result = SP.findPath(fromField.getRoad().sourceID, toField.getRoad().sourceID);
+                    routeP.setRoute(result);
+                }
             }
         }));
-        westContent.add(new RouteDescriptionPanel());
+        westContent.add(routeP);
         SpringUtilities.makeCompactGrid(westContent, 4, 1, 0, 0, 1, 1);
 
         contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
@@ -185,6 +196,8 @@ public class Controller extends JFrame {
         Datafile krakInters = new Datafile("resources/intersections.txt",
                 675902, "Loading intersection data...");
         Model model = new Loader().loadData(progbar, krakInters, krakRoads);
+        Graph graph = new Graph(model.intersections, model.getRoads(model.getBoundingArea()));
+        SP = new ShortestPath(graph);
         progbar.close();
 
         /*boolean loop = true;

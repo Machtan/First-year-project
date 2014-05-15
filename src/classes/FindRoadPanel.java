@@ -130,7 +130,7 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
 
         setNearestRoad(nearest.name);
 
-        /* Can be used if needed for DEBUGGING purposes.
+        /*Can be used if needed for DEBUGGING purposes.
         Draw the rect containing the nearest RoadPart r.
         
         Rect roadRect = r.getRect();
