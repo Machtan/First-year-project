@@ -11,6 +11,7 @@ package classes;
  */
 public class QuadTree extends Quad {
     boolean frozen = false;
+    
     public QuadTree(Rect area, short maxNodes, short maxDepth) {
         super(area, maxNodes, maxDepth, (short)1);
     }
