@@ -150,10 +150,10 @@ public class AutoCompleter extends JTextField {
             usedZips = new HashSet<Integer>();
             String searchText = inputField.getText().toLowerCase();
             //Trying to start something with regex...
-            searchText = searchText.replace(' ',',');
+           // searchText = searchText.replace(' ',',');
             //searchText = searchText.replace(',', ':');
-            searchText.indexOf("\\d");
-            String search[] = searchText.split(",");
+           // searchText.indexOf("\\d");
+           // String search[] = searchText.split(",");
 
             //Starting linear search through all the roads
             for (int i = 0; i < edges.length; i++) {

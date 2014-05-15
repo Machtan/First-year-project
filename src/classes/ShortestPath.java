@@ -12,7 +12,7 @@ public class ShortestPath {
     private static double h(Intersection source, Intersection target) { //s = start, t = target
         // System.out.println("Heuristic analysis: \n"
         //         + "Intersection source: " + source + ". Intersection target: " + target);
-        return Math.sqrt(Math.pow(source.x - target.x, 2) + Math.pow(source.y - target.y, 2));
+        return Math.sqrt(Math.pow(source.x - target.x, 2) + Math.pow(source.y - target.y, 2))/1000/130;
     }
 
     public RoadPart[] findPath(long sourceID, long targetID) {
@@ -56,9 +56,9 @@ public class ShortestPath {
                 //System.out.println("Checking the other intersection than "+current+" of "+currentRoad);
                 //System.out.println("Calling other() with: "+currentRoad+ " and current: " +current);
                 current = G.other(currentRoad, current);
-            } 
+            }
             RoadPart[] result = new RoadPart[path.size()];
-       
+
             for (int j = 0; j < path.size(); j++) {
                 result[j] = path.get(path.size() - j - 1);
             }
@@ -140,7 +140,6 @@ public class ShortestPath {
         Model model = new Loader().loadData(progbar, krakInters, krakRoads);
         progbar.close();
 
-
         RoadPart[] roadTemp = model.getRoads(model.getBoundingArea());
         for (RoadPart r : roadTemp) {
             //System.out.println("Roads: " +r.name);
@@ -151,29 +150,35 @@ public class ShortestPath {
 
         ShortestPath SP = new ShortestPath(graph);
 
-        RoadPart[] RoadPartArray = SP.findPath(603585, 659617);
-        System.out.println("The path found from " + RoadPartArray[0].name + " to " + RoadPartArray[RoadPartArray.length-1].name + " has been found. \n"
-                + "Directions are: ");
-        String prevRoadName = "";
-        Boolean firstRoad = true;
+        RoadPart[] RoadPartArray = SP.findPath(1, 100);
         for (RoadPart road : RoadPartArray) {
-            if (!road.name.equals(prevRoadName)) {
-                if (road.name.length() == 0) {
-                    if (!firstRoad) {
-                        System.out.println("to Unknown Road Name ");
-                    } else {
-                        System.out.println("Starting from Unknown Road Name");
-                    }
-                } else {
-                    prevRoadName = road.name;
-                    if (!firstRoad) {
-                        System.out.println("to " + road.name);
-                    } else {
-                        System.out.println("Starting from " + road.name);
-                    }
-                }
-            }
-            firstRoad = false;
+            System.out.println(road.name);
         }
     }
+
+    /*
+     System.out.println("The path found from " + RoadPartArray[0].name + " to " + RoadPartArray[RoadPartArray.length-1].name + " has been found. \n"
+     + "Directions are: ");
+     String prevRoadName = "";
+     Boolean firstRoad = true;
+     for (RoadPart road : RoadPartArray) {
+     if (!road.name.equals(prevRoadName)) {
+     if (road.name.length() == 0) {
+     if (!firstRoad) {
+     System.out.println("to Unknown Road Name ");
+     } else {
+     System.out.println("Starting from Unknown Road Name");
+     }
+     } else {
+     prevRoadName = road.name;
+     if (!firstRoad) {
+     System.out.println("to " + road.name);
+     } else {
+     System.out.println("Starting from " + road.name);
+     }
+     }
+     }
+     firstRoad = false;
+     }
+     */
 }
