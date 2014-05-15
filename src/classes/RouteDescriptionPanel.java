@@ -14,6 +14,7 @@ import java.lang.Math;
 import java.util.Arrays;
 import java.util.Collections;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 
 /**
  *
@@ -23,12 +24,15 @@ public class RouteDescriptionPanel extends JPanel {
 
     private JList<String> descList;
     double roadLength;
+    private DefaultListModel<String> model;
 
     public RouteDescriptionPanel() {
         super();
+
         initComponents();
-        this.setMaximumSize(new Dimension(180, 200));
-        this.setPreferredSize(this.getMaximumSize());
+        model = new DefaultListModel<>();
+        //this.setMaximumSize(new Dimension(180, 500));
+        //this.setPreferredSize(new Dimension(180,400));
     }
 
     //Reverse the resulting route
@@ -39,14 +43,21 @@ public class RouteDescriptionPanel extends JPanel {
 
     private void initComponents() {
         descList = new JList<>(new String[]{"No route entered yet"});
-        descList.setSize(150, 400);
+        //descList.setSize(180, 500);
         descList.setFont(new Font(Font.DIALOG, Font.BOLD, 10));
-        add(descList);
+        JScrollPane scrollP = new JScrollPane(descList);
+        //scrollP.setMaximumSize(new Dimension(180,400));
+        //scrollP.setPreferredSize(new Dimension(180,400));
+        scrollP.setSize(new Dimension(180, 400));
+        add(scrollP);
+        this.setSize(new Dimension(180, 400));
     }
 
-    private void addPart(String road, double length, DefaultListModel<String> model) {
+    private void addPart(String road, double length) {
         String message = road + " - " + length + "m";
-        model.add(model.size(), message);
+        //model.add(model.size(), message);
+        model.addElement(message);
+        System.out.println("Added: " + model.getElementAt(model.size() - 1));
     }
 
     private double calAngle(RoadPart first, RoadPart second) {
@@ -56,49 +67,46 @@ public class RouteDescriptionPanel extends JPanel {
         return Math.toDegrees(angle1 - angle2);
     }
 
-   /* if(Math.abs(angle)< Math.PI / 4)
-            continue straight ahead
-            else if( angle> 0)
-            return turn right
-    else    turn left
-    */
     public void setRoute(RoadPart[] route) {
-        DefaultListModel<String> model = new DefaultListModel<>();
         if (route.length == 0) {
             model.addElement("Please check a valid route");
         } else {
+            model.clear();
             model.add(model.size(), "Follow");
-            String emptyS = ""; // Any wrong char
+            //for (RoadPart road : route) {
+            //  addPart(road.name, road.length());
+            //}
+            //  }
+
+            String wrongC = ""; // Any wrong char
             RoadPart lastRoad = null;
-            String last = emptyS;
+            String last = wrongC;
             int length = 0;
             for (RoadPart road : route) {
                 if (!road.name.equals(last)) {
-                    if (!last.equals(emptyS)) {
-                        addPart(last, length, model);
+                    if (!last.equals(wrongC)) {
+                        addPart(last, length);
                         if (calAngle(lastRoad, road) < 90) {
                             model.add(model.getSize(), "Turn left onto");
-                        }
-                        else if(calAngle(lastRoad, road) == 90){
-                            model.add(model.getSize(), "Follow the road onto");
-                        }
-                        else {
+                        } else if (calAngle(lastRoad, road) > 90) {
                             model.add(model.getSize(), "Turn right onto");
+                        } else {
+                            model.add(model.getSize(), "Follow the road onto");
                         }
                     }
                     length = road.length();
                     last = road.name;
                     lastRoad = road;
-                }
-                else if(last.equals(emptyS)){
-                    addPart("Unknown road", length, model);
-                }
-                else {
+                } else if (last.equals("")) {
+                    addPart("Unknown road", road.length());
+                    last = road.name;
+                    lastRoad = road;
+                } else {
                     System.out.println("Adding the length of " + road.name + ": " + road.length());
                     length += road.length();
                 }
             }
-            addPart(last, length, model); // Add the last part
+            addPart(last, length); // Add the last part
         }
         descList.setModel(model);
     }
