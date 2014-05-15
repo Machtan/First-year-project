@@ -136,22 +136,39 @@ public class AutoCompleter extends JTextField {
             }
         });
     }
+    
+    /*private void checkRNo(RoadPart r){
+        r.
+    }*/
 
     //Searches through the list
     private void startSearch() {
         if (inputField.getText().length() >= 3) {
             //removeItems();
             System.out.println("Starting search");
+<<<<<<< HEAD
             if (pop.getSubElements().length == 0) {
                 System.out.println("No items");
             }
+=======
+            
+>>>>>>> 98097ddb57f97744bbb4593d68deb21bca991016
             usedZips = new HashSet<Integer>();
             String searchText = inputField.getText().toLowerCase();
+            //Trying to start something with regex...
+            searchText = searchText.replace(' ',',');
+            //searchText = searchText.replace(',', ':');
+            searchText.indexOf("\\d");
+            String search[] = searchText.split(",");
 
             //Starting linear search through all the roads
             for (int i = 0; i < edges.length; i++) {
                 String edgeName = edges[i].name;
                 int edgeZip = edges[i].leftZip;
+                int loLNo = edges[i].sLeftNum; //Lowest house no. on the left
+                int hiLNo = edges[i].eLeftNum; //Highest house no. on the left
+                int loRNo = edges[i].sRightNum; //Lowest house no. on the right
+                int hiRNo = edges[i].eRightNum; //Highest house no. on the right
 
                 if (edgeName.toLowerCase().startsWith(searchText)) {
 
