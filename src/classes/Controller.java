@@ -94,7 +94,6 @@ public class Controller extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //Make shortest path search
-                String prevRoadName = "";
                 if (toField.getRoad() == null || fromField.getRoad() == null) {
                     JOptionPane.showMessageDialog(contentPanel, "Please choose two roads", "Information", JOptionPane.INFORMATION_MESSAGE);
                 } else {

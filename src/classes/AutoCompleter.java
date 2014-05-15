@@ -146,20 +146,14 @@ public class AutoCompleter extends JTextField {
         if (inputField.getText().length() >= 3) {
             //removeItems();
             System.out.println("Starting search");
-<<<<<<< HEAD
-            if (pop.getSubElements().length == 0) {
-                System.out.println("No items");
-            }
-=======
             
->>>>>>> 98097ddb57f97744bbb4593d68deb21bca991016
             usedZips = new HashSet<Integer>();
             String searchText = inputField.getText().toLowerCase();
             //Trying to start something with regex...
-            searchText = searchText.replace(' ',',');
+           // searchText = searchText.replace(' ',',');
             //searchText = searchText.replace(',', ':');
-            searchText.indexOf("\\d");
-            String search[] = searchText.split(",");
+           // searchText.indexOf("\\d");
+           // String search[] = searchText.split(",");
 
             //Starting linear search through all the roads
             for (int i = 0; i < edges.length; i++) {

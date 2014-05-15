@@ -56,6 +56,12 @@ public class RouteDescriptionPanel extends JPanel {
         return Math.toDegrees(angle1 - angle2);
     }
 
+   /* if(Math.abs(angle)< Math.PI / 4)
+            continue straight ahead
+            else if( angle> 0)
+            return turn right
+    else    turn left
+    */
     public void setRoute(RoadPart[] route) {
         DefaultListModel<String> model = new DefaultListModel<>();
         if (route.length == 0) {
