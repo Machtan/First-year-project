@@ -35,6 +35,10 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
     private Road.Edge[] path    = new Road.Edge[0];
     private Road.Node fromNode  = null;
     private Road.Node toNode    = null;
+    private final BasicStroke dotStroke = new BasicStroke(2, 
+            BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);
+    private final BasicStroke ferryStroke = new BasicStroke(1, 
+            BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {5,4}, 0);
     //private HashMap<RoadType, BufferedImage> layers = new HashMap<>();
     
     // Values used for the streamed image drawing
@@ -61,6 +65,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
             throw new RuntimeException("Please use a Road.Edge[0] for clearing!");
         }
         this.path = path;
+        repaint();
     }
     
     /**
@@ -70,6 +75,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
      */
     public void setPathStart(Road.Node start) {
         fromNode = start;
+        repaint();
     }
     
     /**
@@ -79,6 +85,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
      */
     public void setPathEnd(Road.Node end) {
         toNode = end;
+        repaint();
     }
     
     /**
@@ -208,14 +215,13 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
      */
     private void drawOverlays(Graphics2D g2d) {
         if (markerRect != null) {
-            BasicStroke str = new BasicStroke(2, BasicStroke.CAP_BUTT, 
-                BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);
-            g2d.setColor(new Color(200,200,255,90));
-            g2d.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
+            Graphics2D g2c = (Graphics2D)g2d.create();
+            g2c.setColor(new Color(200,200,255,90));
+            g2c.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
                     (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
-            g2d.setColor(Color.BLUE);
-            g2d.setStroke(str);
-            g2d.drawRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
+            g2c.setColor(Color.BLUE);
+            g2c.setStroke(dotStroke);
+            g2c.drawRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
                     (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
         }
         int h = getHeight();
@@ -257,7 +263,8 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
             System.out.println("No image set yet, so nothing to draw...");
         }
     } 
-
+    
+    private IProgressBar progbar = null;
     @Override
     public void startStream() {
         System.out.println("Starting View paint routine...");
@@ -267,7 +274,8 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
 
     @Override
     public void startStream(IProgressBar bar) {
-        throw new UnsupportedOperationException("Progressbar unsupported");
+        progbar = bar;
+        startStream();
     }
     
     /**
@@ -295,9 +303,14 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
      */
     private void drawLines(Road road) {
         activeGraphics.setColor(ins.getColor(road.type));
+        Graphics2D g2d = activeGraphics;
         int h = getHeight();
+        if (road.type == RoadType.Ferry) {
+            g2d = (Graphics2D)activeGraphics.create();
+            g2d.setStroke(ferryStroke);
+        }
         for (Road.Edge edge: road) {
-            activeGraphics.drawLine(
+            g2d.drawLine(
                     edge.p1.mappedX(activeProjection), 
                     edge.p1.mappedY(activeProjection, h), 
                     edge.p2.mappedX(activeProjection), 
@@ -308,11 +321,15 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
     @Override
     public void add(Road obj) {
         drawLines(obj);
+        if (progbar != null) {
+            progbar.update(1);
+        }
     }
 
     @Override
     public void endStream() {
         System.out.println("Painting finished");
         repaint();
+        progbar = null;
     }
 }

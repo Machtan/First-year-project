@@ -63,6 +63,7 @@ public class Model implements StreamedContainer<Road> {
         }
     }
 
+    private IProgressBar progbar = null;
     @Override
     public void startStream() {
         // Find the bounding area of the intersections
@@ -75,16 +76,20 @@ public class Model implements StreamedContainer<Road> {
     @Override
     public void endStream() {
         System.out.println("Finished populating the Quad Tree!");
+        progbar = null;
     }
 
     @Override
     public void startStream(IProgressBar bar) {
-        throw new UnsupportedOperationException("Progress bar unsupported");
+        progbar = bar;
+        startStream();
     }
 
     @Override
     public void add(Road obj) {
         trees.get(obj.type).add(obj);
+        if (progbar != null) {
+            progbar.update(1);
+        }
     }
-
 }

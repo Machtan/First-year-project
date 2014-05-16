@@ -51,6 +51,9 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
             this.p2 = p2;
             this.driveTime = (float)length() * Road.this.speedLimit;
         }
+        public Road parent() {
+            return Road.this;
+        }
         public Rect getRect() {
             return new Rect(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y), 
                     Math.abs(p2.x - p1.x), Math.abs(p2.y - p1.y));
@@ -88,8 +91,6 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
         this.nodes = nodes;
         this.drivetimes = drivetimes;
         this.bounds = bounds;
-        
-        
     }
     
     private class EdgeIter implements Iterator<Edge> {
@@ -104,7 +105,12 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
 
         @Override
         public Edge next() {
-            return new Edge(Road.this.nodes[index], Road.this.nodes[++index]);
+            if (drivetimes.length != 0) {
+                return new Edge(Road.this.nodes[index], Road.this.nodes[index], 
+                    Road.this.drivetimes[index++]);
+            } else {
+                return new Edge(Road.this.nodes[index], Road.this.nodes[++index]);
+            }
         }
 
         @Override

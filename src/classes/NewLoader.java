@@ -28,7 +28,7 @@ public class NewLoader {
             6402050.98297f - 6049914.43018f);
    
     public static Datafile osmdata = new Datafile("resources/new_osm_roads.txt", 
-            0, "Loading new OSM roads...");
+            1452532, "Loading new OSM roads...");
     
     public static Rect OSMBounds = new Rect(
             52.691433f, 
@@ -51,7 +51,6 @@ public class NewLoader {
     
     public static final char sepchar = '@';
     public static Road loadRoad(String line) {
-        //System.out.println("Parsing road line: '"+line+"'");
         // Split the road into metadata, nodes and drive times
         int firstSplit = line.indexOf(sepchar);
         int secondSplit = line.indexOf(sepchar, firstSplit+1);
@@ -112,7 +111,10 @@ public class NewLoader {
         }
         Model model = new Model(bounds);
         
-        model.startStream();
+        ProgressBar progbar = new ProgressBar();
+        progbar.setTarget(file.progressDescription, file.lines);
+        
+        model.startStream(progbar);
         try (InputStream stream = Utils.getFileStream(file.filename);
             InputStreamReader is = new InputStreamReader(stream);
             BufferedReader br = new BufferedReader(is)) {
@@ -126,6 +128,8 @@ public class NewLoader {
             System.out.println("Could not load the file. Error: "+ex);
         }
         model.endStream();
+        
+        progbar.close();
         return model;
     }
     
