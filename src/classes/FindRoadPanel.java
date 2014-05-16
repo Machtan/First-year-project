@@ -83,7 +83,7 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         }
     }
 
-    public RoadPart closestRoad(float x, float y) {
+    public Road.Edge closestRoad(float x, float y) {
         Rect cursorRect = new Rect(x - width / 2, y - height / 2, width, height);
 
         // Get a HashSet containing RoadParts within the cursorRect.

@@ -1,23 +1,24 @@
 package classes;
 
 import enums.RoadType;
+import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class ShortestPath {
 
-    private HashMap<Integer, RoadPart> edgeTo;
+    private HashMap<Integer, Road.Edge> edgeTo;
     private HashMap<Integer, Double> distTo;
     private IndexMinPQ<Double> pq;
     private Graph G;
 
-    private static double h(Intersection source, Intersection target) { //s = start, t = target
+    private static double h(Road.Node source, Road.Node target) { //s = start, t = target
         // System.out.println("Heuristic analysis: \n"
         //         + "Intersection source: " + source + ". Intersection target: " + target);
         return Math.sqrt(Math.pow(source.x - target.x, 2) + Math.pow(source.y - target.y, 2))/1000/130;
     }
 
-    public RoadPart[] findPath(long sourceID, long targetID) {
+    public Road.Edge[] findPath(long sourceID, long targetID) {
         if (G == null) {
             throw new RuntimeException("Graph have not been instantitiated.");
         } else {
@@ -36,7 +37,7 @@ public class ShortestPath {
                 if (v == t) {
                     break;
                 }
-                for (RoadPart r : G.adj(v)) {
+                for (Road.Edge r : G.adj(v)) {
                     //System.out.println("- (" + v + ") Relaxing part " + r);
                     relax(r, v, t);
                 }
@@ -47,19 +48,19 @@ public class ShortestPath {
             //System.out.println("- "+key+": "+edgeTo.get(key));
             //   }
 
-            HashMap<Integer, RoadPart> path = new HashMap<>();
+            HashMap<Integer, Road.Edge> path = new HashMap<>();
             int current = G.getIntersectionIndex(targetID);
             int i = 0;
             // System.out.println("Building edgeTo");
             // System.out.println(edgeTo.toString());
             while (current != startIndex) {
-                RoadPart currentRoad = edgeTo.get(current);
+                Road.Edge currentRoad = edgeTo.get(current);
                 path.put(i++, currentRoad);
                 //System.out.println("Checking the other intersection than "+current+" of "+currentRoad);
                 //System.out.println("Calling other() with: "+currentRoad+ " and current: " +current);
                 current = G.other(currentRoad, current);
             }
-            RoadPart[] result = new RoadPart[path.size()];
+            Road.Edge[] result = new Road.Edge[path.size()];
 
             for (int j = 0; j < path.size(); j++) {
                 result[j] = path.get(path.size() - j - 1);
@@ -72,7 +73,7 @@ public class ShortestPath {
         this.G = G;
     }
 
-    public void relax(RoadPart r, int s, int t) {
+    public void relax(Road.Edge r, int s, int t) {
         //   System.out.println("Relaxing");
         int v = s; // The starting vertice
         int w = G.other(r, v); // w is the other vertice
@@ -95,8 +96,8 @@ public class ShortestPath {
         }
     }
 
-    public static void main(String[] args) {
-        /*   Intersection first = new Intersection("100,10,2");
+    public static void main(String[] args) { /*
+         Intersection first = new Intersection("100,10,2");
          Intersection second = new Intersection("10,15,3");
          Intersection third = new Intersection("20,27,14");
          Intersection fourth = new Intersection("30,12,6");
@@ -104,9 +105,9 @@ public class ShortestPath {
          Intersection sixth = new Intersection("1,15,4");
          Intersection seventh = new Intersection("18,25,7");
 
-         RoadPart rfirst = new RoadPart("100,30,0,rfirst,0,0,0,0,,,,,0,0,0,0,0,1,,,");
-         RoadPart rsecond = new RoadPart("30,20,0,rsecond,0,0,0,0,,,,,0,0,0,0,0,1,,,");
-         RoadPart rthird = new RoadPart("30,10,0,rthird,0,0,0,0,,,,,0,0,0,0,0,1,,,");
+         Road.Edge rfirst = new RoadPart("100,30,0,rfirst,0,0,0,0,,,,,0,0,0,0,0,1,,,");
+         Road.Edge rsecond = new RoadPart("30,20,0,rsecond,0,0,0,0,,,,,0,0,0,0,0,1,,,");
+         Road.Edge rthird = new RoadPart("30,10,0,rthird,0,0,0,0,,,,,0,0,0,0,0,1,,,");
          RoadPart rfourth = new RoadPart("40,100,0,rfourth,0,0,0,0,,,,,0,0,0,0,0,1,,,");
          RoadPart rfith = new RoadPart("10,1,0,rfith,0,0,0,0,,,,,0,0,0,0,0,1,,,");
          RoadPart rsixth = new RoadPart("1,18,0,rsixth,0,0,0,0,,,,,0,0,0,0,0,1,,,");
@@ -133,7 +134,7 @@ public class ShortestPath {
          System.out.println("The found path is:");
          for (RoadPart road : RoadPartArray) {
          System.out.println("- " + road.name);
-         }*/
+         }
         ProgressBar progbar = new ProgressBar();
         Datafile krakRoads = new Datafile("resources/roads.txt", 812301,
                 "Loading road data...");
@@ -142,8 +143,8 @@ public class ShortestPath {
         Model model = new Loader().loadData(progbar, krakInters, krakRoads);
         progbar.close();
 
-        RoadPart[] roadTemp = model.getRoads(model.getBoundingArea());
-        for (RoadPart r : roadTemp) {
+        Road.Edge[] roadTemp = model.getRoads(model.getBoundingArea());
+        for (Road.Edge r : roadTemp) {
             //System.out.println("Roads: " +r.name);
             r.setPoints(r.p1, r.p2);
         }
@@ -155,6 +156,25 @@ public class ShortestPath {
         RoadPart[] RoadPartArray = SP.findPath(1, 100);
         for (RoadPart road : RoadPartArray) {
             System.out.println(road.name);
+            
+        
+        ProgressBar progbar = new ProgressBar(); // Create the progress bar
+        Dimension viewSize = new Dimension(600,400);
+        OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
+        progbar.close();
+
+        Model model = NewLoader.loadData(NewLoader.krakdata);
+        Controller controller = new Controller(view, model); 
+        controller.setMinimumSize(new Dimension(800,600));
+
+        //controller.pack();
+        System.out.println("View size previs:  " + view.getSize());
+        controller.draw(controller.viewport.zoomTo(1));
+        controller.setVisible(true);
+        System.out.println("View size postvis: " + view.getSize());
+        
+        */
+        
         }
     }
 
@@ -183,4 +203,4 @@ public class ShortestPath {
      firstRoad = false;
      }
      */
-}
+

@@ -28,14 +28,14 @@ public class AutoCompleter extends JTextField {
     private JTextField inputField; //Text Field for searching capabilities
     private static final int searchDelay = 200; //Milliseconds
     private Timer typeTimer;
-    private RoadPart[] edges;
+    private Road.Edge[] edges;
     private String selectedRoad;
     private int letterCount = 0; //Value to check if letters in textfield is written by us, and not a road taken from the list
     private JPopupMenu pop;
-    private RoadPart foundRoad;
+    private Road.Edge foundRoad;
     private HashSet<Integer> usedZips;
 
-    public AutoCompleter(RoadPart[] roads) {
+    public AutoCompleter(Road.Edge[] roads) {
         edges = roads;
         inputField = this;
         inputField.setMaximumSize(new Dimension(180, 22));
@@ -116,8 +116,8 @@ public class AutoCompleter extends JTextField {
         pop.setPreferredSize(new Dimension(inputField.getWidth(), inputField.getHeight() * pop.getSubElements().length));
     }
 
-    private MenuItem createMenuItem(RoadPart r, String text) {
-        RoadPart tempR = r;
+    private MenuItem createMenuItem(Road.Edge r, String text) {
+        Road.Edge tempR = r;
         MenuItem item = new MenuItem(r, text);
         item.setFont(new Font(Font.DIALOG, Font.BOLD, 10));
         addMenuListener(item);
@@ -130,7 +130,7 @@ public class AutoCompleter extends JTextField {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                foundRoad = item.roadPart;
+                foundRoad = item.Road.Edge;
                 inputField.setText(item.getText());
                 removeItems();
             }
@@ -157,7 +157,7 @@ public class AutoCompleter extends JTextField {
 
             //Starting linear search through all the roads
             for (int i = 0; i < edges.length; i++) {
-                String edgeName = edges[i].name;
+                String edgeName = edges[i].Road.this.name;
                 int edgeZip = edges[i].leftZip;
                 int loLNo = edges[i].sLeftNum; //Lowest house no. on the left
                 int hiLNo = edges[i].eLeftNum; //Highest house no. on the left
