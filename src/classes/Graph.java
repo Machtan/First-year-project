@@ -25,18 +25,15 @@ public class Graph {
      *
      * @throws java.lang.IllegalArgumentException if <tt>V</tt> < 0
      */
-    public Graph(int intersections, RoadPart[] roads, HashSet<RoadType> roadTypes) {
+    public Graph(int intersections, RoadPart[] roads, HashSet<RoadType> excludedRoadTypes) {
         if (intersections < 0) {
             throw new IllegalArgumentException("Number of vertices must be nonnegative");
         }
 
         ArrayList<RoadPart> arr = new ArrayList<>();
         for (RoadPart r : roads) {
-            if(r.type == RoadType.Path) {
-            System.out.println(r.type); }
-            
             //if (!roadTypes.contains(r.type)) {
-            if(r.type != RoadType.Path) {
+            if(!excludedRoadTypes.contains(r.type)) {
                 arr.add(r);
             }
     
@@ -45,7 +42,7 @@ public class Graph {
         arr.toArray(tempRoads);
 
         V = intersections;
-        inters = new ArrayList<>(tempRoads.length / 4);
+        inters = new ArrayList<>(roads.length / 4);
         this.roads = tempRoads;
         this.E = tempRoads.length;
         adj = new ArrayList[V];
@@ -56,7 +53,7 @@ public class Graph {
             adj[v] = new ArrayList<RoadPart>();
         }
         int i = 0;
-        for (RoadPart road : roads) {
+        for (RoadPart road : tempRoads) {
             if (!IDToIndex.containsKey(road.sourceID)) {
                 //System.out.println("Road with Source - " + road.sourceID + ", and target - " +road.targetID);
                 indexToID.put(i, road.sourceID);
