@@ -4,10 +4,15 @@
  */
 package classes;
 
+<<<<<<< HEAD
 import interfaces.IProgressBar;
 import interfaces.StreamedContainer;
+=======
+import enums.RoadType;
+>>>>>>> master
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Graph implements StreamedContainer<Road>{
 
@@ -20,8 +25,7 @@ public class Graph implements StreamedContainer<Road>{
     private HashMap<Integer, Long> indexToID;
 
     /**
-     * Creates a new edge-weighted graph from the given model
-     * @param model The model to load the graph from
+     * Creates a new graph from the given model
      */
     public Graph(Model model) {
         model.getAllRoads(this);

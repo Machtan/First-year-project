@@ -3,7 +3,6 @@ package classes;
 import enums.RoadType;
 import java.awt.Color;
 import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * The RenderInstructions class is used by the model to filter roads, and to

@@ -4,12 +4,18 @@
  */
 package classes;
 
+import java.awt.Dimension;
+import java.awt.Font;
 import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import java.lang.Math;
+import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.Collections;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 
 /**
  *
@@ -19,44 +25,97 @@ public class RouteDescriptionPanel extends JPanel {
 
     private JList<String> descList;
     double roadLength;
+    private DefaultListModel<String> model;
 
     public RouteDescriptionPanel() {
         super();
+
         initComponents();
+        model = new DefaultListModel<>();
+        //this.setMaximumSize(new Dimension(180, 500));
+        //this.setPreferredSize(new Dimension(180,400));
     }
-    
+
+    //Reverse the resulting route
+    private <T> T[] reverseArr(T[] a) {
+        Collections.reverse(Arrays.asList(a));
+        return a;
+    }
+
     private void initComponents() {
         descList = new JList<>(new String[]{"No route entered yet"});
-        descList.setSize(150, 400);
-        add(descList);
+        //descList.setSize(180, 500);
+        descList.setFont(new Font(Font.DIALOG, Font.BOLD, 10));
+        JScrollPane scrollP = new JScrollPane(descList);
+        //scrollP.setMaximumSize(new Dimension(180,400));
+        scrollP.setPreferredSize(new Dimension(180, 400));
+        scrollP.setSize(new Dimension(180, 400));
+        add(scrollP);
+        this.setSize(new Dimension(180, 400));
     }
-    
-    private void addPart(String road, double length, DefaultListModel<String> model) {
-        String message = "Follow " + road + " for " + length + "m";
-        model.add(model.size(), message);
+
+    private void addPart(String road, double length) {
+        length = Math.round(length);
+        String message;
+        if (length < 1000.0) {
+            //length = Double.parseDouble(new DecimalFormat("##,##").format(length));
+            message = road + " - " + length + "m";
+        } else {
+            //length = Double.parseDouble(new DecimalFormat("##,##").format(length));
+            message = road + " - " + length / 1000 + "km";
+        }
+        //model.add(model.size(), message);
+        model.addElement(message);
+        //System.out.println("Added: " + model.getElementAt(model.size() - 1));
     }
-    
+
+    private double calAngle(RoadPart first, RoadPart second) {
+        double angle1 = Math.atan2(first.y1() - first.y2(), first.x1() - first.x2());
+        double angle2 = Math.atan2(second.y1() - second.y2(), second.x1() - second.x2());
+        System.out.println("Angles " + Math.toDegrees(angle1 - angle2));
+        return Math.toDegrees(angle1 - angle2);
+    }
+
     public void setRoute(RoadPart[] route) {
-        DefaultListModel<String> model = new DefaultListModel<>();
         if (route.length == 0) {
             model.addElement("Please check a valid route");
         } else {
-            String wrongChar = "!"; // Any wrong char
-            String last = wrongChar; 
-            int length = 0;
+            model.clear();
+            model.add(model.size(), "Follow");
+
+            //double totalLength = 0;
+            String wrongC = ""; // Any wrong char
+            RoadPart lastRoad = null;
+            String last = wrongC;
+            double length = 0;
             for (RoadPart road : route) {
+                //totalLength += road.getLength();
                 if (!road.name.equals(last)) {
-                    if (!last.equals(wrongChar)) {
-                        addPart(last, length, model);
+                    if (!last.equals(wrongC)) {
+                        addPart(last,length);
+                        if (calAngle(lastRoad, road) < 90) {
+                            model.add(model.getSize(), "Turn left onto");
+                        } else if (calAngle(lastRoad, road) > 90) {
+                            model.add(model.getSize(), "Turn right onto");
+                        } else {
+                            model.add(model.getSize(), "Follow the road onto");
+                        }
                     }
-                    length = road.length();
+                    length = road.getLength();
                     last = road.name;
+                    lastRoad = road;
+                } else if (last.equals("")) {
+                    addPart("Unknown road", road.getLength());
+                    last = road.name;
+                    lastRoad = road;
                 } else {
-                    System.out.println("Adding the length of "+road.name+": "+road.length());
-                    length += road.length();
+                    System.out.println("Adding the length of " + road.name + ": " + road.getLength());
+                    length += road.getLength();
                 }
             }
-            addPart(last, length, model); // Add the last part
+            addPart(last, length); // Add the last part
+            //String totL;
+            //addPart("Total length ", totalLength - route[route.length-1].getLength());
         }
         descList.setModel(model);
     }
@@ -67,16 +126,16 @@ public class RouteDescriptionPanel extends JPanel {
         for (int i = 0; i < 10; i++) {
             int j = 0;
             for (String name : new String[]{"Kildevej", "Rodevej", "Pærevej"}) {
-                RoadPart road = new RoadPart("0,0,0,"+name+",0,0,0,0,,,,,0,0,0,80,"+i*3+",0,,,");
-                Intersection i2 = new Intersection("1,0,"+i*3+j);
+                RoadPart road = new RoadPart("0,0,0," + name + ",0,0,0,0,,,,,0,0,0,80," + i * 3 + ",0,,,");
+                Intersection i2 = new Intersection("1,0," + i * 3 + j);
                 road.setPoints(i1, i2);
                 testRoads.add(road);
                 j++;
-                System.out.println(road.driveTime * (road.speedLimit/3.6));
+                System.out.println(road.driveTime * (road.speedLimit / 3.6));
             }
         }
         RoadPart[] roads = testRoads.toArray(new RoadPart[0]);
-        
+
         RouteDescriptionPanel routePanel = new RouteDescriptionPanel();
         routePanel.setRoute(roads);
         JFrame frame = new JFrame();

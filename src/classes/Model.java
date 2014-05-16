@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package classes;
 
 import enums.RoadType;
@@ -16,6 +15,7 @@ import java.util.HashMap;
  * Model is the model handling the tree. It used to handle the retrieval of lines.
  * @author Jakob
  */
+
 public class Model implements StreamedContainer<Road> {
     public final Rect bounds;
     private HashMap<RoadType, QuadTree> trees = new HashMap<>();
@@ -35,7 +35,7 @@ public class Model implements StreamedContainer<Road> {
         priorities.add(RoadType.HighwayExit);
         priorities.add(RoadType.Highway);
     }
-    
+
     /**
      * Streams the road of the given projection to a target
      * @param target Where to stream the roads
@@ -50,8 +50,9 @@ public class Model implements StreamedContainer<Road> {
                 trees.get(type).getIn(p.source, target);
             }
         }
+
     }
-    
+
     /**
      * Streams all roads in the model to the target
      * @param target The target to stream roads to
@@ -85,6 +86,5 @@ public class Model implements StreamedContainer<Road> {
     public void add(Road obj) {
         trees.get(obj.type).add(obj);
     }
-    
-}
 
+}
