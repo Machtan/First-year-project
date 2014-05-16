@@ -38,6 +38,10 @@ public class Controller extends JFrame {
     private final Model model;
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
     public ArrayList<RoadType> prioritized;
+    private FindAsYouSearchPanel searchStuff;
+    private JTextField inputField;
+    private JList adressList;
+    private DefaultListModel listModel;
     
     // Dynamic fields
     public final Viewport viewport;
@@ -54,14 +58,6 @@ public class Controller extends JFrame {
         defaultInstructions.addMapping(Color.blue, RoadType.Ferry);
         defaultInstructions.addMapping(new Color(200,200,255), RoadType.Other);
     }
-    
-    private FindAsYouSearchPanel searchStuff;
-    private JTextField inputField;
-    private JList adressList;
-    private DefaultListModel listModel;
-    // Dynamic fields
-    public final Viewport viewport;
-    private RenderInstructions ins;
 
     /**
      * Constructor for the TestController class
@@ -76,7 +72,6 @@ public class Controller extends JFrame {
         
         this.model = model;
         viewport = new Viewport(model.bounds, 1, view);
-        this.ins = Model.defaultInstructions;
 
         this.view = view;
 
@@ -106,7 +101,8 @@ public class Controller extends JFrame {
         //contentPanel.add(new SearchStuff(), BorderLayout.WEST); //TODO compat
                 
         //contentPanel.add(new RouteDescriptionPanel());
-
+        
+        /*
         JPanel westContent = new JPanel();
         westContent.setLayout(new SpringLayout());        
         final RouteDescriptionPanel routeP = new RouteDescriptionPanel();
@@ -127,14 +123,22 @@ public class Controller extends JFrame {
                 }
             }
         }));
+        
+        HashSet<RoadType> types = new HashSet<>();
+        types.add(RoadType.Path);
+        Graph graph = new Graph(model.intersections, model.getRoads(model.getBoundingArea()), types);
+        SP = new ShortestPath(graph);
+        
         westContent.add(routeP);
         SpringUtilities.makeCompactGrid(westContent, 4, 1, 0, 0, 1, 1);
-
-        contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
+        //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
+        contentPanel.add(westContent, BorderLayout.WEST); 
+        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
+        */
+        
+        contentPanel.add(new RenderPanel(defaultInstructions, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
-        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
-        contentPanel.add(westContent, BorderLayout.WEST); //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
 
         setTitle("First-year Project - Visualization of Denmark");
 
@@ -207,11 +211,6 @@ public class Controller extends JFrame {
         ProgressBar progbar = new ProgressBar(); // Create the progress bar
         Dimension viewSize = new Dimension(600,400);
         OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
-
-        HashSet<RoadType> types = new HashSet<>();
-        types.add(RoadType.Path);
-        Graph graph = new Graph(model.intersections, model.getRoads(model.getBoundingArea()), types);
-        SP = new ShortestPath(graph);
         progbar.close();
 
         Model model = NewLoader.loadData(NewLoader.krakdata);
