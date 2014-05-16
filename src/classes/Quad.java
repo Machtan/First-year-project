@@ -1,26 +1,24 @@
 package classes;
 
-import enums.RoadType;
-import java.util.HashSet;
+import interfaces.QuadNode;
+import interfaces.StreamedContainer;
 
 /**
  * The Quad class divides a Rect area into smaller Rect subareas to help ease up 
  * the resources needed when working with areas with a large amount of elements.
- * @author Daniel
  * @author Jakob
- * @author Isabella
  * @author Alekxander
+ * @param <T> The type of node to store in the quad
  */
-public class Quad {
+public class Quad <T extends QuadNode> {
 
     private Quad[] subquads; // 4 subquads if necessarry. Empty if not.
     private boolean bottom; // True if the element is the bottommost element.
     private short maxNodes = 400; // Number of nodes a quad can hold before it splits.
     private final short depth; // The depth of the quad
     public final Rect area; // The area of the Quad
-    private FastArList<RoadPart> nodeList; // The elements in the Quad.
-    private RoadPart[] nodes;
     private final short maxDepth; // The max depth
+    private FastArList<T> nodeList; // The elements in the Quad.
     
     public Quad(Rect area, short maxNodes, short maxDepth, short depth) {
         this.area = area;
@@ -36,7 +34,7 @@ public class Quad {
      * corresponding subquad instead.
      * @param node 
      */
-    public void add(RoadPart node) {
+    public void add(T node) {
         if (bottom) {
             //System.out.println("Adding "+node+" to "+this);
             nodeList.add(node);
@@ -45,7 +43,7 @@ public class Quad {
             }
         } else {
             for (Quad subquad : subquads) {
-                if (subquad.area.collidesWith(node.getRect())) {
+                if (node.collidesWith(subquad.area)) {
                     subquad.add(node);
                     //break; // Make it duplicate-safe :)
                 }
@@ -57,44 +55,30 @@ public class Quad {
     /**
      * Fills the given FastArList with the items from the given area of this quad
      * @param area The area to look in
-     * @param list The list to add nodes to
+     * @param target The streamed container to add roads to
      */
-    protected void getIn(Rect area, FastArList<RoadPart> list) {
+    protected void getIn(Rect area, StreamedContainer target) {
         if (bottom) {
             if (area.contains(this.area)) {
-                list.addAll(nodes);
+                for(T node : nodeList) {
+                    target.add(node);
+                }
+                
             } else {
-                for (RoadPart node : nodes) {
-                    if (node.getRect().collidesWith(area)) {
-                        list.add(node);
+                for (T node : nodeList) {
+                    if (node.collidesWith(area)) {
+                        target.add(node);
                     }
                 }
             }
         } else {
             for (Quad subquad : subquads) {
                 if (subquad.area.collidesWith(area)) {
-                    subquad.getIn(area, list);
+                    subquad.getIn(area, target);
                 }
             }
         }
-    }
-        
-    /**
-     * Freezes the tree, preventing further addition to it and improving its 
-     * performance by converting lists to arrays
-     */
-    protected void freeze() {
-        if (bottom) {
-            nodes = nodeList.toArray(new RoadPart[nodeList.size()]);
-            nodeList = null;
-        } else {
-            for (Quad subquad : subquads) {
-                subquad.freeze();
-            }
-        }
-    }
-    
-    
+    }    
 
     /**
      * Splits a quad into four subquads by added four quads into subquads field
@@ -118,10 +102,10 @@ public class Quad {
             bottom = false;
 
             // nu skal vi indele nodes fra vores Quad til at være i de mindre subquads
-            for (RoadPart i : nodeList.toArray(new RoadPart[nodeList.size()])) {
+            for (T node : nodeList) {
                 for (Quad subquad : subquads) {
-                    if (i.getRect().collidesWith(subquad.area)) {
-                        subquad.add(i);
+                    if (node.collidesWith(subquad.area)) {
+                        subquad.add(node);
                     }
                 }
             }

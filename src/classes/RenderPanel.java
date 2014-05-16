@@ -10,7 +10,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
@@ -20,28 +19,15 @@ import javax.swing.JPanel;
  */
 public class RenderPanel extends JPanel {
 
-    private final RenderInstructions ins;
     private final Controller controller;
     private final ArrayList<RoadType> defined;
+    private final ArrayList<RoadType> drawnTypes;
     
-    private void addOption(String description, RoadType... types) {
-        Color color = ins.getColor(types[0]);
-        JCheckBox option = new JCheckBox(description);
-        option.setMnemonic(MouseEvent.BUTTON1);
-        option.setSelected(true);
-        for (RoadType type : types) {
-            defined.add(type);
-        }
-        new CheckListener(option, color, ins.getVoidColor(), types);
-        option.setFocusable(false);
-        add(option);
-    }
-    
-    public RenderPanel(RenderInstructions ins, Controller cont) {
+    public RenderPanel(ArrayList<RoadType> drawnTypes, Controller cont) {
         super();
-        this.ins = ins;
         controller = cont;
         defined = new ArrayList<>();
+        this.drawnTypes = drawnTypes;
         
         addOption("Highways and exits", RoadType.Highway, RoadType.HighwayExit);
         addOption("Prime routes", RoadType.PrimeRoute);
@@ -49,15 +35,23 @@ public class RenderPanel extends JPanel {
         addOption("Ferry routes", RoadType.Ferry);
     }
     
+    private void addOption(String description, RoadType... types) {
+        JCheckBox option = new JCheckBox(description);
+        option.setMnemonic(MouseEvent.BUTTON1);
+        option.setSelected(true);
+        for (RoadType type : types) {
+            defined.add(type);
+        }
+        new CheckListener(option, types);
+        option.setFocusable(false);
+        add(option);
+    }
+    
     private class CheckListener implements ItemListener {
-        
-        private final Color selected;
-        private final Color deselected;
+       
         private final RoadType[] types;
         
-        public CheckListener(JCheckBox parent, Color selected, Color deselected, RoadType... types) {
-            this.selected = selected;
-            this.deselected = deselected;
+        public CheckListener(JCheckBox parent, RoadType... types) {
             this.types = types;
             parent.addItemListener(this);
         }
@@ -73,14 +67,18 @@ public class RenderPanel extends JPanel {
         
         private void onChecked(Object source) {
             for (RoadType type : types) {
-                ins.addMapping(selected, type);
+                //ins.addMapping(selected, type);
+                if (!drawnTypes.contains(type)) {
+                    drawnTypes.add(type);
+                }
             }
             refresh();
         }
         
         private void onUnchecked(Object source) {
             for (RoadType type : types) {
-                ins.addMapping(deselected, type);
+                //ins.addMapping(deselected, type);
+                drawnTypes.remove(type);
             }
             refresh();
         }

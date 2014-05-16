@@ -3,6 +3,7 @@ package classes;
 import enums.RoadType;
 import external.SpringUtilities;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -35,17 +36,28 @@ public class Controller extends JFrame {
     private static ShortestPath SP;
     private final OptimizedView view;
     private final Model model;
-    private final CMouseHandler mouseHandler;
-    private final CResizeHandler resizeHandler;
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
-    private ArrayList<RoadType> prioritized;
+    public ArrayList<RoadType> prioritized;
     private FindAsYouSearchPanel searchStuff;
     private JTextField inputField;
     private JList adressList;
     private DefaultListModel listModel;
+    
     // Dynamic fields
     public final Viewport viewport;
-    private RenderInstructions ins;
+    public static final RenderInstructions defaultInstructions = new RenderInstructions();
+    /**
+     * Initializes the static variables
+     */
+    static {
+        // Create the default render instructions :
+        defaultInstructions.addMapping(Color.red, RoadType.Highway);
+        defaultInstructions.addMapping(Color.red, RoadType.HighwayExit);
+        defaultInstructions.addMapping(new Color(255,170,100), RoadType.PrimeRoute);
+        defaultInstructions.addMapping(new Color(0,255,25,200), RoadType.Path);
+        defaultInstructions.addMapping(Color.blue, RoadType.Ferry);
+        defaultInstructions.addMapping(new Color(200,200,255), RoadType.Other);
+    }
 
     /**
      * Constructor for the TestController class
@@ -56,14 +68,10 @@ public class Controller extends JFrame {
     public Controller(OptimizedView view, Model model) {
         super();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setTitle("First-year Project - Visualization of Denmark");
+        
         this.model = model;
-        viewport = new Viewport(model.getBoundingArea(), 1, view);
-        this.ins = Model.defaultInstructions;
-
-        prioritized = new ArrayList<>();
-        prioritized.add(RoadType.Highway);
-        prioritized.add(RoadType.HighwayExit);
-        prioritized.add(RoadType.PrimeRoute);
+        viewport = new Viewport(model.bounds, 1, view);
 
         this.view = view;
 
@@ -81,9 +89,20 @@ public class Controller extends JFrame {
         // Key handling
         setFocusTraversalKeysEnabled(false);
         setFocusable(false);
-        resizeHandler = new CResizeHandler(this, view);
-        mouseHandler = new CMouseHandler(this, view);
-
+        new CResizeHandler(this, view);
+        new CMouseHandler(this, view);
+        
+        contentPanel.add(viewPanel);
+        contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
+        /*
+        contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
+        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
+        */
+        //contentPanel.add(new SearchStuff(), BorderLayout.WEST); //TODO compat
+                
+        //contentPanel.add(new RouteDescriptionPanel());
+        
+        /*
         JPanel westContent = new JPanel();
         westContent.setLayout(new SpringLayout());        
         final RouteDescriptionPanel routeP = new RouteDescriptionPanel();
@@ -104,19 +123,28 @@ public class Controller extends JFrame {
                 }
             }
         }));
+        
+        HashSet<RoadType> types = new HashSet<>();
+        types.add(RoadType.Path);
+        Graph graph = new Graph(model.intersections, model.getRoads(model.getBoundingArea()), types);
+        SP = new ShortestPath(graph);
+        
         westContent.add(routeP);
         SpringUtilities.makeCompactGrid(westContent, 4, 1, 0, 0, 1, 1);
-
-        contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
+        //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
+        contentPanel.add(westContent, BorderLayout.WEST); 
+        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
+        */
+        
+        contentPanel.add(new RenderPanel(model.priorities, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
-        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
-        contentPanel.add(westContent, BorderLayout.WEST); //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
 
         setTitle("First-year Project - Visualization of Denmark");
 
         // Pack the window
-        this.setContentPane(contentPanel);
+        setContentPane(contentPanel);
+        pack();
     }
 
     /**
@@ -134,7 +162,8 @@ public class Controller extends JFrame {
      * @param p The projection to draw
      */
     public void draw(Viewport.Projection p) {
-        view.renewImage(model.getLines(p, view.getHeight(), ins, prioritized));
+        view.renewImage(p);
+        model.getRoads(view, p);
     }
 
     /**
@@ -143,7 +172,8 @@ public class Controller extends JFrame {
      * @param deltaWidth
      */
     public void extend(int deltaWidth) {
-        view.extend(model.getLines(viewport.widen(deltaWidth), view.getHeight(), ins, prioritized));
+        view.extend();
+        model.getRoads(view, viewport.widen(deltaWidth));
     }
 
     /**
@@ -153,21 +183,11 @@ public class Controller extends JFrame {
      * @param dy The y-axis movement
      */
     public void moveMap(int dx, int dy) {
-        ArrayList<Line> lines = new ArrayList<>();
-        for (Viewport.Projection p : viewport.movePixels(dx, dy)) {
-            lines.addAll(model.getLines(p, view.getHeight(), ins, prioritized));
+        view.offsetImage(dx, dy);
+        for (Viewport.Projection p: viewport.movePixels(dx, dy)) {
+            view.setProjection(p);
+            model.getRoads(view, p);
         }
-        view.offsetImage(dx, dy, lines);
-    }
-
-    /**
-     * Returns the roads with the given area
-     *
-     * @param area The area to look in
-     * @return A list of roads in the area
-     */
-    public RoadPart[] getRoads(Rect area) {
-        return model.getRoads(area, ins);
     }
 
     /**
@@ -176,9 +196,10 @@ public class Controller extends JFrame {
     public void redraw() {
         long t1 = System.nanoTime();
         System.out.println("Executing a full redraw of the View");
-        System.out.println("The projection is " + viewport.getProjection());
-        view.renewImage(model.getLines(viewport.getProjection(), view.getHeight(), ins, prioritized));
-        System.out.println("- Finished! (" + (System.nanoTime() - t1) / 1000000000.0 + " sec) -");
+        System.out.println("The projection is "+viewport.getProjection());
+        view.renewImage(viewport.getProjection());
+        model.getRoads(view, viewport.getProjection());
+        System.out.println("- Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec) -");
     }
 
     /**
@@ -188,32 +209,15 @@ public class Controller extends JFrame {
      */
     public static void main(String[] args) throws InterruptedException {
         ProgressBar progbar = new ProgressBar(); // Create the progress bar
-        Dimension viewSize = new Dimension(600, 400);
-        OptimizedView view = new OptimizedView(viewSize);
-
-        // Load everything with the optional progressbar on :U
-        Datafile krakRoads = new Datafile("resources/roads.txt", 812301,
-                "Loading road data...");
-        Datafile krakInters = new Datafile("resources/intersections.txt",
-                675902, "Loading intersection data...");
-        Model model = new Loader().loadData(progbar, krakInters, krakRoads);
-        HashSet<RoadType> types = new HashSet<>();
-        types.add(RoadType.Path);
-        Graph graph = new Graph(model.intersections, model.getRoads(model.getBoundingArea()), types);
-        SP = new ShortestPath(graph);
+        Dimension viewSize = new Dimension(600,400);
+        OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
         progbar.close();
 
-        /*boolean loop = true;
-         while (loop) {
-         try {
-         Thread.sleep(10);
-         } catch (InterruptedException e) {
-         loop = false;
-         }
-         }*/
-        Controller controller = new Controller(view, model);
-        controller.setMinimumSize(new Dimension(800, 600));
-        controller.pack();
+        Model model = NewLoader.loadData(NewLoader.krakdata);
+        Controller controller = new Controller(view, model); 
+        controller.setMinimumSize(new Dimension(800,600));
+
+        //controller.pack();
         System.out.println("View size previs:  " + view.getSize());
         controller.draw(controller.viewport.zoomTo(1));
         controller.setVisible(true);

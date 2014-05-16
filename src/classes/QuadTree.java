@@ -1,45 +1,29 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package classes;
 
+import interfaces.StreamedContainer;
+
 /**
- *
+ * QuadTree is a data type that sorts input nodes by their area, and easily
+ * retrieves nodes from a specific area.
  * @author Alekxander
  * @author Jakob
  */
 public class QuadTree extends Quad {
-    boolean frozen = false;
-    
     public QuadTree(Rect area, short maxNodes, short maxDepth) {
         super(area, maxNodes, maxDepth, (short)1);
     }
     
     /**
-     * Assure that the tree is frozen :)
+     * Fills the target streamed container with roads inside the given area
+     * @param area The area to look in
+     * @param target The target to notify
      */
-    private void assureFrozen() {
-        if (!frozen) { 
-            freeze();
-        }
-    }
-    
-    @Override
-    public void freeze() {
-        System.out.println("Freezing the Quad Tree :)");
-        super.freeze();
-        frozen = true;
-    }
-    
-    public RoadPart[] getIn(Rect rect) {
-        assureFrozen();
+    public void getIn(Rect area, StreamedContainer target) {
         long t1 = System.nanoTime();
-        FastArList<RoadPart> result = new FastArList<>();
-        super.getIn(rect, result);
-        RoadPart[] resArr = result.toArray(new RoadPart[result.size()]);
+        target.startStream();
+        super.getIn(area, target);
         double s = (System.nanoTime()-t1)/1e9;
         //System.out.println("'getIn' returned "+result.size()+" roads from the QuadTree in "+s+"sec");
-        return resArr;
+        target.endStream();
     }
 }

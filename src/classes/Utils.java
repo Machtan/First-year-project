@@ -1,15 +1,9 @@
 package classes;
 
-import static classes.Loader.encoding;
 import java.awt.Dimension;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import krak.DataLine;
 
 /**
@@ -152,6 +146,8 @@ public class Utils {
         public static float getFloat() { return line.getFloat(); }
         public static char getChar() { return line.getChar(); }
         public static short getShort() { return line.getShort(); }
+        public static boolean getBool() { return line.getBool(); }
+        public static boolean hasNext() { return line.hasMore(); }
     }
     
      /**
@@ -161,7 +157,7 @@ public class Utils {
      * @param data The list of CharSequence-implementing objects
      * @param filepath The path to the file eg: resources/roads.txt
      */
-    public static <T extends CharSequence> void save(T[] data, String filepath) {
+    /*public static <T extends CharSequence> void save(T[] data, String filepath) {
         Path srcdir = Paths.get(Paths.get(getcwd()).getParent().getParent()+"","src");
         String path = Paths.get(srcdir.toString(), filepath).toString();
         File file = new File(path);
@@ -174,5 +170,5 @@ public class Utils {
         } catch (IOException ex) {
             throw new RuntimeException("Error while saving data to '"+path+"'");
         }
-    }
+    }*/
 }

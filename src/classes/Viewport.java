@@ -21,6 +21,8 @@ public class Viewport {
     public static class Projection {
         public final Rect source; // The map space to draw
         public final Rect target; // The window space to draw on
+        public final float ppu; // Pixels per unit
+        public final float upp; // Units per pixel
         /**
          * An empty projection.
          */
@@ -28,6 +30,8 @@ public class Viewport {
         public Projection(Rect source, Rect target) {
             this.source = source;
             this.target = target;
+            ppu = target.width / source.width;
+            upp = 1 / ppu;
         }
         public Projection(Rect source, Dimension dim) {
             this(source, new Rect(dim));
@@ -241,29 +245,32 @@ public class Viewport {
         Rect horTarget = null;
         // Find out which parts of the map should be redrawn
         if (dx > 0) { // (render)Left pressed -> map goes right 
-            verArea = new Rect(na.x, na.y, abs(dx*upp), a.height); // <-- not working
-            verTarget = new Rect(0, 0, width, height);
+            horArea = new Rect(na.x, na.y, abs(dx*upp), a.height); // <-- not working
+            horTarget = new Rect(0, 0, abs(dx), height);
         } else if (dx < 0) { // (render)Right pressed -> map goes left
-            verArea = new Rect(a.right(), na.y, abs(dx*upp), a.height);
-            verTarget = new Rect(width-abs(dx), 0, width, height);
+            horArea = new Rect(a.right(), na.y, abs(dx*upp), a.height);
+            horTarget = new Rect(width-abs(dx), 0, abs(dx), height);
         }
         if (dy > 0) { // (render)Down -> map up
-            horArea = new Rect(na.x, na.y, a.width, abs(dy*upp)); // <-- not working
-            horTarget = new Rect(0, 0, width, abs(dy)); // 
+            verArea = new Rect(na.x, na.y, a.width, abs(dy*upp)); // <-- not working
+            verTarget = new Rect(0, 0, width, abs(dy)); // 
         } else if (dy < 0) { // (render)Up -> map down
-            horArea = new Rect(na.x, a.top(), a.width, abs(dy*upp));
-            horTarget = new Rect(0, height-abs(dy), width, abs(dy)); // 
+            verArea = new Rect(na.x, a.top(), a.width, abs(dy*upp));
+            verTarget = new Rect(0, height-abs(dy), width, abs(dy)); // 
         }
         
         activeRect = na; // Assign the new active rect
 
         // Create and return the projections :)
         if ((verTarget != null) && (horTarget != null)) {
-            return new Projection[]{new Projection(verArea, verTarget), 
-                new Projection(horArea, horTarget)};
+            System.out.println("Returning both targets for ("+dx+", "+dy+")");
+            return new Projection[]{new Projection(horArea, horTarget), 
+                new Projection(verArea, verTarget)};
         } else if (verTarget != null) {
+            System.out.println("Returning vertical target for ("+dx+", "+dy+")");
             return new Projection[]{new Projection(verArea, verTarget)};
         } else {
+            System.out.println("Returning horizaontal target for ("+dx+", "+dy+")");
             return new Projection[]{new Projection(horArea, horTarget)};
         }
     } 

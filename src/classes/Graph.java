@@ -4,73 +4,25 @@
  */
 package classes;
 
+
+import interfaces.IProgressBar;
+import interfaces.StreamedContainer;
+
 import enums.RoadType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class Graph {
+public class Graph implements StreamedContainer<Road>{
 
-    private final int V; //Number of vertices/intersections
+    private int V; //Number of vertices/intersections
     private int E; //Number of edges/road parts
-    private ArrayList[] adj;
-    private RoadPart[] roads;
+    private ArrayList<ArrayList<Road.Edge>> adj;
+    //private ArrayList<Road> roads;
+    private ArrayList<Road.Node> nodes;
     private HashMap<Long, Integer> IDToIndex;
     private HashMap<Integer, Long> indexToID;
-    private ArrayList<Intersection> inters;
-
-    /**
-     * Initializes an empty edge-weighted graph with <tt>V</tt> vertices and 0
-     * edges. param V the number of vertices
-     *
-     * @throws java.lang.IllegalArgumentException if <tt>V</tt> < 0
-     */
-    public Graph(int intersections, RoadPart[] roads, HashSet<RoadType> excludedRoadTypes) {
-        if (intersections < 0) {
-            throw new IllegalArgumentException("Number of vertices must be nonnegative");
-        }
-
-        ArrayList<RoadPart> arr = new ArrayList<>();
-        for (RoadPart r : roads) {
-            //if (!roadTypes.contains(r.type)) {
-            if(!excludedRoadTypes.contains(r.type)) {
-                arr.add(r);
-            }
-    
-        }
-        RoadPart[] tempRoads = new RoadPart[arr.size()];
-        arr.toArray(tempRoads);
-
-        V = intersections;
-        inters = new ArrayList<>(roads.length / 4);
-        this.roads = tempRoads;
-        this.E = tempRoads.length;
-        adj = new ArrayList[V];
-        IDToIndex = new HashMap<>();
-        indexToID = new HashMap<>();
-
-        for (int v = 0; v < V; v++) {
-            adj[v] = new ArrayList<RoadPart>();
-        }
-        int i = 0;
-        for (RoadPart road : tempRoads) {
-            if (!IDToIndex.containsKey(road.sourceID)) {
-                //System.out.println("Road with Source - " + road.sourceID + ", and target - " +road.targetID);
-                indexToID.put(i, road.sourceID);
-                IDToIndex.put(road.sourceID, i++);
-                inters.add(road.p1);
-            }
-            adj[IDToIndex.get(road.sourceID)].add(road);
-
-            if (!IDToIndex.containsKey(road.targetID)) {
-                //System.out.println("Adding new intersection " + road.targetID + " at index " + i);
-                indexToID.put(i, road.targetID);
-                IDToIndex.put(road.targetID, i++);
-                inters.add(road.p2);
-            }
-            adj[IDToIndex.get(road.targetID)].add(road);
-        }
-    }
 
     /**
      * Returns the number of vertices in the edge-weighted graph.
@@ -89,6 +41,9 @@ public class Graph {
     public int E() {
         return E;
     }
+    public Graph(Model model) {
+        model.getAllRoads(this);
+    }
 
     /**
      * Returns the edges incident on vertex <tt>v</tt>.
@@ -97,25 +52,25 @@ public class Graph {
      * @param v the vertex
      * @throws java.lang.IndexOutOfBoundsException unless 0 <= v < V
      */
-    public Iterable<RoadPart> adj(int v) {
+    public Iterable<Road.Edge> adj(int v) {
         if (v < 0 || v >= V) {
             throw new IndexOutOfBoundsException("vertex " + v + " is not between 0 and " + (V - 1));
         }
         //  System.out.println("vertex " + v + " has " + adj[v].size() + " adjacent edges");
-        return adj[v];
+        return adj.get(v);
     }
 
-    public int other(RoadPart part, int firstIndex) {
+    public int other(Road.Edge part, int firstIndex) {
         // System.out.println("Checking other index with indexes " + part.sourceID + " and " + part.targetID);
         // System.out.println("Road:" + part);
         //System.out.println("RoadPart: " + part.name);
         //System.out.println("SourceID: " + part.sourceID + "\n"
         //      + "FirstIDIndex: " + firstIDIndex);
         if (part != null) {
-            if (IDToIndex.get(part.sourceID) == firstIndex) {
-                return IDToIndex.get(part.targetID);
+            if (IDToIndex.get(part.p1.id) == firstIndex) {
+                return IDToIndex.get(part.p2.id);
             } else {
-                return IDToIndex.get(part.sourceID);
+                return IDToIndex.get(part.p1.id);
             }
         } else {
             throw new RuntimeException("Roadpart is null");
@@ -131,18 +86,56 @@ public class Graph {
         return IDToIndex.get(ID);
     }
 
-    public Intersection getIntersection(int index) {
-        return inters.get(index);
+    public Road.Node getIntersection(int index) {
+        return nodes.get(index);
     }
 
-    /**
-     * Returns all edges in the edge-weighted graph. To iterate over the edges
-     * in the edge-weighted graph, use foreach notation:
-     * <tt>for (Edge e : G.edges())</tt>.
-     *
-     * @return all edges in the edge-weighted graph as an Iterable.
-     */
-    public RoadPart[] edges() {
-        return roads;
+    @Override
+    public void startStream() {
+        V = 0;
+        E = 0;
+        nodes = new ArrayList<>();
+        System.out.println("Starting the graph population...");
+    }
+
+    @Override
+    public void startStream(IProgressBar bar) {
+        throw new UnsupportedOperationException("Progressbar unsupported.");
+    }
+
+    @Override
+    public void add(Road obj) {
+        V += obj.nodes.length;
+        //roads.add(obj);
+        int i = nodes.size();
+        Road.Edge last = null;
+        for (Road.Edge edge: obj) {
+            last = edge;
+            Road.Node node = edge.p1;
+            if (!IDToIndex.containsKey(node.id)) {
+                indexToID.put(i, node.id);
+                IDToIndex.put(node.id, i);
+                nodes.add(node);
+                adj.add(new ArrayList<Road.Edge>());
+                i++;
+            }
+            
+            adj.get(IDToIndex.get(edge.p1.id)).add(edge);
+            if (!obj.oneway) { // Krak is mostly bidirectional
+                adj.get(IDToIndex.get(edge.p2.id)).add(edge);
+            }
+            E += 1;
+        }
+        if (!IDToIndex.containsKey(last.p2.id)) {
+            indexToID.put(i, last.p2.id);
+            IDToIndex.put(last.p2.id, i);
+            nodes.add(last.p2);
+            i++;
+        }
+    }
+
+    @Override
+    public void endStream() {
+        System.out.println("Graph populated!");
     }
 }

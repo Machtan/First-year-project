@@ -34,8 +34,6 @@ public class Loader implements ILoader {
 
     /**
      * Loads a list of reformatted RoadPart data from a file
-     *
-     * @param roadFilePath The path to the file
      * @param bar An optional progress bar
      * @return An array of RoadPart elements
      */
