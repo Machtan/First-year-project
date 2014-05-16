@@ -50,7 +50,6 @@ public class Model implements StreamedContainer<Road> {
                 trees.get(type).getIn(p.source, target);
             }
         }
-
     }
 
     /**

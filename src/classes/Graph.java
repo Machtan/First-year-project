@@ -7,12 +7,8 @@ package classes;
 
 import interfaces.IProgressBar;
 import interfaces.StreamedContainer;
-
-import enums.RoadType;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 public class Graph implements StreamedContainer<Road>{
 
