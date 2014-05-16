@@ -167,7 +167,7 @@ public class Controller extends JFrame {
                 loop = false;
             }
         }*/
-        Model model = NewLoader.loadKrakData(NewLoader.krakdata);
+        Model model = NewLoader.loadData(NewLoader.krakdata);
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
         controller.pack();

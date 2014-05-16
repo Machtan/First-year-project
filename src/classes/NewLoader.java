@@ -7,6 +7,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+/* OSM
+x: [52.691433 : 62.0079024]
+y: [-20.071433 : 28.0741667]
+*/
+
 /**
  * The NewLoader class <More docs goes here>
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
@@ -21,6 +26,16 @@ public class NewLoader {
             6049914.43018f, 
             892658.21706f - 442254.35659f, 
             6402050.98297f - 6049914.43018f);
+   
+    public static Datafile osmdata = new Datafile("resources/new_osm_roads.txt", 
+            0, "Loading new OSM roads...");
+    
+    public static Rect OSMBounds = new Rect(
+            52.691433f, 
+            -20.071433f,
+            62.0079024f - 52.691433f, 
+            28.0741667f - (-20.071433f)
+    );
     
     /**
      * Returns how fast once could ideally traverse between the given points
@@ -34,11 +49,15 @@ public class NewLoader {
         return dist / ((float)speedLimit * 1000f);
     }
     
+    public static final char sepchar = '@';
     public static Road loadRoad(String line) {
         //System.out.println("Parsing road line: '"+line+"'");
         // Split the road into metadata, nodes and drive times
-        int firstSplit = line.indexOf(';');
-        int secondSplit = line.indexOf(';', firstSplit+1);
+        int firstSplit = line.indexOf(sepchar);
+        int secondSplit = line.indexOf(sepchar, firstSplit+1);
+        if ((firstSplit == -1) || (secondSplit == -1)) {
+            throw new RuntimeException("Could not split at '"+sepchar+"' in the line:\n"+line);
+        }
         String meta = line.substring(0, firstSplit);
         String nodestring = line.substring(firstSplit+1, secondSplit);
         String drivetimestring = line.substring(secondSplit+1);
@@ -84,8 +103,15 @@ public class NewLoader {
                 nodes.toArray(new Road.Node[nodes.size()]), driveTimes, bounds);
     }
     
-    public static Model loadKrakData(Datafile file) {
-        Model model = new Model(krakBounds);
+    public static Model loadData(Datafile file) {
+        Rect bounds = new Rect(0,0,0,0);
+        if (file.equals(krakdata)) {
+            bounds = krakBounds;
+        } else if (file.equals(osmdata)) {
+            bounds = OSMBounds;
+        }
+        Model model = new Model(bounds);
+        
         model.startStream();
         try (InputStream stream = Utils.getFileStream(file.filename);
             InputStreamReader is = new InputStreamReader(stream);
@@ -106,7 +132,7 @@ public class NewLoader {
     public static void main(String[] args) {
         System.out.println("Loading model...");
         long t1 = System.nanoTime();
-        Model model = loadKrakData(krakdata);
+        Model model = loadData(krakdata);
         double delta = (System.nanoTime()-t1)/1e9;
         System.out.println("Loaded!");
         System.out.println("The loading took "+delta+" seconds!");
