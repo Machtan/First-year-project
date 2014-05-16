@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -196,7 +197,9 @@ public class Controller extends JFrame {
         Datafile krakInters = new Datafile("resources/intersections.txt",
                 675902, "Loading intersection data...");
         Model model = new Loader().loadData(progbar, krakInters, krakRoads);
-        Graph graph = new Graph(model.intersections, model.getRoads(model.getBoundingArea()));
+        HashSet<RoadType> types = new HashSet<>();
+        types.add(RoadType.Path);
+        Graph graph = new Graph(model.intersections, model.getRoads(model.getBoundingArea()), types);
         SP = new ShortestPath(graph);
         progbar.close();
 

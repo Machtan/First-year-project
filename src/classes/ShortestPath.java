@@ -1,6 +1,8 @@
 package classes;
 
+import enums.RoadType;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class ShortestPath {
 
@@ -146,7 +148,7 @@ public class ShortestPath {
             r.setPoints(r.p1, r.p2);
         }
 
-        Graph graph = new Graph(model.intersections, roadTemp);
+        Graph graph = new Graph(model.intersections, roadTemp, new HashSet<RoadType>());
 
         ShortestPath SP = new ShortestPath(graph);
 

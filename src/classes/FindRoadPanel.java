@@ -67,15 +67,10 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
      */
     private float pointToLineDistance(Point2D.Float a, Point2D.Float b, Point2D.Float mouse) {
         Point2D.Float c = new Point2D.Float(mouse.x - a.x, mouse.y - a.y);
-        System.out.println(" c " + c);
         Point2D.Float ab = new Point2D.Float(b.x - a.x, b.y - a.y);
-        System.out.println(" ab " + ab);
         float length = (float) Math.sqrt(ab.x*ab.x + ab.y*ab.y);
-        System.out.println(" length " + length);
         Point2D.Float unit = new Point2D.Float(ab.x / length, ab.y / length);
-        System.out.println(" unit " + unit);
         float dot = unit.x * c.x + unit.y * c.y;
-        System.out.println(" dot " + dot);
         
         if (dot < 0) {
             return (float) Math.sqrt((mouse.x - a.x) * (mouse.x - a.x) + (mouse.y - a.y) * (mouse.y - a.y));
@@ -111,13 +106,11 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         double minDist = Integer.MAX_VALUE;
         RoadPart nearest = null;
         for (RoadPart road : roads) {
-            System.out.println(road.name);
             float distance = pointToLineDistance(
                     new Point2D.Float(road.x1(), road.y1()),
                     new Point2D.Float(road.x2(), road.y2()),
                     new Point2D.Float(x, y)
             );
-            System.out.println("dist " +distance + "\n");
             if (distance < minDist) {
                 nearest = road;
                 minDist = distance;

@@ -4,8 +4,10 @@
  */
 package classes;
 
+import enums.RoadType;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Graph {
 
@@ -23,14 +25,29 @@ public class Graph {
      *
      * @throws java.lang.IllegalArgumentException if <tt>V</tt> < 0
      */
-    public Graph(int intersections, RoadPart[] roads) {
+    public Graph(int intersections, RoadPart[] roads, HashSet<RoadType> roadTypes) {
         if (intersections < 0) {
             throw new IllegalArgumentException("Number of vertices must be nonnegative");
         }
+
+        ArrayList<RoadPart> arr = new ArrayList<>();
+        for (RoadPart r : roads) {
+            if(r.type == RoadType.Path) {
+            System.out.println(r.type); }
+            
+            //if (!roadTypes.contains(r.type)) {
+            if(r.type != RoadType.Path) {
+                arr.add(r);
+            }
+    
+        }
+        RoadPart[] tempRoads = new RoadPart[arr.size()];
+        arr.toArray(tempRoads);
+
         V = intersections;
-        inters = new ArrayList<>(roads.length / 4);
-        this.roads = roads;
-        this.E = roads.length;
+        inters = new ArrayList<>(tempRoads.length / 4);
+        this.roads = tempRoads;
+        this.E = tempRoads.length;
         adj = new ArrayList[V];
         IDToIndex = new HashMap<>();
         indexToID = new HashMap<>();
@@ -38,7 +55,6 @@ public class Graph {
         for (int v = 0; v < V; v++) {
             adj[v] = new ArrayList<RoadPart>();
         }
-
         int i = 0;
         for (RoadPart road : roads) {
             if (!IDToIndex.containsKey(road.sourceID)) {
