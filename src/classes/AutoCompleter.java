@@ -34,9 +34,10 @@ public class AutoCompleter extends JTextField {
     private int letterCount = 0; //Value to check if letters in textfield is written by us, and not a road taken from the list
     private JPopupMenu pop;
     private Road.Edge foundRoad;
-    private HashSet<Integer> usedZips;
-    private HashSet<Road.Edge> addedRoads;
-    private HashMap<String, Integer> addrMap;
+    //private HashSet<Integer> usedZips;
+    private HashSet<Road> addedRoads;
+    //private HashMap<String, Integer> addrMap;
+    //private HashSet<String> usedRoadNames;
 
     public AutoCompleter(Road.Edge[] roads) {
         edges = roads;
@@ -146,8 +147,9 @@ public class AutoCompleter extends JTextField {
             //removeItems();
             System.out.println("Starting search");
 
-            usedZips = new HashSet<Integer>();
-            addedRoads = new HashSet<Road.Edge>();
+            //usedZips = new HashSet<Integer>();
+            //usedRoadNames = new HashSet<String>();
+            addedRoads = new HashSet<Road>();
             String searchText = inputField.getText().toLowerCase();
 
             //Starting linear search through all the roads
@@ -160,14 +162,15 @@ public class AutoCompleter extends JTextField {
                     //Just add it when there's no other elements
                     if (pop.getSubElements().length == 0) {
                         pop.add(createMenuItem(edges[i], edgeName + " - " + edgeZip));
-                        usedZips.add(edgeZip);
-                        addedRoads.add(edges[i]);
+                        //usedZips.add(edgeZip);
+                        addedRoads.add(edges[i].parent());
+                        //usedRoadNames.add(edgeName);
 
                         //Only shows one option for each city
-                    } else if (!addedRoads.contains(edges[i]) && !usedZips.contains(edgeZip)) {
+                    } else if (!addedRoads.contains(edges[i].parent())) {
                         pop.add(createMenuItem(edges[i], edgeName + " - " + edgeZip));
-                        usedZips.add(edgeZip);
-                        addedRoads.add(edges[i]);
+                        //usedZips.add(edgeZip);
+                        addedRoads.add(edges[i].parent());
                     }
 
                     setPopMenu();
