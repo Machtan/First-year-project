@@ -31,7 +31,7 @@ public class FindAsYouSearchPanel extends JPanel {
     private JTextField inputField; //Text Field for searching capabilities
     private static final int searchDelay = 200; //Milliseconds
     private Timer typeTimer;
-    private RoadPart[] edges;
+    private Road.Edge[] edges;
     //private ArrayList<String> roadList;
     private DefaultListModel listModel;
     private JList roadJList;
@@ -39,7 +39,7 @@ public class FindAsYouSearchPanel extends JPanel {
     private ArrayList<String> roadListName;
     private int letterCount = 0; //Value to check if letters in textfield is written by us, and not a road taken from the list
 
-    public FindAsYouSearchPanel(RoadPart[] roads) {
+    public FindAsYouSearchPanel(Road.Edge[] roads) {
         edges = roads;
         listModel = new DefaultListModel();
         roadJList = new JList(listModel);
@@ -136,8 +136,8 @@ public class FindAsYouSearchPanel extends JPanel {
 
         if (letterCount > 0) { //Making sure the search happens when the letters in the textfield are written by us
             for (int i = 0; i < edges.length; i++) {
-                String edgeName = edges[i].name;
-                int edgeZip = edges[i].leftZip;
+                String edgeName = edges[i].parent().name;
+                int edgeZip = edges[i].parent().zipCode;
 
                 if (enoughInput && edgeName.toLowerCase().startsWith(searchText)) {
                     if (listModel.isEmpty()) {

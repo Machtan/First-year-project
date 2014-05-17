@@ -37,10 +37,10 @@ public class Loader implements ILoader {
      * @param bar An optional progress bar
      * @return An array of RoadPart elements
      */
-    public static RoadPart[] loadRoads(Datafile file, IProgressBar bar) {
+    public static Road.Edge[] loadRoads(Datafile file, IProgressBar bar) {
         System.out.println("Loading road data...");
         long t1 = System.nanoTime();
-        RoadPart[] roads = new RoadPart[(int)file.lines];
+        Road.Edge[] roads = new Road.Edge[(int)file.lines];
         int i = 0;
         try (InputStream stream = Utils.getFileStream(file.filename);
             InputStreamReader is = new InputStreamReader(stream, Charset.forName(encoding));
@@ -50,7 +50,7 @@ public class Loader implements ILoader {
             // Do the long loading without if-statements inside ;)
             if (bar != null) {
                 while ((line = br.readLine()) != null) {
-                    roads[i++] = new RoadPart(line);
+                    roads[i++] = new Road.Edge(line);
                     bar.update(1);
                 }
             } else {
@@ -75,7 +75,7 @@ public class Loader implements ILoader {
         return roads; //arr;
     }
     
-    public static RoadPart[] loadRoads(Datafile file) {
+    public static Road.Edge[] loadRoads(Datafile file) {
         return loadRoads(file, null);
     }
     

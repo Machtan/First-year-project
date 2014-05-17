@@ -87,7 +87,7 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         Rect cursorRect = new Rect(x - width / 2, y - height / 2, width, height);
 
         // Get a HashSet containing RoadParts within the cursorRect.
-        RoadPart[] roads = controller.getRoads(cursorRect);
+        Road.Edge[] roads = controller.getRoads(cursorRect);
 
         // If no RoadParts are found within the area, float size of cursorRect until 
         // at least one has been found.
@@ -104,11 +104,11 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
 
         // Calculate distance from mouse coordinates to all the RoadParts found.
         double minDist = Integer.MAX_VALUE;
-        RoadPart nearest = null;
-        for (RoadPart road : roads) {
+        Road.Edge nearest = null;
+        for (Road.Edge road : roads) {
             float distance = pointToLineDistance(
-                    new Point2D.Float(road.x1(), road.y1()),
-                    new Point2D.Float(road.x2(), road.y2()),
+                    new Point2D.Float(road.p1.x, road.p1.y),
+                    new Point2D.Float(road.p2.x, road.p2.y),
                     new Point2D.Float(x, y)
             );
             if (distance < minDist) {
@@ -145,9 +145,9 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         float x = port.getMapX(cPos.x);
         float y = port.getMapY(cPos.y);
 
-        RoadPart closest = closestRoad(x, y);
+        Road.Edge closest = closestRoad(x, y);
 
-        setNearestRoad(closest.name, x, y);
+        setNearestRoad(closest.parent().name, x, y);
     }
 
     @Override

@@ -69,14 +69,14 @@ public class RouteDescriptionPanel extends JPanel {
         //System.out.println("Added: " + model.getElementAt(model.size() - 1));
     }
 
-    private double calAngle(RoadPart first, RoadPart second) {
-        double angle1 = Math.atan2(first.y1() - first.y2(), first.x1() - first.x2());
-        double angle2 = Math.atan2(second.y1() - second.y2(), second.x1() - second.x2());
+    private double calAngle(Road.Edge first, Road.Edge second) {
+        double angle1 = Math.atan2(first.p1.y - first.p2.y, first.p1.x - first.p2.x);
+        double angle2 = Math.atan2(second.p1.y - second.p2.y, second.p1.x - second.p2.x);
         System.out.println("Angles " + Math.toDegrees(angle1 - angle2));
         return Math.toDegrees(angle1 - angle2);
     }
 
-    public void setRoute(RoadPart[] route) {
+    public void setRoute(Road.Edge[] route) {
         if (route.length == 0) {
             model.addElement("Please check a valid route");
         } else {
@@ -85,14 +85,14 @@ public class RouteDescriptionPanel extends JPanel {
 
             //double totalLength = 0;
             String wrongC = ""; // Any wrong char
-            RoadPart lastRoad = null;
+            Road.Edge lastRoad = null;
             String last = wrongC;
             double length = 0;
-            for (RoadPart road : route) {
+            for (Road.Edge road : route) {
                 //totalLength += road.getLength();
-                if (!road.name.equals(last)) {
+                if (!road.parent().name.equals(last)) {
                     if (!last.equals(wrongC)) {
-                        addPart(last,length);
+                        addPart(last, length);
                         if (calAngle(lastRoad, road) < 90) {
                             model.add(model.getSize(), "Turn left onto");
                         } else if (calAngle(lastRoad, road) > 90) {
@@ -101,16 +101,16 @@ public class RouteDescriptionPanel extends JPanel {
                             model.add(model.getSize(), "Follow the road onto");
                         }
                     }
-                    length = road.getLength();
-                    last = road.name;
+                    length = road.length();
+                    last = road.parent().name;
                     lastRoad = road;
                 } else if (last.equals("")) {
-                    addPart("Unknown road", road.getLength());
-                    last = road.name;
+                    addPart("Unknown road", road.length());
+                    last = road.parent().name;
                     lastRoad = road;
                 } else {
-                    System.out.println("Adding the length of " + road.name + ": " + road.getLength());
-                    length += road.getLength();
+                    System.out.println("Adding the length of " + road.parent().name + ": " + road.length());
+                    length += road.length();
                 }
             }
             addPart(last, length); // Add the last part
@@ -119,28 +119,28 @@ public class RouteDescriptionPanel extends JPanel {
         }
         descList.setModel(model);
     }
+    /*
+     public static void main(String[] args) {
+     ArrayList<RoadPart> testRoads = new ArrayList<>();
+     Intersection i1 = new Intersection("0,0,0");
+     for (int i = 0; i < 10; i++) {
+     int j = 0;
+     for (String name : new String[]{"Kildevej", "Rodevej", "Pærevej"}) {
+     RoadPart road = new RoadPart("0,0,0," + name + ",0,0,0,0,,,,,0,0,0,80," + i * 3 + ",0,,,");
+     Intersection i2 = new Intersection("1,0," + i * 3 + j);
+     road.setPoints(i1, i2);
+     testRoads.add(road);
+     j++;
+     System.out.println(road.driveTime * (road.speedLimit / 3.6));
+     }
+     }
+     RoadPart[] roads = testRoads.toArray(new RoadPart[0]);
 
-    public static void main(String[] args) {
-        ArrayList<RoadPart> testRoads = new ArrayList<>();
-        Intersection i1 = new Intersection("0,0,0");
-        for (int i = 0; i < 10; i++) {
-            int j = 0;
-            for (String name : new String[]{"Kildevej", "Rodevej", "Pærevej"}) {
-                RoadPart road = new RoadPart("0,0,0," + name + ",0,0,0,0,,,,,0,0,0,80," + i * 3 + ",0,,,");
-                Intersection i2 = new Intersection("1,0," + i * 3 + j);
-                road.setPoints(i1, i2);
-                testRoads.add(road);
-                j++;
-                System.out.println(road.driveTime * (road.speedLimit / 3.6));
-            }
-        }
-        RoadPart[] roads = testRoads.toArray(new RoadPart[0]);
-
-        RouteDescriptionPanel routePanel = new RouteDescriptionPanel();
-        routePanel.setRoute(roads);
-        JFrame frame = new JFrame();
-        frame.add(routePanel);
-        frame.pack();
-        frame.setVisible(true);
-    }
+     RouteDescriptionPanel routePanel = new RouteDescriptionPanel();
+     routePanel.setRoute(roads);
+     JFrame frame = new JFrame();
+     frame.add(routePanel);
+     frame.pack();
+     frame.setVisible(true);
+     }*/
 }
