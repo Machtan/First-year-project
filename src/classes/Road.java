@@ -31,6 +31,10 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
         public int mappedY(Projection p, int windowHeight) {
             return Math.round(windowHeight - (p.target.y + (y - p.source.y) * p.ppu));
         }
+        @Override
+        public String toString() {
+            return "["+id+": ("+x+", "+y+")]";
+        }
     }
     public class Edge {
         public final Node p1;
@@ -95,6 +99,7 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
     
     private class EdgeIter implements Iterator<Edge> {
         int index;
+        Edge nextEdge;
         public EdgeIter() {
             index = 0;
         }
@@ -105,12 +110,10 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
 
         @Override
         public Edge next() {
-            if (drivetimes.length != 0) {
-                return new Edge(Road.this.nodes[index], Road.this.nodes[index], 
-                    Road.this.drivetimes[index++]);
-            } else {
-                return new Edge(Road.this.nodes[index], Road.this.nodes[++index]);
-            }
+            nextEdge = new Edge(Road.this.nodes[index], Road.this.nodes[index+1], 
+                Road.this.drivetimes[index]);
+            index++;
+            return nextEdge;
         }
 
         @Override

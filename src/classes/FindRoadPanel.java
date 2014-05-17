@@ -1,5 +1,8 @@
 package classes;
 
+import interfaces.IProgressBar;
+import interfaces.RoadReceiver;
+import interfaces.StreamedContainer;
 import java.awt.BorderLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -19,13 +22,16 @@ import javax.swing.border.Border;
  * @author Isabella
  * @author Alekxander
  */
-public class FindRoadPanel extends JPanel implements MouseMotionListener {
+public class FindRoadPanel extends JPanel implements MouseMotionListener, 
+        StreamedContainer<Road>, RoadReceiver {
 
     private final JPanel view;
     private final Controller controller;
     private static final int width = 100; // initial invariable for the width of a new rectangle.
     private static final int height = 100; // initial invariable for the heigth of a new rectangle.
     private JLabel roadLabel;
+    private JLabel coordLabel;
+    private String coordFString = "x/y: %10.1f, %10.1f";
     private final String description = "Nearest road: ";
 
     FindRoadPanel(Controller controller, JPanel target) {
@@ -40,20 +46,20 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         setBorder(BorderFactory.createCompoundBorder(bevel, padding));
         roadLabel = new JLabel(description + "Undefined");
         add(roadLabel, BorderLayout.WEST);
+        coordLabel = new JLabel("x/y: undefined, undefined");
+        add(coordLabel, BorderLayout.EAST);
     }
 
     /**
      * Set field roadLabel to Sring name. If given string is empty, set
      * roadLabel to UNKNOWN.
-     *
      * @param name of road
+     * @param p Where the mouse is
      */
-    public void setNearestRoad(String name, float x, float y) {
-        if (!name.equals("")) {
-            roadLabel.setText(description + name + " x :" + x + " y : " + y);
-        } else {
-            roadLabel.setText(description + "UNKNOWN, x : " + x + " y : " + y);
-        }
+    public void setNearestRoad(String name, Point2D.Float p) {
+        String roadName = (name.equals(""))? "UKNOWN": name;
+        roadLabel.setText(description + roadName);
+        coordLabel.setText(String.format(coordFString, p.x, p.y));
     }
 
     /**
@@ -82,41 +88,23 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
             return (float) Math.sqrt((mouse.x - point.x) * (mouse.x - point.x) + (mouse.y - point.y) * (mouse.y - point.y));
         }
     }
-
-    public Road.Edge closestRoad(float x, float y) {
-        Rect cursorRect = new Rect(x - width / 2, y - height / 2, width, height);
-
+    
+    private Rect cursorRect;
+    private Road nearest;
+    private float minDist;
+    private RoadReceiver recipient;
+    private float startX;
+    private float startY;
+    public void findNearestRoad(Rect cursorRect, RoadReceiver recipient) {
         // Get a HashSet containing RoadParts within the cursorRect.
-        Road.Edge[] roads = controller.getRoads(cursorRect);
-
-        // If no RoadParts are found within the area, float size of cursorRect until 
-        // at least one has been found.
-        while (roads.length == 0) {
-
-            float rectX = cursorRect.x - cursorRect.width / 2;
-            float rectY = cursorRect.y - cursorRect.height / 2;
-            float rectWidth = cursorRect.width * 2;
-            float rectHeight = cursorRect.height * 2;
-
-            cursorRect = new Rect(rectX, rectY, rectWidth, rectHeight);
-            roads = controller.getRoads(cursorRect);
-        }
-
-        // Calculate distance from mouse coordinates to all the RoadParts found.
-        double minDist = Integer.MAX_VALUE;
-        Road.Edge nearest = null;
-        for (Road.Edge road : roads) {
-            float distance = pointToLineDistance(
-                    new Point2D.Float(road.p1.x, road.p1.y),
-                    new Point2D.Float(road.p2.x, road.p2.y),
-                    new Point2D.Float(x, y)
-            );
-            if (distance < minDist) {
-                nearest = road;
-                minDist = distance;
-            }
-        }
-        return nearest;
+        this.cursorRect = cursorRect;
+        this.recipient = recipient;
+        controller.streamRoads(cursorRect, this);
+    }
+    
+    public void findNearestRoad(float x, float y, RoadReceiver recipient) {
+        Rect rect = new Rect(x - width / 2, y - height / 2, width, height);
+        findNearestRoad(rect, recipient);
     }
 
     /**
@@ -144,14 +132,57 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener {
         // Create a new small Rect with the mouseposition as midpoint with mapcoordinates.
         float x = port.getMapX(cPos.x);
         float y = port.getMapY(cPos.y);
-
-        Road.Edge closest = closestRoad(x, y);
-
-        setNearestRoad(closest.parent().name, x, y);
+        findNearestRoad(x, y, this);
     }
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-        // Do nothing 
+    public void mouseDragged(MouseEvent e) {}
+
+    @Override
+    public void startStream() {
+        //System.out.println("Starting road check stream...");
+        nearest = null;
+        minDist = Float.MAX_VALUE;
+    }
+
+    @Override
+    public void startStream(IProgressBar bar) {
+        throw new UnsupportedOperationException("ProgressBar unsupported");
+    }
+
+    @Override
+    public void add(Road obj) {
+        for (Road.Edge edge : obj) {
+            float distance = pointToLineDistance(
+                    new Point2D.Float(edge.p1.x, edge.p1.y),
+                    new Point2D.Float(edge.p2.x, edge.p2.y),
+                    cursorRect.center()
+            );
+            if (distance < minDist) {
+                nearest = obj;
+                minDist = distance;
+            }
+        }
+    }
+
+    @Override
+    public void endStream() {
+        if (nearest == null) { // No roads were found this time
+            float rectX = cursorRect.x - cursorRect.width / 2;
+            float rectY = cursorRect.y - cursorRect.height / 2;
+            float rectWidth = cursorRect.width * 2;
+            float rectHeight = cursorRect.height * 2;
+            cursorRect = new Rect(rectX, rectY, rectWidth, rectHeight);
+            //System.out.println("Found no roads, changing rect to "+cursorRect);
+            findNearestRoad(cursorRect, recipient);
+        } else {
+            //System.out.println("Found a road, ending...");
+            recipient.receiveRoad(nearest);
+        }
+    }
+
+    @Override
+    public void receiveRoad(Road road) {
+        setNearestRoad(road.name, cursorRect.center());
     }
 }

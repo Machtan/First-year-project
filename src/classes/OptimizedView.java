@@ -220,7 +220,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
             g2c.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
                     (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
             g2c.setColor(Color.BLUE);
-            g2c.setStroke(dotStroke);
+            //g2c.setStroke(dotStroke);
             g2c.drawRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
                     (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
         }
@@ -307,9 +307,10 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
         int h = getHeight();
         if (road.type == RoadType.Ferry) {
             g2d = (Graphics2D)activeGraphics.create();
-            g2d.setStroke(ferryStroke);
+            //g2d.setStroke(ferryStroke);
         }
         for (Road.Edge edge: road) {
+            //System.out.println("Drawing a line from ("+edge.p1+") to ("+edge.p2+") => "+edge.p1.mappedX(activeProjection)+" to "+edge.p2.mappedX(activeProjection));
             g2d.drawLine(
                     edge.p1.mappedX(activeProjection), 
                     edge.p1.mappedY(activeProjection, h), 

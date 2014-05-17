@@ -43,14 +43,17 @@ public class Model implements StreamedContainer<Road> {
      */
     public void getRoads(StreamedContainer<Road> target, Viewport.Projection p) {
         if (p.equals(Viewport.Projection.Empty)) { 
+            System.out.println("Model received an empty projection, passing...");
             target.startStream();
             target.endStream();
         } else {
+            //System.out.println("[Model] Requesting tree data from "+p.source+"...");
+            target.startStream();
             for (RoadType type : priorities) {
                 trees.get(type).getIn(p.source, target);
             }
+            target.endStream();
         }
-
     }
 
     /**
@@ -58,9 +61,11 @@ public class Model implements StreamedContainer<Road> {
      * @param target The target to stream roads to
      */
     public void getAllRoads(StreamedContainer<Road> target) {
+        target.startStream();
         for (RoadType type : priorities) {
             trees.get(type).getIn(bounds, target);
         }
+        target.endStream();
     }
 
     private IProgressBar progbar = null;

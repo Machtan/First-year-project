@@ -2,6 +2,7 @@ package classes;
 
 import enums.RoadType;
 import external.SpringUtilities;
+import interfaces.StreamedContainer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -133,8 +134,9 @@ public class Controller extends JFrame {
         SpringUtilities.makeCompactGrid(westContent, 4, 1, 0, 0, 1, 1);
         //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
         contentPanel.add(westContent, BorderLayout.WEST); 
-        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH); //TODO Unbreak
         */
+        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
+        
         
         contentPanel.add(new RenderPanel(model.priorities, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
@@ -201,6 +203,16 @@ public class Controller extends JFrame {
         model.getRoads(view, viewport.getProjection());
         System.out.println("- Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec) -");
     }
+    
+    /**
+     * Streams the roads from the given area to the target
+     * @param area The area to find roads in
+     * @param target Where to send them
+     */
+    public void streamRoads(Rect area, StreamedContainer<Road> target) {
+        // The projection target is irrelevant, since we're not drawing
+        model.getRoads(target, new Viewport.Projection(area, area)); 
+    }
 
     /**
      * Entry point
@@ -208,12 +220,10 @@ public class Controller extends JFrame {
      * @param args
      */
     public static void main(String[] args) throws InterruptedException {
-        ProgressBar progbar = new ProgressBar(); // Create the progress bar
         Dimension viewSize = new Dimension(600,400);
         OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
-        progbar.close();
 
-        Model model = NewLoader.loadData(NewLoader.osmdata);
+        Model model = NewLoader.loadData(NewLoader.krakdata);
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
 

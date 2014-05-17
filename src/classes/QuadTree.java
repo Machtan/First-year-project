@@ -20,10 +20,8 @@ public class QuadTree extends Quad {
      */
     public void getIn(Rect area, StreamedContainer target) {
         long t1 = System.nanoTime();
-        target.startStream();
         super.getIn(area, target);
         double s = (System.nanoTime()-t1)/1e9;
         //System.out.println("'getIn' returned "+result.size()+" roads from the QuadTree in "+s+"sec");
-        target.endStream();
     }
 }
