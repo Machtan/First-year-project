@@ -1,6 +1,7 @@
 package classes;
 
 import java.awt.Dimension;
+import java.awt.geom.Point2D;
 
 /**
  * The Rect class <More docs goes here>
@@ -72,6 +73,14 @@ public class Rect {
      */
     public Rect shift(float x, float y) {
         return new Rect(this.x+x, this.y+y, this.width, this.height);
+    }
+    
+    /**
+     * Returns the center of this rectangle as a 2d point
+     * @return the center of this rectangle as a 2d point
+     */
+    public Point2D.Float center() {
+        return new Point2D.Float(x+ width/2, y + height/2);
     }
     
     /**
