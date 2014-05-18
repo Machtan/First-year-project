@@ -111,43 +111,45 @@ public class ShortestPath {
         Road.Node[] nodes = new Road.Node[]{first, second, third, fourth, fifth, sixth, seventh, eighth, ninth};
         Rect rect = new Rect(100,100,100,100);
         
+          
         Road.Node[] nodesForA = new Road.Node[]{first, second};
         float[] timeA = new float[]{NewLoader.getDriveTime(first, second, (short)80)};
-        Road roadA = new Road("a", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForA, timeA, rect); 
-        Road.Edge EdgeA = new Road.Edge(first, second);
+        Road roadA = new Road("a", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForA, timeA, new Rect(first.x, second.y, second.x-first.x, second.y-first.y)); 
+        
+       // Road.Edge EdgeA = new Road.Edge(first, second);
 
         Road.Node[] nodesForB = new Road.Node[]{second, third};
         float[] timeB = new float[]{NewLoader.getDriveTime(second, third, (short)80)};
-       // Road roadB = new Road("b", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForB, timeB, rect);
+        Road roadB = new Road("b", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForB, timeB, new Rect(second.x, third.y, third.x-second.x, third.y-second.y));
         
         Road.Node[] nodesForC = new Road.Node[]{second, eighth};
         float[] timeC = new float[]{NewLoader.getDriveTime(second, eighth, (short)80)};
-       // Road roadC = new Road("c", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForC, timeC, rect);
+        Road roadC = new Road("c", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForC, timeC, new Rect(second.x, eighth.y, eighth.x-second.x, eighth.y-second.y));
         
         Road.Node[] nodesForD = new Road.Node[]{eighth, fifth};
         float[] timeD = new float[]{NewLoader.getDriveTime(eighth, fifth, (short)80)};
-       // Road roadD = new Road("d", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForD, timeD, rect);
+        Road roadD = new Road("d", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForD, timeD, new Rect(fifth.x, eighth.y, eighth.x-fifth.x, eighth.y-second.y));
      
         Road.Node[] nodesForE = new Road.Node[]{fifth, seventh};
         float[] timeE = new float[]{NewLoader.getDriveTime(fifth, seventh, (short)80)};
-       // Road roadE = new Road("e", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForE, timeE, rect);
+        Road roadE = new Road("e", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForE, timeE, new Rect(fifth.x, seventh.y, seventh.x-fifth.x, seventh.y-fifth.y));
        
         Road.Node[] nodesForF = new Road.Node[]{seventh, ninth};
         float[] timeF = new float[]{NewLoader.getDriveTime(seventh, ninth, (short)80)};
-      //  Road roadF = new Road("f", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForF, timeF, rect);
+        Road roadF = new Road("f", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForF, timeF, new Rect(seventh.x, ninth.y, ninth.x-seventh.x, ninth.y-seventh.y));
         
         Road.Node[] nodesForG = new Road.Node[]{fifth, fourth};
         float[] timeG = new float[]{NewLoader.getDriveTime(fifth, fourth, (short)80)};
-      //  Road roadG = new Road("g", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForG, timeG, rect);
+        Road roadG = new Road("g", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForG, timeG, new Rect(fourth.x, fifth.y, fifth.x-fourth.x, fifth.y-fourth.y));
        
         Road.Node[] nodesForH = new Road.Node[]{fourth, sixth};
         float[] timeH = new float[]{NewLoader.getDriveTime(fourth, sixth, (short)80)};
-      //  Road roadH = new Road("h", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForH, timeH, rect);
+        Road roadH = new Road("h", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForH, timeH, new Rect(fourth.x, sixth.y, fourth.x-sixth.x, sixth.y-fourth.y));
        
         Road.Node[] nodesForI = new Road.Node[]{first, fourth};
         float[] timeI = new float[]{NewLoader.getDriveTime(first, fourth, (short)80)};
-      //  Road roadI = new Road("i", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForI, timeI, rect);
-           /*
+        Road roadI = new Road("i", RoadType.PrimeRoute, (short)2600, (short)80, false, nodesForI, timeI, new Rect(first.x, fourth.y, fourth.x-first.x, fourth.y-first.y));
+             /*
         RoadPart a = new RoadPart("1,2,0,rfirst,0,0,0,0,,,,,0,0,0,0,0,1,,,");
         Road.Edge b = new Road.Edge("2,3,0,rsecond,0,0,0,0,,,,,0,0,0,0,0,1,,,");
         Road.Edge c = new Road.Edge("2,8,0,rthird,0,0,0,0,,,,,0,0,0,0,0,1,,,");
@@ -161,7 +163,7 @@ public class ShortestPath {
         roads = new Edge[]{a, b, c, d, e ,f, g, h, i};
         * */
         
-        Road[] r = new Road[]{roadA, roadB, roadC, roadD, roadE, roadF, roadG, roadH, roadI};
+   //     Road[] r = new Road[]{roadA, roadB, roadC, roadD, roadE, roadF, roadG, roadH, roadI};
         /*
         a.setPoints(first, second);
         b.setPoints(second, third);
