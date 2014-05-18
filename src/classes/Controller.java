@@ -95,11 +95,6 @@ public class Controller extends JFrame {
         
         contentPanel.add(viewPanel);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
-        /*
-        contentPanel.add(new RenderPanel(ins, this), BorderLayout.NORTH);
-        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
-        */
-        //contentPanel.add(new SearchStuff(), BorderLayout.WEST); //TODO compat
                 
         //contentPanel.add(new RouteDescriptionPanel());
         
@@ -136,8 +131,6 @@ public class Controller extends JFrame {
         contentPanel.add(westContent, BorderLayout.WEST); 
         */
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
-        
-        
         contentPanel.add(new RenderPanel(model.priorities, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);

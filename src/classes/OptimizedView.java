@@ -39,7 +39,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);
     private final BasicStroke ferryStroke = new BasicStroke(1, 
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {5,4}, 0);
-    //private HashMap<RoadType, BufferedImage> layers = new HashMap<>();
+    private HashMap<RoadType, BufferedImage> layers = new HashMap<>();
     
     // Values used for the streamed image drawing
     private Graphics2D activeGraphics;
@@ -74,6 +74,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
      * @param start The node to start at
      */
     public void setPathStart(Road.Node start) {
+        System.out.println("Set the path starting point to "+start);
         fromNode = start;
         repaint();
     }
@@ -84,6 +85,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
      * @param end The node to end at
      */
     public void setPathEnd(Road.Node end) {
+        System.out.println("Set the path ending point to "+end);
         toNode = end;
         repaint();
     }
@@ -202,9 +204,6 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
         activeProjection = p;
         image = createImage(getSize(), true);
         backbuffer = createImage(getSize(), false);
-        /*for (RoadType type : RoadType.values()) {
-            layers.put(type, createImage(getSize(), true));
-        }*/
         scaled = false;
         repaint();
     }
@@ -220,7 +219,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
             g2c.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
                     (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
             g2c.setColor(Color.BLUE);
-            //g2c.setStroke(dotStroke);
+            g2c.setStroke(dotStroke);
             g2c.drawRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
                     (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
         }
@@ -228,14 +227,14 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
         if (fromNode != null) {
             int x = fromNode.mappedX(activeProjection);
             int y = fromNode.mappedY(activeProjection, h);
-            g2d.setColor(Color.PINK);
-            g2d.drawOval(x, y, 10, 10);
+            g2d.setColor(Color.MAGENTA);
+            g2d.fillOval(x, y, 10, 10);
         }
         if (toNode != null) {
             int x = toNode.mappedX(activeProjection);
             int y = toNode.mappedY(activeProjection, h);
-            g2d.setColor(Color.BLACK);
-            g2d.drawOval(x, y, 10, 10);
+            g2d.setColor(new Color(100,255,100));
+            g2d.fillOval(x, y, 10, 10);
         }
         for (Road.Edge edge : path) {
             g2d.drawLine(
@@ -307,7 +306,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
         int h = getHeight();
         if (road.type == RoadType.Ferry) {
             g2d = (Graphics2D)activeGraphics.create();
-            //g2d.setStroke(ferryStroke);
+            g2d.setStroke(ferryStroke);
         }
         for (Road.Edge edge: road) {
             //System.out.println("Drawing a line from ("+edge.p1+") to ("+edge.p2+") => "+edge.p1.mappedX(activeProjection)+" to "+edge.p2.mappedX(activeProjection));
