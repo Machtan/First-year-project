@@ -2,6 +2,7 @@ package classes;
 
 import interfaces.QuadNode;
 import interfaces.StreamedContainer;
+import java.util.HashMap;
 
 /**
  * The Quad class divides a Rect area into smaller Rect subareas to help ease up 
@@ -13,6 +14,7 @@ import interfaces.StreamedContainer;
 public class Quad <T extends QuadNode> {
 
     private Quad[] subquads; // 4 subquads if necessarry. Empty if not.
+    private HashMap<Rect, FastArList<T>> edgeCases;
     private boolean bottom; // True if the element is the bottommost element.
     private short maxNodes = 400; // Number of nodes a quad can hold before it splits.
     private final short depth; // The depth of the quad
@@ -25,6 +27,11 @@ public class Quad <T extends QuadNode> {
         this.maxNodes = maxNodes;
         this.maxDepth = maxDepth;
         this.depth = depth;
+        edgeCases = new HashMap<>();
+        Rect verArea = new Rect(area.x + area.width/2, area.y, 0, area.height);
+        Rect horArea = new Rect(area.x, area.y + area.height/2, area.width, 0);
+        edgeCases.put(verArea, new FastArList<T>());
+        edgeCases.put(horArea, new FastArList<T>());
         nodeList = new FastArList<>();
         bottom = true;
     }
@@ -35,6 +42,12 @@ public class Quad <T extends QuadNode> {
      * @param node 
      */
     public void add(T node) {
+        for (Rect r : edgeCases.keySet()) {
+            if (node.collidesWith(r)) {
+                edgeCases.get(r).add(node);
+                return; // Don't do anything else
+            }
+        }
         if (bottom) {
             //System.out.println("Adding "+node+" to "+this);
             nodeList.add(node);
@@ -58,6 +71,15 @@ public class Quad <T extends QuadNode> {
      * @param target The streamed container to add roads to
      */
     protected void getIn(Rect area, StreamedContainer target) {
+        for (Rect r: edgeCases.keySet()) { // Add edge cases
+            if (r.collidesWith(area)) {
+                for (T node : edgeCases.get(r)) {
+                    if (node.collidesWith(area)) {
+                        target.add(node);
+                    }
+                }
+            }
+        }
         if (bottom) {
             if (area.contains(this.area)) {
                 for(T node : nodeList) {

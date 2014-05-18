@@ -1,11 +1,12 @@
 package classes;
 
+import interfaces.Receiver;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import javax.swing.JPanel;
+import java.util.HashMap;
 
 /**
  * The CMouseHandler class handles mouse-based input of the controller, which
@@ -17,22 +18,26 @@ import javax.swing.JPanel;
 public class CMouseHandler implements MouseListener, MouseMotionListener {
     
     // ======== CONFIGURATION ========
-    private static final int dragButton = MouseEvent.BUTTON3;
-    private static final int markButton = MouseEvent.BUTTON1;    
+    private static final int dragButton = MouseEvent.BUTTON1;
+    private static final int markButton = MouseEvent.BUTTON3;    
     
     // ===============================
     private Point startPos;
-    private Point endPos;
-    private Point lastDragPoint;
+    private Point lastPos;
     private Rect markRect;
     private final Controller controller;
-    private final JPanel view;
-    private boolean isMarking;
-    private boolean isDragging;
+    private final OptimizedView view;
+    private boolean isMarking = false;
+    private boolean isDragging = false;
+    private Road.Node pathStart = null;
+    private Road.Node pathEnd = null;
+    private HashMap<Integer, Boolean> isDown = new HashMap<>();;
     
-    public CMouseHandler(Controller controller, JPanel target) {
+    public CMouseHandler(Controller controller, OptimizedView target) {
         this.controller = controller;
-        isMarking = false;
+        isDown.put(dragButton, false);
+        isDown.put(markButton, false);
+        
         view = target;
         view.addMouseListener(this);
         view.addMouseMotionListener(this);
@@ -40,21 +45,13 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
     
     @Override
     public void mousePressed(MouseEvent e) {
-        switch(e.getButton()) {
-            case markButton:
-                isMarking = true;
-                isDragging = false;
-                startPos = e.getLocationOnScreen();
-                startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-                markRect = new Rect(startPos.x, startPos.y, 0, 0);
-                break;
-            case dragButton:
-                lastDragPoint = e.getLocationOnScreen();
-                lastDragPoint.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-                isDragging = true;
-                isMarking = false;
-                break;
+        int button = e.getButton();
+        if (isDown.containsKey(button)) {
+            isDown.put(button, true);
         }
+        startPos = e.getLocationOnScreen();
+        startPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+        lastPos = startPos;
     }
     
     /**
@@ -106,42 +103,97 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (isDragging) {
-            Point newPos = e.getLocationOnScreen();
-            newPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+        Point newPos = e.getLocationOnScreen();
+        newPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
+        if (isDown.get(dragButton)) {
+            isDragging = true;
             Dimension viewSize = controller.viewport.getSize();
             newPos.x = (int)clamp(newPos.x, 0, viewSize.width);
             newPos.y = (int)clamp(newPos.y, 0, viewSize.height);
-            int dx = newPos.x - lastDragPoint.x;
-            int dy = -1 * (newPos.y - lastDragPoint.y);
-            lastDragPoint = newPos;
+            int dx = newPos.x - lastPos.x;
+            int dy = -1 * (newPos.y - lastPos.y);
             if ((dx+dy)==0) { return; } // No allowed movement, no drag
             controller.moveMap(dx, dy);
         }
-        if (isMarking && (startPos != null)) {
-            endPos = e.getLocationOnScreen();
-            endPos.translate(-view.getLocationOnScreen().x, -view.getLocationOnScreen().y);
-            controller.setMarkerRect(getMarkRect(startPos, endPos));
+        if (isDown.get(markButton)) {
+            isMarking = true;
+            controller.setMarkerRect(getMarkRect(startPos, newPos));
             view.repaint();
+        }
+        lastPos = newPos;
+    }
+    
+    /**
+     * Attempts to calculate the shortest path between the start and end
+     */
+    private void findShortestPath() {
+        if ((pathStart != null) && (pathEnd != null)) {
+            System.out.println("Finding shortest path!...");
+            view.setPath(PathFinder.findPath(controller.graph, pathStart.id, pathEnd.id));
+        }
+    }
+    
+    /**
+     * Sets where the path should start
+     * @param start 
+     */
+    private void setPathStart(Road.Node start) {
+        pathStart = start;
+        view.setPathStart(start);
+        findShortestPath();
+    }
+    
+    /**
+     * Sets where the path should end
+     * @param end 
+     */
+    private void setPathEnd(Road.Node end) {
+        pathEnd = end;
+        view.setPathEnd(end);
+        findShortestPath();
+    }
+    
+    private class PositionHelper implements Receiver<Road.Node>{
+        private final boolean start;
+        /**
+         * A helper class for receiving positions and sending them to the view
+         * The start parameter is whether it should set the starting or ending
+         * point of the view, when a node is received.
+         */
+        public PositionHelper(boolean start) {
+            this.start = start;
+        }
+
+        @Override
+        public void receive(Road.Node obj) {
+            if (start) {
+                CMouseHandler.this.setPathStart(obj);
+            } else {
+                CMouseHandler.this.setPathEnd(obj);
+            }
+            
         }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (endPos == null) {
-            endPos = startPos;
-        }
-        switch(e.getButton()) {
+        int button = e.getButton();
+        Viewport port = controller.viewport;
+        float mapX = port.getMapX(lastPos.x);
+        float mapY = port.getMapY(lastPos.y);
+        switch(button) {
             case dragButton:
                 if (isDragging) {
-                    // Some easing movement here or something...
+                    // Some easing movement here or something..?
+                } else {
+                    // Set the starting position of the view
+                    Finder.findNearestNode(mapX, mapY, new PositionHelper(true), controller);
                 }
                 isDragging = false;
                 break;
             case markButton:
-                if (isMarking && (startPos != null)) { // Don't attempt to zoom before clicking :u
-                    Viewport port = controller.viewport;
-                    markRect = getMarkRect(startPos, endPos);
+                if (isMarking) { // Don't attempt to zoom before clicking :u
+                    markRect = getMarkRect(startPos, lastPos);
                     float rHeight = markRect.height;
                     float rWidth = markRect.width;
                     float rX = markRect.x;
@@ -156,12 +208,16 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
                     controller.setMarkerRect(null);
 
                     Rect mapArea = port.getMapArea(new Rect(rX, rY, rWidth, rHeight));
-                    float mapRatio = mapArea.width/mapArea.height;
-
                     controller.draw(port.setSource(mapArea));
+                } else {
+                    // Set the ending position of the view
+                    Finder.findNearestNode(mapX, mapY, new PositionHelper(false), controller);
                 }
                 isMarking = false;
                 break;
+        }
+        if (isDown.containsKey(button)) {
+            isDown.put(button, false);
         }
     }
 

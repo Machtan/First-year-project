@@ -1,16 +1,12 @@
 package classes;
 
-import enums.RoadType;
-import java.awt.Dimension;
 import java.util.HashMap;
-import java.util.HashSet;
 
-public class ShortestPath {
+public class PathFinder {
 
-    private HashMap<Integer, Road.Edge> edgeTo;
-    private HashMap<Integer, Double> distTo;
-    private IndexMinPQ<Double> pq;
-    private Graph G;
+    private static HashMap<Integer, Road.Edge> edgeTo;
+    private static HashMap<Integer, Double> distTo;
+    private static IndexMinPQ<Double> pq;
 
     private static double h(Road.Node source, Road.Node target) { //s = start, t = target
         // System.out.println("Heuristic analysis: \n"
@@ -18,7 +14,7 @@ public class ShortestPath {
         return Math.sqrt(Math.pow(source.x - target.x, 2) + Math.pow(source.y - target.y, 2)) / 1000 / 130;
     }
 
-    public Road.Edge[] findPath(long sourceID, long targetID) {
+    public static Road.Edge[] findPath(Graph G, long sourceID, long targetID) {
         if (G == null) {
             throw new RuntimeException("Graph have not been instantitiated.");
         } else {
@@ -39,7 +35,7 @@ public class ShortestPath {
                 }
                 for (Road.Edge r : G.adj(v)) {
                     //System.out.println("- (" + v + ") Relaxing part " + r);
-                    relax(r, v, t);
+                    relax(G, r, v, t);
                 }
             }
 
@@ -69,11 +65,7 @@ public class ShortestPath {
         }
     }
 
-    public ShortestPath(Graph G) {
-        this.G = G;
-    }
-
-    public void relax(Road.Edge r, int s, int t) {
+    private static void relax(Graph G, Road.Edge r, int s, int t) {
         //   System.out.println("Relaxing");
         int v = s; // The starting vertice
         int w = G.other(r, v); // w is the other vertice

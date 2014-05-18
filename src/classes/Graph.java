@@ -12,13 +12,13 @@ import java.util.HashMap;
 
 public class Graph implements StreamedContainer<Road>{
 
-    private int V; //Number of vertices/intersections
-    private int E; //Number of edges/road parts
-    private ArrayList<ArrayList<Road.Edge>> adj;
-    //private ArrayList<Road> roads;
-    private ArrayList<Road.Node> nodes;
-    private HashMap<Long, Integer> IDToIndex;
-    private HashMap<Integer, Long> indexToID;
+    private int V = 0; //Number of vertices/intersections
+    private int E = 0; //Number of edges/road parts
+    private ArrayList<ArrayList<Road.Edge>> adj = new ArrayList<>();
+    private ArrayList<Road.Node> nodes          = new ArrayList<>();
+    private HashMap<Long, Integer> IDToIndex    = new HashMap<>();
+    private HashMap<Integer, Long> indexToID    = new HashMap<>();
+    private IProgressBar progbar                = null;
 
     /**
      * Returns the number of vertices in the edge-weighted graph.
@@ -26,7 +26,7 @@ public class Graph implements StreamedContainer<Road>{
      * @return the number of vertices in the edge-weighted graph
      */
     public int V() {
-        return V;
+        return adj.size();
     }
 
     /**
@@ -37,7 +37,13 @@ public class Graph implements StreamedContainer<Road>{
     public int E() {
         return E;
     }
+    
     public Graph(Model model) {
+        model.getAllRoads(this);
+    }
+    
+    public Graph(Model model, IProgressBar progbar) {
+        this.progbar = progbar;
         model.getAllRoads(this);
     }
 
@@ -49,8 +55,8 @@ public class Graph implements StreamedContainer<Road>{
      * @throws java.lang.IndexOutOfBoundsException unless 0 <= v < V
      */
     public Iterable<Road.Edge> adj(int v) {
-        if (v < 0 || v >= V) {
-            throw new IndexOutOfBoundsException("vertex " + v + " is not between 0 and " + (V - 1));
+        if (v < 0 || v >= V()) {
+            throw new IndexOutOfBoundsException("vertex " + v + " is not between 0 and " + (V() - 1));
         }
         //  System.out.println("vertex " + v + " has " + adj[v].size() + " adjacent edges");
         return adj.get(v);
@@ -64,6 +70,9 @@ public class Graph implements StreamedContainer<Road>{
         //      + "FirstIDIndex: " + firstIDIndex);
         if (part != null) {
             if (IDToIndex.get(part.p1.id) == firstIndex) {
+                if (!IDToIndex.containsKey(part.p2.id)) {
+                    throw new RuntimeException("The ID '"+part.p2.id+"' is not in the Index map!");
+                }
                 return IDToIndex.get(part.p2.id);
             } else {
                 return IDToIndex.get(part.p1.id);
@@ -88,45 +97,54 @@ public class Graph implements StreamedContainer<Road>{
 
     @Override
     public void startStream() {
-        V = 0;
-        E = 0;
         nodes = new ArrayList<>();
         System.out.println("Starting the graph population...");
     }
 
     @Override
     public void startStream(IProgressBar bar) {
-        throw new UnsupportedOperationException("Progressbar unsupported.");
+        progbar = bar;
+        startStream();
+    }
+    
+    /**
+     * Adds a new node at the given index
+     * @param node The node to add
+     * @param index The index at which to add it
+     */
+    private void addNode(Road.Node node, int index) {
+        indexToID.put(index, node.id);
+        IDToIndex.put(node.id, index);
+        nodes.add(node);
+        adj.add(new ArrayList<Road.Edge>());
+        //System.out.println("Adding "+node+" at index "+index+"! ("+adj.size()+" adj)");
     }
 
     @Override
     public void add(Road obj) {
-        V += obj.nodes.length;
         //roads.add(obj);
         int i = nodes.size();
         Road.Edge last = null;
         for (Road.Edge edge: obj) {
             last = edge;
             Road.Node node = edge.p1;
+            Road.Node target = edge.p2;
             if (!IDToIndex.containsKey(node.id)) {
-                indexToID.put(i, node.id);
-                IDToIndex.put(node.id, i);
-                nodes.add(node);
-                adj.add(new ArrayList<Road.Edge>());
-                i++;
+                addNode(node, i++);
+            }
+            if (!IDToIndex.containsKey(target.id)) {
+                addNode(target, i++);
+            }
+            //System.out.println("i: "+i+", gotten index: "+IDToIndex.get(node.id));
+            adj.get(IDToIndex.get(node.id)).add(edge);
+            if (!obj.oneway) { // Krak is mostly bidirectional
+                adj.get(IDToIndex.get(target.id)).add(edge);
             }
             
-            adj.get(IDToIndex.get(edge.p1.id)).add(edge);
-            if (!obj.oneway) { // Krak is mostly bidirectional
-                adj.get(IDToIndex.get(edge.p2.id)).add(edge);
-            }
             E += 1;
         }
-        if (!IDToIndex.containsKey(last.p2.id)) {
-            indexToID.put(i, last.p2.id);
-            IDToIndex.put(last.p2.id, i);
-            nodes.add(last.p2);
-            i++;
+        if (progbar != null) {
+            progbar.update(1);
         }
     }
 

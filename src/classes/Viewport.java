@@ -263,14 +263,14 @@ public class Viewport {
 
         // Create and return the projections :)
         if ((verTarget != null) && (horTarget != null)) {
-            System.out.println("Returning both targets for ("+dx+", "+dy+")");
+            //System.out.println("Returning both targets for ("+dx+", "+dy+")");
             return new Projection[]{new Projection(horArea, horTarget), 
                 new Projection(verArea, verTarget)};
         } else if (verTarget != null) {
-            System.out.println("Returning vertical target for ("+dx+", "+dy+")");
+            //System.out.println("Returning vertical target for ("+dx+", "+dy+")");
             return new Projection[]{new Projection(verArea, verTarget)};
         } else {
-            System.out.println("Returning horizaontal target for ("+dx+", "+dy+")");
+            //System.out.println("Returning horizontal target for ("+dx+", "+dy+")");
             return new Projection[]{new Projection(horArea, horTarget)};
         }
     } 

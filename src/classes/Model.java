@@ -20,6 +20,7 @@ public class Model implements StreamedContainer<Road> {
     public final Rect bounds;
     private HashMap<RoadType, QuadTree> trees = new HashMap<>();
     public ArrayList<RoadType> priorities;
+    public long roadCount = 0;
     
     /* Krak boundaries
     x = [442254.35659 : 892658.21706]
@@ -92,6 +93,7 @@ public class Model implements StreamedContainer<Road> {
 
     @Override
     public void add(Road obj) {
+        roadCount += 1;
         trees.get(obj.type).add(obj);
         if (progbar != null) {
             progbar.update(1);
