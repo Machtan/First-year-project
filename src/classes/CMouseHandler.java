@@ -7,7 +7,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.HashMap;
-import javax.swing.JPanel;
 
 /**
  * The CMouseHandler class handles mouse-based input of the controller, which
@@ -30,6 +29,8 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
     private final OptimizedView view;
     private boolean isMarking = false;
     private boolean isDragging = false;
+    private Road.Node pathStart = null;
+    private Road.Node pathEnd = null;
     private HashMap<Integer, Boolean> isDown = new HashMap<>();;
     
     public CMouseHandler(Controller controller, OptimizedView target) {
@@ -122,6 +123,36 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
         lastPos = newPos;
     }
     
+    /**
+     * Attempts to calculate the shortest path between the start and end
+     */
+    private void findShortestPath() {
+        if ((pathStart != null) && (pathEnd != null)) {
+            System.out.println("Finding shortest path!...");
+            view.setPath(PathFinder.findPath(controller.graph, pathStart.id, pathEnd.id));
+        }
+    }
+    
+    /**
+     * Sets where the path should start
+     * @param start 
+     */
+    private void setPathStart(Road.Node start) {
+        pathStart = start;
+        view.setPathStart(start);
+        findShortestPath();
+    }
+    
+    /**
+     * Sets where the path should end
+     * @param end 
+     */
+    private void setPathEnd(Road.Node end) {
+        pathEnd = end;
+        view.setPathEnd(end);
+        findShortestPath();
+    }
+    
     private class PositionHelper implements Receiver<Road.Node>{
         private final boolean start;
         /**
@@ -136,9 +167,9 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
         @Override
         public void receive(Road.Node obj) {
             if (start) {
-                CMouseHandler.this.view.setPathStart(obj);
+                CMouseHandler.this.setPathStart(obj);
             } else {
-                CMouseHandler.this.view.setPathEnd(obj);
+                CMouseHandler.this.setPathEnd(obj);
             }
             
         }

@@ -34,11 +34,12 @@ import javax.swing.border.Border;
  */
 public class Controller extends JFrame {
 
-    private static ShortestPath SP;
+    private static PathFinder SP;
     private final OptimizedView view;
     private final Model model;
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
     public ArrayList<RoadType> prioritized;
+    public final Graph graph;
     private FindAsYouSearchPanel searchStuff;
     private JTextField inputField;
     private JList adressList;
@@ -71,6 +72,11 @@ public class Controller extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setTitle("First-year Project - Visualization of Denmark");
         
+        ProgressBar progbar = new ProgressBar();
+        progbar.setTarget("Creating graph", model.roadCount);
+        graph = new Graph(model, progbar);
+        progbar.close();
+        System.out.println("Graph stats: V: "+graph.V()+", E: "+graph.E());
         this.model = model;
         viewport = new Viewport(model.bounds, 1, view);
 

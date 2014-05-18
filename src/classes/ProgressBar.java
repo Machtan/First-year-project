@@ -16,6 +16,7 @@ public class ProgressBar extends JFrame implements IProgressBar {
     private long target;
     private int counter; // Current counter
     private int minAdd; // How much the counter needs to be before updating
+    private long t1;
 
     public ProgressBar() {
         super();
@@ -61,6 +62,7 @@ public class ProgressBar extends JFrame implements IProgressBar {
      */
     public void setTarget(String text, long target) {
         System.out.println("Progress: '"+text+"' ("+target+")");
+        t1 = System.nanoTime();
         minAdd = (int)Math.ceil(target*updateAmount);
         counter = 0;
         this.target = target;
@@ -83,6 +85,10 @@ public class ProgressBar extends JFrame implements IProgressBar {
                 counter = 0;
                 //update(getGraphics()); // Too inconsistent :( (too 'slow' to show everything)
                 System.out.println("Updating progress, "+progressBar.getValue()+" / "+target);
+            }
+            if (done()) {
+                double time = (System.nanoTime()-t1) / 1e9;
+                System.out.println("[Progress]: Finished '"+statusLabel.getText()+"' in "+time+"s!");
             }
         } else {
             throw new RuntimeException("Update ("+addition+") attempted while already finished!");

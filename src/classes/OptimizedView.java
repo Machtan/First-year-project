@@ -35,10 +35,15 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
     private Road.Edge[] path    = new Road.Edge[0];
     private Road.Node fromNode  = null;
     private Road.Node toNode    = null;
+    
+    // Strokes
     private final BasicStroke dotStroke = new BasicStroke(2, 
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);
     private final BasicStroke ferryStroke = new BasicStroke(1, 
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {5,4}, 0);
+    private final BasicStroke pathStroke = new BasicStroke(2, 
+            BasicStroke.CAP_ROUND, BasicStroke.JOIN_BEVEL);
+    
     private HashMap<RoadType, BufferedImage> layers = new HashMap<>();
     
     // Values used for the streamed image drawing
@@ -213,8 +218,10 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
      * @param g2d The graphics2D object to draw it unto
      */
     private void drawOverlays(Graphics2D g2d) {
+        Graphics2D g2 = (Graphics2D)g2d.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         if (markerRect != null) {
-            Graphics2D g2c = (Graphics2D)g2d.create();
+            Graphics2D g2c = (Graphics2D)g2.create();
             g2c.setColor(new Color(200,200,255,90));
             g2c.fillRect((int)Math.round(markerRect.x), (int)Math.round(markerRect.y-markerRect.height), 
                     (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
@@ -224,24 +231,30 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
                     (int)Math.round(markerRect.width), (int)Math.round(markerRect.height));
         }
         int h = getHeight();
+        if (path.length != 0) {
+            Graphics2D g2e = (Graphics2D)g2d.create();
+            
+            g2e.setStroke(pathStroke);
+            g2e.setColor(Color.GREEN);
+            for (Road.Edge edge : path) {
+                g2e.drawLine(
+                        edge.p1.mappedX(activeProjection), 
+                        edge.p1.mappedY(activeProjection, h), 
+                        edge.p2.mappedX(activeProjection), 
+                        edge.p2.mappedY(activeProjection, h));
+            }
+        }
         if (fromNode != null) {
             int x = fromNode.mappedX(activeProjection);
             int y = fromNode.mappedY(activeProjection, h);
-            g2d.setColor(Color.MAGENTA);
-            g2d.fillOval(x, y, 10, 10);
+            g2.setColor(Color.MAGENTA);
+            g2.fillOval(x, y, 10, 10);
         }
         if (toNode != null) {
             int x = toNode.mappedX(activeProjection);
             int y = toNode.mappedY(activeProjection, h);
-            g2d.setColor(new Color(100,255,100));
-            g2d.fillOval(x, y, 10, 10);
-        }
-        for (Road.Edge edge : path) {
-            g2d.drawLine(
-                    edge.p1.mappedX(activeProjection), 
-                    edge.p1.mappedY(activeProjection, h), 
-                    edge.p2.mappedX(activeProjection), 
-                    edge.p2.mappedY(activeProjection, h));
+            g2.setColor(new Color(100,255,100));
+            g2.fillOval(x, y, 10, 10);
         }
     }
     
