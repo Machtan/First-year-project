@@ -137,7 +137,7 @@ public class Controller extends JFrame {
         //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
         contentPanel.add(westContent, BorderLayout.WEST); 
         */
-        //contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
+        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
         contentPanel.add(new RenderPanel(model.priorities, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
@@ -223,7 +223,7 @@ public class Controller extends JFrame {
         Dimension viewSize = new Dimension(600,400);
         OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
 
-        Model model = NewLoader.loadData(NewLoader.krakdata);
+        Model model = NewLoader.loadData(NewLoader.osmdata);
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
 
