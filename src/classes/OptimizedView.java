@@ -345,8 +345,4 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
         repaint();
         progbar = null;
     }
-    
-    public Road.Edge[] returnEdges() {
-        return path;
-    }
 }

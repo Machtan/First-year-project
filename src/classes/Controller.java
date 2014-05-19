@@ -141,18 +141,33 @@ public class Controller extends JFrame {
         JPanel westContent = new JPanel();
         westContent.setLayout(new SpringLayout());
         final RouteDescriptionPanel routeDesc = new RouteDescriptionPanel();
-        final AutoCompleter fromField = new AutoCompleter(view.returnEdges());
-        final AutoCompleter toField = new AutoCompleter(view.returnEdges());
+        final AutoCompleter fromField = new AutoCompleter(model);
+        final AutoCompleter toField = new AutoCompleter(model);
         westContent.add(fromField);
         westContent.add(toField);
+        westContent.add(new JButton(new AbstractAction("Search") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //Make shortest path search
+                String prevRoadName = "";
+                if (toField.getRoad() == null || fromField.getRoad() == null) {
+                    JOptionPane.showMessageDialog(contentPanel, "Please choose two roads", "Information", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    Road.Edge[] result = SP.findPath(graph, fromField.getRoad().nodes[1].id, toField.getRoad().nodes[1].id);
+                    routeDesc.setRoute(result);
+                }
+            }
+        }));
         westContent.add(routeDesc);
+        SpringUtilities.makeCompactGrid(westContent, 4, 1, 0, 0, 1, 1);
         
         
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
         contentPanel.add(new RenderPanel(model.priorities, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
+        contentPanel.add(westContent, BorderLayout.WEST);
         contentPanel.add(viewPanel);
-        //contentPanel.add(westContent, BorderLayout.WEST);
+        
 
         setTitle("First-year Project - Visualization of Denmark");
 
@@ -235,7 +250,7 @@ public class Controller extends JFrame {
         Dimension viewSize = new Dimension(600,400);
         OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
 
-        Model model = NewLoader.loadData(NewLoader.osmdata);
+        Model model = NewLoader.loadData(NewLoader.krakdata);
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
 

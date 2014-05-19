@@ -27,7 +27,7 @@ import javax.swing.event.DocumentListener;
  *
  * @author Daniel
  */
-public class AutoCompleter extends JTextField implements StreamedContainer {
+public class AutoCompleter extends JTextField implements StreamedContainer<Road> {
 
     private JTextField inputField; //Text Field for searching capabilities
     private static final int searchDelay = 200; //Milliseconds
@@ -36,17 +36,17 @@ public class AutoCompleter extends JTextField implements StreamedContainer {
     private String selectedRoad;
     private int letterCount = 0; //Value to check if letters in textfield is written by us, and not a road taken from the list
     private JPopupMenu pop;
-    private Road.Edge foundRoad;
-    //private HashSet<Integer> usedZips;
-    private HashSet<Road> addedRoads;
-    private ArrayList<ArrayList<Road.Edge>> adj = new ArrayList<>();
-    private ArrayList<Road.Node> nodes          = new ArrayList<>();
+    private Road foundRoad;
+    private String edgeToAdd;
+    private HashSet<Integer> usedZips;
+    private HashSet<String> addedRoads;
+    private ArrayList<Road> edgesList = new ArrayList<>();
     //private HashMap<String, Integer> addrMap;
     //private HashSet<String> usedRoadNames;
 
-    public AutoCompleter(Road.Edge[] roads) {
-        //model.getAllRoads(this);
-        edges = roads;
+    public AutoCompleter(Model model) {
+        model.getAllRoads(this);
+        //edges = roads;
         inputField = this;
         inputField.setMaximumSize(new Dimension(180, 22));
         inputField.setPreferredSize(inputField.getMaximumSize());
@@ -55,6 +55,7 @@ public class AutoCompleter extends JTextField implements StreamedContainer {
         pop.setFocusable(false);
         addListeners();
         setTimer();
+        //startStream();
     }
 
     //Set what the timer does
@@ -62,7 +63,7 @@ public class AutoCompleter extends JTextField implements StreamedContainer {
         typeTimer = new Timer(searchDelay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                startSearch();
+                startSearch(edgesList);
             }
         });
         typeTimer.setRepeats(false);
@@ -126,8 +127,9 @@ public class AutoCompleter extends JTextField implements StreamedContainer {
         pop.setPreferredSize(new Dimension(inputField.getWidth(), inputField.getHeight() * pop.getSubElements().length));
     }
 
-    private MenuItem createMenuItem(Road.Edge r, String text) {
-        Road.Edge tempR = r;
+    private MenuItem createMenuItem(Road r, String text) {
+        Road tempR = r;
+        
         MenuItem item = new MenuItem(r, text);
         item.setFont(new Font(Font.DIALOG, Font.BOLD, 10));
         addMenuListener(item);
@@ -137,7 +139,6 @@ public class AutoCompleter extends JTextField implements StreamedContainer {
 
     private void addMenuListener(final MenuItem item) {
         item.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 foundRoad = item.roadPart;
@@ -146,28 +147,80 @@ public class AutoCompleter extends JTextField implements StreamedContainer {
             }
         });
     }
+    
+     private void startSearch(ArrayList<Road> edges2) {
+        edges2 = edgesList;
+        if (inputField.getText().length() >= 3) {
+            //removeItems();
+            System.out.println("Starting search");
 
+            usedZips = new HashSet<Integer>();
+            //usedRoadNames = new HashSet<String>();
+            addedRoads = new HashSet<>();
+            String searchText = inputField.getText().toLowerCase();
+
+            //Starting linear search through all the roads
+            for (Road edge : edges2) {
+                String edgeName = edge.name;
+                int edgeZip = edge.zipCode;
+
+                if (edgeName.toLowerCase().startsWith(searchText)) {
+
+                    //Just add it when there's no other elements
+                    if (pop.getSubElements().length == 0) {
+                        pop.add(createMenuItem(edge, edgeName + " - " + edgeZip));
+                        usedZips.add(edgeZip);
+                        
+                        System.out.println(edgeToAdd);
+                        //addedRoads.add(edgeName);
+                        //usedRoadNames.add(edgeName);
+
+                        //Only shows one option for each city
+                    } else if (!usedZips.contains(edgeZip)) {
+                        pop.add(createMenuItem(edge, edgeName + " - " + edgeZip));
+                        usedZips.add(edgeZip);
+                       
+                        
+                        //addedRoads.add(edgeToAdd);
+                    }
+
+                    setPopMenu();
+                    //show up to 18 possible roads
+                    if (pop.getSubElements().length >= 18) {
+                        pop.setVisible(true);
+                        return;
+
+                    } else if (pop.getSubElements().length != 0) {
+                        pop.setVisible(true);
+
+                    }
+                }
+            }
+        }
+    }
+/*
     //Searches through the list
-    private void startSearch() {
+    private void startSearch(ArrayList<Road.Edge> edge) {
+        edge = edgesList;
         if (inputField.getText().length() >= 3) {
             //removeItems();
             System.out.println("Starting search");
 
             //usedZips = new HashSet<Integer>();
             //usedRoadNames = new HashSet<String>();
-            addedRoads = new HashSet<Road>();
+            addedRoads = new HashSet<>();
             String searchText = inputField.getText().toLowerCase();
 
             //Starting linear search through all the roads
             for (int i = 0; i < edges.length; i++) {
-                String edgeName = edges[i].parent().name;
-                int edgeZip = edges[i].parent().zipCode;
+                String edgeName = edge.parent().name;
+                int edgeZip = edge.parent().zipCode;
 
                 if (edgeName.toLowerCase().startsWith(searchText)) {
 
                     //Just add it when there's no other elements
                     if (pop.getSubElements().length == 0) {
-                        pop.add(createMenuItem(edges[i], edgeName + " - " + edgeZip));
+                        pop.add(createMenuItem(edge, edgeName + " - " + edgeZip));
                         //usedZips.add(edgeZip);
                         addedRoads.add(edges[i].parent());
                         //usedRoadNames.add(edgeName);
@@ -193,7 +246,7 @@ public class AutoCompleter extends JTextField implements StreamedContainer {
             }
         }
     }
-
+*/
     private void removeItems() {
         pop.removeAll();
         pop.setVisible(false);
@@ -202,27 +255,28 @@ public class AutoCompleter extends JTextField implements StreamedContainer {
         inputField.repaint();
     }
 
-    public Road.Edge getRoad() {
+    public Road getRoad() {
         return foundRoad;
     }
 
     @Override
     public void startStream() {
-        nodes = new ArrayList<>();
+        
     }
 
     @Override
     public void startStream(IProgressBar bar) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void add(Object obj) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        //
     }
 
     @Override
     public void endStream() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+    }
+
+    @Override
+    public void add(Road obj) {
+            edgesList.add(obj);
+             
     }
 }

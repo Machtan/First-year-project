@@ -13,9 +13,9 @@ import javax.swing.JMenuItem;
  */
 public class MenuItem extends JMenuItem {
 
-    public final Road.Edge roadPart;
+    public final Road roadPart;
 
-    public MenuItem(Road.Edge r, String text) {
+    public MenuItem(Road r, String text) {
         super(text);
         roadPart = r;
     }
