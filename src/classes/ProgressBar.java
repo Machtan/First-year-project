@@ -21,7 +21,6 @@ public class ProgressBar extends JFrame implements IProgressBar {
     public ProgressBar() {
         super();
         System.out.println("Creating progress bar");
-        setLocationRelativeTo(null);
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setUndecorated(true);
         statusLabel = new JLabel("No target set :)");
@@ -45,6 +44,7 @@ public class ProgressBar extends JFrame implements IProgressBar {
         //setPreferredSize(new Dimension(200, panel.getPreferredSize().height));
         
         pack();
+        setLocationRelativeTo(null);
         setVisible(true);
         paintComponents(getGraphics());
         System.out.println("Progress bar created!");
