@@ -75,9 +75,10 @@ public class Controller extends JFrame {
         
         ProgressBar progbar = new ProgressBar();
         progbar.setTarget("Creating graph", model.roadCount);
-        graph = new Graph(model, progbar);
+        graph = new Graph(model, NewLoader.loaded, progbar);
+        //graph = null;
         progbar.close();
-        System.out.println("Graph stats: V: "+graph.V()+", E: "+graph.E());
+        //System.out.println("Graph stats: V: "+graph.V()+", E: "+graph.E());
         this.model = model;
         viewport = new Viewport(model.bounds, 1, view);
 
@@ -105,38 +106,6 @@ public class Controller extends JFrame {
                 
         //contentPanel.add(new RouteDescriptionPanel());
         
-        /*
-        JPanel westContent = new JPanel();
-        westContent.setLayout(new SpringLayout());        
-        final RouteDescriptionPanel routeP = new RouteDescriptionPanel();
-        final AutoCompleter fromField = new AutoCompleter(model.getRoads(model.getBoundingArea()));
-        final AutoCompleter toField = new AutoCompleter(model.getRoads(model.getBoundingArea()));
-        westContent.add(fromField);
-        westContent.add(toField);
-        westContent.add(new JButton(new AbstractAction("Search") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //Make shortest path search
-                String prevRoadName = "";
-                if (toField.getRoad() == null || fromField.getRoad() == null) {
-                    JOptionPane.showMessageDialog(contentPanel, "Please choose two roads", "Information", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    RoadPart[] result = SP.findPath(fromField.getRoad().sourceID, toField.getRoad().sourceID);
-                    routeP.setRoute(result);
-                }
-            }
-        }));
-        
-        HashSet<RoadType> types = new HashSet<>();
-        types.add(RoadType.Path);
-        Graph graph = new Graph(model.intersections, model.getRoads(model.getBoundingArea()), types);
-        SP = new ShortestPath(graph);
-        
-        westContent.add(routeP);
-        SpringUtilities.makeCompactGrid(westContent, 4, 1, 0, 0, 1, 1);
-        //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
-        contentPanel.add(westContent, BorderLayout.WEST); 
-        */
         
         JPanel westContent = new JPanel();
         westContent.setLayout(new SpringLayout());

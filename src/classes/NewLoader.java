@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /* OSM
 x: [52.691433 : 62.0079024]
@@ -60,6 +61,8 @@ public class NewLoader {
         )
     );
     
+    public static HashMap<Long, Road.Node> loaded = new HashMap<>();
+    
     /**
      * Returns how fast once could ideally traverse between the given points
      * @param p1 The point of origin
@@ -98,14 +101,23 @@ public class NewLoader {
         float minY = minX;
         float maxY = maxX;
         while (Utils.Tokenizer.hasNext()) {
-            long id = Utils.Tokenizer.getLong();
-            float x = Utils.Tokenizer.getFloat();
-            float y = Utils.Tokenizer.getFloat();
-            minX = (x < minX)? x: minX;
-            maxX = (x > maxX)? x: maxX;
-            minY = (y < minY)? y: minY;
-            maxY = (y > maxY)? y: maxY;
-            nodes.add(new Road.Node(id, x, y));
+            long id = Utils.Tokenizer.getLong(); // Buffered node loading
+            Road.Node node;
+            if (!loaded.containsKey(id)) {
+                float x = Utils.Tokenizer.getFloat();
+                float y = Utils.Tokenizer.getFloat();
+                node = new Road.Node(id, x, y);
+                loaded.put(id, node);
+            } else {
+                Utils.Tokenizer.discard();
+                Utils.Tokenizer.discard();
+                node = loaded.get(id);
+            }
+            minX = (node.x < minX)? node.x: minX;
+            maxX = (node.x > maxX)? node.x: maxX;
+            minY = (node.y < minY)? node.y: minY;
+            maxY = (node.y > maxY)? node.y: maxY;
+            nodes.add(node);
         }
         Rect bounds = new Rect(minX, minY, maxX-minX, maxY-minY);
         
@@ -138,6 +150,7 @@ public class NewLoader {
             BufferedReader br = new BufferedReader(is)) {
             String line;
             while ((line = br.readLine()) != null) {
+                //loadRoad(line);
                 model.add(loadRoad(line));
             }
         } catch (IOException ex) {

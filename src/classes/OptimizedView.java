@@ -44,7 +44,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
     private final BasicStroke pathStroke = new BasicStroke(2, 
             BasicStroke.CAP_ROUND, BasicStroke.JOIN_BEVEL);
     
-    private HashMap<RoadType, BufferedImage> layers = new HashMap<>();
+    //private HashMap<RoadType, BufferedImage> layers = new HashMap<>();
     
     // Values used for the streamed image drawing
     private Graphics2D activeGraphics;
@@ -59,6 +59,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
         this.ins = ins;
         setMinimumSize(dimension);
         setSize(dimension);
+        renewImage(Viewport.Projection.Empty);
     }
     
     /**
