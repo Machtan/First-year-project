@@ -96,7 +96,7 @@ public class IndexMinPQ<Key extends Comparable<Key>> implements Iterable<Integer
      *
      * @return the number of keys on the priority queue
      */
-    public int size() {
+    public long size() {
         return N;
     }
 
@@ -129,7 +129,7 @@ public class IndexMinPQ<Key extends Comparable<Key>> implements Iterable<Integer
      * @return an index associated with a minimum key
      * @throws java.util.NoSuchElementException if priority queue is empty
      */
-    public int minIndex() {
+    public long minIndex() {
         if (N == 0) {
             throw new NoSuchElementException("Priority queue underflow");
         }

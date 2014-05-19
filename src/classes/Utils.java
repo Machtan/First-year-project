@@ -148,6 +148,7 @@ public class Utils {
         public static short getShort() { return line.getShort(); }
         public static boolean getBool() { return line.getBool(); }
         public static boolean hasNext() { return line.hasMore(); }
+        public static void discard() { line.discard(); }
     }
     
      /**

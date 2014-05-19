@@ -74,9 +74,10 @@ public class Controller extends JFrame {
         
         ProgressBar progbar = new ProgressBar();
         progbar.setTarget("Creating graph", model.roadCount);
-        graph = new Graph(model, progbar);
+        graph = new Graph(model, NewLoader.loaded, progbar);
+        //graph = null;
         progbar.close();
-        System.out.println("Graph stats: V: "+graph.V()+", E: "+graph.E());
+        //System.out.println("Graph stats: V: "+graph.V()+", E: "+graph.E());
         this.model = model;
         viewport = new Viewport(model.bounds, 1, view);
 
@@ -136,7 +137,7 @@ public class Controller extends JFrame {
         //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
         contentPanel.add(westContent, BorderLayout.WEST); 
         */
-        contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
+        //contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
         contentPanel.add(new RenderPanel(model.priorities, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
@@ -222,7 +223,7 @@ public class Controller extends JFrame {
         Dimension viewSize = new Dimension(600,400);
         OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
 
-        Model model = NewLoader.loadData(NewLoader.osmdata);
+        Model model = NewLoader.loadData(NewLoader.krakdata);
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
 
