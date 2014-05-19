@@ -137,10 +137,22 @@ public class Controller extends JFrame {
         //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
         contentPanel.add(westContent, BorderLayout.WEST); 
         */
+        
+        JPanel westContent = new JPanel();
+        westContent.setLayout(new SpringLayout());
+        final RouteDescriptionPanel routeDesc = new RouteDescriptionPanel();
+        final AutoCompleter fromField = new AutoCompleter(view.returnEdges());
+        final AutoCompleter toField = new AutoCompleter(view.returnEdges());
+        westContent.add(fromField);
+        westContent.add(toField);
+        westContent.add(routeDesc);
+        
+        
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
         contentPanel.add(new RenderPanel(model.priorities, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
         contentPanel.add(viewPanel);
+        //contentPanel.add(westContent, BorderLayout.WEST);
 
         setTitle("First-year Project - Visualization of Denmark");
 

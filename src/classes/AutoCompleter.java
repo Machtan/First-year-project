@@ -4,12 +4,15 @@
  */
 package classes;
 
+import interfaces.IProgressBar;
+import interfaces.StreamedContainer;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,7 +27,7 @@ import javax.swing.event.DocumentListener;
  *
  * @author Daniel
  */
-public class AutoCompleter extends JTextField {
+public class AutoCompleter extends JTextField implements StreamedContainer {
 
     private JTextField inputField; //Text Field for searching capabilities
     private static final int searchDelay = 200; //Milliseconds
@@ -36,10 +39,13 @@ public class AutoCompleter extends JTextField {
     private Road.Edge foundRoad;
     //private HashSet<Integer> usedZips;
     private HashSet<Road> addedRoads;
+    private ArrayList<ArrayList<Road.Edge>> adj = new ArrayList<>();
+    private ArrayList<Road.Node> nodes          = new ArrayList<>();
     //private HashMap<String, Integer> addrMap;
     //private HashSet<String> usedRoadNames;
 
     public AutoCompleter(Road.Edge[] roads) {
+        //model.getAllRoads(this);
         edges = roads;
         inputField = this;
         inputField.setMaximumSize(new Dimension(180, 22));
@@ -198,5 +204,25 @@ public class AutoCompleter extends JTextField {
 
     public Road.Edge getRoad() {
         return foundRoad;
+    }
+
+    @Override
+    public void startStream() {
+        nodes = new ArrayList<>();
+    }
+
+    @Override
+    public void startStream(IProgressBar bar) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void add(Object obj) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void endStream() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
