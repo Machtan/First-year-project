@@ -44,6 +44,7 @@ public class Controller extends JFrame {
     private JTextField inputField;
     private JList adressList;
     private DefaultListModel listModel;
+    public final RouteDescriptionPanel routePanel;
     
     // Dynamic fields
     public final Viewport viewport;
@@ -102,14 +103,11 @@ public class Controller extends JFrame {
         
         contentPanel.add(viewPanel);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
-                
-        //contentPanel.add(new RouteDescriptionPanel());
         
-        /*
         JPanel westContent = new JPanel();
         westContent.setLayout(new SpringLayout());        
-        final RouteDescriptionPanel routeP = new RouteDescriptionPanel();
-        final AutoCompleter fromField = new AutoCompleter(model.getRoads(model.getBoundingArea()));
+        routePanel = new RouteDescriptionPanel();
+        /*final AutoCompleter fromField = new AutoCompleter(model.getRoads(model.getBoundingArea()));
         final AutoCompleter toField = new AutoCompleter(model.getRoads(model.getBoundingArea()));
         westContent.add(fromField);
         westContent.add(toField);
@@ -125,15 +123,13 @@ public class Controller extends JFrame {
                     routeP.setRoute(result);
                 }
             }
-        }));
+        }));*/
         
-        SP = new ShortestPath(graph);
-        
-        westContent.add(routeP);
-        SpringUtilities.makeCompactGrid(westContent, 4, 1, 0, 0, 1, 1);
+        westContent.add(routePanel);
+        SpringUtilities.makeCompactGrid(westContent, 1, 1, 0, 0, 1, 1);
         //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
         contentPanel.add(westContent, BorderLayout.WEST); 
-        */
+        
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
         contentPanel.add(new RenderPanel(model.priorities, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);

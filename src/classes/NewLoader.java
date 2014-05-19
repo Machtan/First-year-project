@@ -23,7 +23,7 @@ y: [-20.071433 : 28.0741667]
 public class NewLoader {
     
     public static Datafile krakdata = new Datafile("resources/new_krak_roads.txt", 812301, 
-            "Loading new Krak roads...", 
+            "Loading new Krak roads", 
             new Rect(
                 442254.35659f, 
                 6049914.43018f, 

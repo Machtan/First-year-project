@@ -24,7 +24,7 @@ public class DatasetChooser extends JFrame {
     
     private JPanel midPanel;
     private boolean initialized = false;
-    private static Font headerFont = new Font("Lucida", Font.PLAIN, 24);
+    private static final Font headerFont = new Font("Lucida", Font.PLAIN, 24);
     /**
      * Constructor for the DatasetChooser class
      */
@@ -32,10 +32,14 @@ public class DatasetChooser extends JFrame {
         super();
         initComponents();
         addChoice("Krak", "<html>A set of data compiled by KRAK. "+
-                "<br/>Note: Requires 1GB of RAM to load.</html>", NewLoader.krakdata);
-        addChoice("OpenStreetMap", "<html>A huge crowd-collected data set."+
-                "<br/>For more info, please see www.openstreetmap.org."+
-                "<br/>Note: Requires at least 4GB of RAM to load.</html>", NewLoader.osmdata);
+                "<br/>This data set is rather simple, and thus faster than the OSM set. "+
+                "It contains all of Denmark, and most of Scania as well."+
+                "<br/><br/>Note: Requires 1GB of RAM to load.</html>", NewLoader.krakdata);
+        addChoice("OpenStreetMap", "<html>A huge crowd-collected data set. "+
+                "<br/>The map is only of Denmark, but should be a bit more detailed than "+
+                "the Krak data set. "+
+                "<br/>For more information, please see <br/>www.openstreetmap.org."+
+                "<br/><br/>Note: Requires 2GB of RAM to load.</html>", NewLoader.osmdata);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
@@ -117,7 +121,7 @@ public class DatasetChooser extends JFrame {
                 Dimension viewSize = new Dimension(600,400);
                 OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
                 Controller controller = new Controller(view, model); 
-                controller.setMinimumSize(new Dimension(800,600));
+                controller.setMinimumSize(new Dimension(900,600));
                 controller.setVisible(true);
                 controller.draw(controller.viewport.zoomTo(1));
             }
