@@ -5,6 +5,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.util.ArrayList;
 
 /* OSM
@@ -20,14 +22,15 @@ y: [-20.071433 : 28.0741667]
 public class NewLoader {
     
     public static Datafile krakdata = new Datafile("resources/new_krak_roads.txt", 812301, 
-            "Loading new Krak roads...");
-    public static Rect krakBounds = new Rect(
-            442254.35659f, 
-            6049914.43018f, 
-            892658.21706f - 442254.35659f, 
-            6402050.98297f - 6049914.43018f);
+            "Loading new Krak roads...", 
+            new Rect(
+                442254.35659f, 
+                6049914.43018f, 
+                892658.21706f - 442254.35659f, 
+                6402050.98297f - 6049914.43018f)
+    );
    
-    public static Datafile osmdata = new Datafile("resources/new_osm_roads.txt", 
+    /*public static Datafile osmdata = new Datafile("resources/new_osm_roads.txt", 
             1452532, "Loading new OSM roads...");
     
     public static Rect OSMBounds = new Rect(
@@ -35,6 +38,26 @@ public class NewLoader {
             -20.071433f,
             62.0079024f - 52.691433f, 
             28.0741667f - (-20.071433f)
+    );*/
+    //[x: 314455.05500143045 : 588445.5270339495] [y: 6086420.049592097 : 6231795.69263988]
+    public static Datafile osmtestfile = new Datafile("resources/converted_test_roads.txt", 
+            1000, "Loading OSM test roads", 
+            new Rect(
+                314455.05500143045f,
+                6086420.049592097f,
+                588445.5270339495f - 314455.05500143045f,
+                6231795.69263988f - 6086420.049592097f)
+    );
+    
+    //[x: 150955.1544851401 : 695916.7463075386] [y: 5838350.401229404 : 6877073.128247903]
+    public static Datafile osmdata = new Datafile("resources/converted_osm_roads.txt",
+        1452532, "Loading OSM roads",
+        new Rect(
+            150955.1544851401f,
+            5838350.401229404f,
+            695916.7463075386f - 150955.1544851401f,
+            6877073.128247903f - 5838350.401229404f
+        )
     );
     
     /**
@@ -104,12 +127,7 @@ public class NewLoader {
     
     public static Model loadData(Datafile file) {
         Rect bounds = new Rect(0,0,0,0);
-        if (file.equals(krakdata)) {
-            bounds = krakBounds;
-        } else if (file.equals(osmdata)) {
-            bounds = OSMBounds;
-        }
-        Model model = new Model(bounds);
+        Model model = new Model(file.bounds);
         
         ProgressBar progbar = new ProgressBar();
         progbar.setTarget(file.progressDescription, file.lines);
@@ -128,7 +146,9 @@ public class NewLoader {
             System.out.println("Could not load the file. Error: "+ex);
         }
         model.endStream();
-        
+        MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
+        System.out.printf("Heap memory usage: %d MB%n",
+                mxbean.getHeapMemoryUsage().getUsed() / (1000000));
         progbar.close();
         return model;
     }
