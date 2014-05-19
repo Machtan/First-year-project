@@ -150,9 +150,9 @@ public class NewLoader {
                 nodes.toArray(new Road.Node[nodes.size()]), driveTimes, bounds);
     }
     
-    public static Model loadData(Datafile file) {
+    public static Model loadData(final Datafile file) {
         Rect bounds = new Rect(0,0,0,0);
-        Model model = new Model(file.bounds);
+        final Model model = new Model(file.bounds);
         
         ProgressBar progbar = new ProgressBar();
         progbar.setTarget(file.progressDescription, file.lines);
@@ -172,6 +172,8 @@ public class NewLoader {
             System.out.println("Could not load the file. Error: "+ex);
         }
         model.endStream();
+
+        
         MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
         System.out.printf("Heap memory usage: %d MB%n",
                 mxbean.getHeapMemoryUsage().getUsed() / (1000000));

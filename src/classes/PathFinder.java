@@ -1,12 +1,13 @@
 package classes;
 
 import java.util.HashMap;
+import java.util.PriorityQueue;
 
 public class PathFinder {
 
     private static HashMap<Integer, Road.Edge> edgeTo;
     private static HashMap<Integer, Double> distTo;
-    private static IndexMinPQ<Double> pq;
+    private static PriorityQueue<Double> pq;
 
     private static double h(Road.Node source, Road.Node target) { //s = start, t = target
         // System.out.println("Heuristic analysis: \n"
@@ -19,10 +20,8 @@ public class PathFinder {
             throw new RuntimeException("Graph have not been instantitiated.");
         } else {
             //    System.out.println("Finding path");
-            int t = G.getIntersectionIndex(targetID);
             edgeTo = new HashMap<>();
             distTo = new HashMap<>();
-            int startIndex = G.getIntersectionIndex(sourceID);
             distTo.put(startIndex, 0.0);
 
             pq = new IndexMinPQ(G.V());

@@ -56,7 +56,7 @@ public class Controller extends JFrame {
         defaultInstructions.addMapping(Color.red, RoadType.Highway);
         defaultInstructions.addMapping(Color.red, RoadType.HighwayExit);
         defaultInstructions.addMapping(new Color(255,170,100), RoadType.PrimeRoute);
-        defaultInstructions.addMapping(new Color(0,255,25,200), RoadType.Path);
+        defaultInstructions.addMapping(new Color(0,255,25), RoadType.Path);
         defaultInstructions.addMapping(Color.blue, RoadType.Ferry);
         defaultInstructions.addMapping(new Color(200,200,255), RoadType.Other);
     }
@@ -127,9 +127,6 @@ public class Controller extends JFrame {
             }
         }));
         
-        HashSet<RoadType> types = new HashSet<>();
-        types.add(RoadType.Path);
-        Graph graph = new Graph(model.intersections, model.getRoads(model.getBoundingArea()), types);
         SP = new ShortestPath(graph);
         
         westContent.add(routeP);
@@ -216,21 +213,9 @@ public class Controller extends JFrame {
 
     /**
      * Entry point
-     *
      * @param args
      */
     public static void main(String[] args) throws InterruptedException {
-        Dimension viewSize = new Dimension(600,400);
-        OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
-
-        Model model = NewLoader.loadData(NewLoader.osmdata);
-        Controller controller = new Controller(view, model); 
-        controller.setMinimumSize(new Dimension(800,600));
-
-        //controller.pack();
-        System.out.println("View size previs:  " + view.getSize());
-        controller.draw(controller.viewport.zoomTo(1));
-        controller.setVisible(true);
-        System.out.println("View size postvis: " + view.getSize());
+        new DatasetChooser();
     }
 }
