@@ -222,7 +222,8 @@ public class Controller extends JFrame {
         Dimension viewSize = new Dimension(600,400);
         OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
 
-        Model model = NewLoader.loadData(NewLoader.osmdata);
+        //Model model = NewLoader.loadData(NewLoader.osmdata);
+        Model model = NewLoader.loadData(NewLoader.krakdata);
         Controller controller = new Controller(view, model); 
         controller.setMinimumSize(new Dimension(800,600));
 
