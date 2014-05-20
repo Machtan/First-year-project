@@ -13,7 +13,6 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
 import javax.swing.JPanel;
 
 /**
@@ -41,9 +40,11 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {3,2}, 0);
     private final BasicStroke ferryStroke = new BasicStroke(1, 
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {5,4}, 0);
-    private final BasicStroke pathStroke = new BasicStroke(2, 
+    private final BasicStroke pathStroke = new BasicStroke(4, 
             BasicStroke.CAP_ROUND, BasicStroke.JOIN_BEVEL);
-    
+    private final Color startColor = new Color(32, 107, 47);
+    private final Color endColor = new Color(87, 33, 122);
+    private final Color pathColor = new Color(255, 115, 0);
     //private HashMap<RoadType, BufferedImage> layers = new HashMap<>();
     
     // Values used for the streamed image drawing
@@ -244,7 +245,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
             Graphics2D g2e = (Graphics2D)g2d.create();
             
             g2e.setStroke(pathStroke);
-            g2e.setColor(Color.GREEN);
+            g2e.setColor(pathColor);
             for (Road.Edge edge : path) {
                 g2e.drawLine(
                         edge.p1.mappedX(activeProjection), 
@@ -256,14 +257,14 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
         if (fromNode != null) {
             int x = fromNode.mappedX(activeProjection);
             int y = fromNode.mappedY(activeProjection, h);
-            g2.setColor(Color.MAGENTA);
-            g2.fillOval(x, y, 10, 10);
+            g2.setColor(startColor);
+            g2.fillOval(x, y, 7, 7);
         }
         if (toNode != null) {
             int x = toNode.mappedX(activeProjection);
             int y = toNode.mappedY(activeProjection, h);
-            g2.setColor(new Color(100,255,100));
-            g2.fillOval(x, y, 10, 10);
+            g2.setColor(endColor);
+            g2.fillOval(x, y, 7, 7);
         }
     }
     

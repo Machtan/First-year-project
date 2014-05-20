@@ -64,8 +64,9 @@ public class NewLoader {
     
     //[x: 150955.1544851401 : 695916.7463075386] [y: 5838350.401229404 : 6877073.128247903]
     //'minX': -2234341.7010513074, 'minY': 6892115.032515525, 'maxX': 3125201.9414894776, 'maxY': 8823248.457253834
-    public static Datafile osmdata = new Datafile("resources/converted_osm_roads.txt",
-        1452532, "Loading OSM roads",
+    // Full(broken) datafile: 1452532
+    public static Datafile osmdata = new Datafile("resources/osm_roads.txt",
+        527924, "Loading OSM roads",
         new Rect(
             883750f,
             7235451f,
