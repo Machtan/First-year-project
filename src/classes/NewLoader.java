@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,7 +29,7 @@ public class NewLoader {
                 442254.35659f, 
                 6049914.43018f, 
                 892658.21706f - 442254.35659f, 
-                6402050.98297f - 6049914.43018f)
+                6402050.98297f - 6049914.43018f), "utf-8"
     );
    
     /*public static Datafile osmdata = new Datafile("resources/new_osm_roads.txt", 
@@ -48,7 +49,7 @@ public class NewLoader {
                 927436.897410232f,
                 7312234.822616017f,
                 1410980.5570572452f - 927436.897410232f,
-                7567986.8759869505f - 7312234.822616017f)
+                7567986.8759869505f - 7312234.822616017f), "utf-8"
     );
     
     //[x: 271984.88412645145 : 415199.71181185555] [y: 921203.957443526 : 1401614.2412508868]
@@ -58,8 +59,7 @@ public class NewLoader {
             271984.88412645145f,
             921203.957443526f,
             415199.71181185555f - 271984.88412645145f,
-            1401614.2412508868f - 921203.957443526f
-        )
+            1401614.2412508868f - 921203.957443526f), "utf-8"
     );
     
     //[x: 150955.1544851401 : 695916.7463075386] [y: 5838350.401229404 : 6877073.128247903]
@@ -71,8 +71,8 @@ public class NewLoader {
             883750f,
             7235451f,
             1700000f - 883750f,
-            7888838f - 7235451f
-        )
+            7888838f - 7235451f), 
+            "utf-8"
     );
     
     public static HashMap<Long, Road.Node> loaded = new HashMap<>();
@@ -147,7 +147,7 @@ public class NewLoader {
         
         model.startStream(progbar);
         try (InputStream stream = Utils.getFileStream(file.filename);
-            InputStreamReader is = new InputStreamReader(stream);
+            InputStreamReader is = new InputStreamReader(stream, Charset.forName(file.charset));
             BufferedReader br = new BufferedReader(is)) {
             String line;
             while ((line = br.readLine()) != null) {
