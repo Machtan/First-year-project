@@ -67,7 +67,7 @@ public class ZoomButtonsGUI extends JPanel {
             }
             
         });
-        String resetTip = "Zooms back out to the whole map.";
+        String resetTip = "Zooms back out to the whole map";
         addButton(loadImage("/resources/images/reset.png"), resetTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
