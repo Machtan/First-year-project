@@ -37,8 +37,6 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
     private JPopupMenu pop;
     private Road foundRoad;
     private String edgeToAdd;
-    private HashSet<Integer> usedZips;
-    private HashSet<String> addedRoads;
     private ArrayList<Road> edgesList = new ArrayList<>();
     private final boolean startPointField;
     private final OptimizedView view;
@@ -158,29 +156,26 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
      private void startSearch() {
         if (getText().length() >= 3) {
             
-            usedZips = new HashSet<>();
-            usedRoadNames = new HashSet<>();
-            addedRoads = new HashSet<>();
+            HashSet<String> usedRoads = new HashSet<>();
             String searchText = getText().toLowerCase();
             
             //Starting linear search through all the roads
             for (Road edge : edgesList) {
                 String edgeName = edge.name;
                 int edgeZip = edge.zipCode;
+                String toAdd = edgeName+edgeZip;
 
                 if (edgeName.toLowerCase().startsWith(searchText)) {
 
                     //Just add it when there's no other elements
                     if (pop.getSubElements().length == 0) {
                         pop.add(createMenuItem(edge, edgeName + " - " + edgeZip));
-                        usedZips.add(edgeZip);
-                        usedRoadNames.add(edgeName);
+                        usedRoads.add(toAdd);
 
                         //Only shows one option for each city
-                    } else if (!usedZips.contains(edgeZip) && !usedRoadNames.contains(edgeName)) {
+                    } else if (!usedRoads.contains(toAdd)) {
                         pop.add(createMenuItem(edge, edgeName + " - " + edgeZip));
-                        usedZips.add(edgeZip);
-                        usedRoadNames.add(edgeName);
+                        usedRoads.add(toAdd);
                     }
 
                     setPopMenu();
