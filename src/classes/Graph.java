@@ -13,30 +13,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Graph implements StreamedContainer<Road>{
-
+    
+    public static class NoPathException extends Exception {
+        public NoPathException() {
+            super("A path could not be found");
+        }
+    }
+    
     private int V = 0; //Number of vertices/intersections
     private int E = 0; //Number of edges/road parts
     private HashMap<Long, ArrayList<Road.Edge>> adj = new HashMap<>();
     private HashMap<Long, Road.Node> nodes;
     private IProgressBar progbar                    = null;
-
-    /**
-     * Returns the number of vertices in the edge-weighted graph.
-     *
-     * @return the number of vertices in the edge-weighted graph
-     */
-    public int V() {
-        return adj.size();
-    }
-
-    /**
-     * Returns the number of edges in the edge-weighted graph.
-     *
-     * @return the number of edges in the edge-weighted graph
-     */
-    public int E() {
-        return E;
-    }
     
     public Graph(Model model, HashMap<Long, Road.Node> nodes) {
         this.nodes = nodes;
@@ -54,6 +42,24 @@ public class Graph implements StreamedContainer<Road>{
         }
         model.getAllRoads(this);
     }
+    
+    /**
+     * Returns the number of vertices in the edge-weighted graph.
+     *
+     * @return the number of vertices in the edge-weighted graph
+     */
+    public int V() {
+        return adj.size();
+    }
+
+    /**
+     * Returns the number of edges in the edge-weighted graph.
+     *
+     * @return the number of edges in the edge-weighted graph
+     */
+    public int E() {
+        return E;
+    }
 
     /**
      * Returns the edges incident on vertex <tt>v</tt>.
@@ -67,7 +73,7 @@ public class Graph implements StreamedContainer<Road>{
         return adj.get(v);
     }
 
-    public long other(Road.Edge part, long firstIndex) {
+    public long other(Road.Edge part, long firstIndex) throws NoPathException {
         // System.out.println("Checking other index with indexes " + part.sourceID + " and " + part.targetID);
         // System.out.println("Road:" + part);
         //System.out.println("RoadPart: " + part.name);
@@ -80,8 +86,7 @@ public class Graph implements StreamedContainer<Road>{
                 return part.p1.id;
             }
         } else {
-            throw new RuntimeException("Roadpart is null");
-            //return firstIDIndex;
+            throw new NoPathException();
         }
     }
 

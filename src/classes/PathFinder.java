@@ -1,7 +1,10 @@
 package classes;
 
+import classes.Graph.NoPathException;
 import java.util.HashMap;
 import java.util.PriorityQueue;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 public class PathFinder {
 
@@ -36,7 +39,8 @@ public class PathFinder {
     public static Road.Edge[] findPath(Graph G, long sourceID, long targetID) {
         if (G == null) {
             throw new RuntimeException("Graph have not been instantitiated.");
-        } else {
+        }
+        try {
             //    System.out.println("Finding path");
             edgeTo = new HashMap<>();
             distTo = new HashMap<>();
@@ -79,10 +83,15 @@ public class PathFinder {
                 result[j] = path.get(path.size() - j - 1);
             }
             return result;
+        } catch (NoPathException ex) {
+            JOptionPane.showMessageDialog(new JFrame(), 
+                    "No path could be found between the given addresses", 
+                    "Error", JOptionPane.INFORMATION_MESSAGE);
+            return new Road.Edge[0];
         }
     }
 
-    private static void relax(Graph G, Road.Edge r, long s, long t) {
+    private static void relax(Graph G, Road.Edge r, long s, long t) throws NoPathException {
         //   System.out.println("Relaxing");
         long v = s; // The starting vertice
         long w = G.other(r, v); // w is the other vertice
