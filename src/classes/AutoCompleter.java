@@ -37,13 +37,11 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
     private JPopupMenu pop;
     private Road foundRoad;
     private String edgeToAdd;
-    private HashSet<Integer> usedZips;
-    private HashSet<String> addedRoads;
     private ArrayList<Road> edgesList = new ArrayList<>();
     private final boolean startPointField;
     private final OptimizedView view;
     //private HashMap<String, Integer> addrMap;
-    //private HashSet<String> usedRoadNames;
+    private HashSet<String> usedRoadNames;
 
     public AutoCompleter(Model model, OptimizedView view, boolean startPointField) {
         model.getAllRoads(this);
@@ -149,7 +147,6 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
                 } else {
                     view.setPathEnd(foundRoad.nodes[0]);
                 }
-                
                 setText(item.getText());
                 removeItems();
             }
@@ -157,39 +154,28 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
     }
     
      private void startSearch() {
-        
         if (getText().length() >= 3) {
-            //removeItems();
-            System.out.println("Starting search");
-
-            usedZips = new HashSet<Integer>();
-            //usedRoadNames = new HashSet<String>();
-            addedRoads = new HashSet<>();
+            
+            HashSet<String> usedRoads = new HashSet<>();
             String searchText = getText().toLowerCase();
             
             //Starting linear search through all the roads
             for (Road edge : edgesList) {
                 String edgeName = edge.name;
                 int edgeZip = edge.zipCode;
+                String toAdd = edgeName+edgeZip;
 
                 if (edgeName.toLowerCase().startsWith(searchText)) {
 
                     //Just add it when there's no other elements
                     if (pop.getSubElements().length == 0) {
                         pop.add(createMenuItem(edge, edgeName + " - " + edgeZip));
-                        usedZips.add(edgeZip);
-                        
-                        System.out.println(edgeToAdd);
-                        //addedRoads.add(edgeName);
-                        //usedRoadNames.add(edgeName);
+                        usedRoads.add(toAdd);
 
                         //Only shows one option for each city
-                    } else if (!usedZips.contains(edgeZip)) {
+                    } else if (!usedRoads.contains(toAdd)) {
                         pop.add(createMenuItem(edge, edgeName + " - " + edgeZip));
-                        usedZips.add(edgeZip);
-                       
-                        
-                        //addedRoads.add(edgeToAdd);
+                        usedRoads.add(toAdd);
                     }
 
                     setPopMenu();
@@ -206,59 +192,11 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
             }
         }
     }
-/*
-    //Searches through the list
-    private void startSearch(ArrayList<Road.Edge> edge) {
-        edge = edgesList;
-        if (getText().length() >= 3) {
-            //removeItems();
-            System.out.println("Starting search");
 
-            //usedZips = new HashSet<Integer>();
-            //usedRoadNames = new HashSet<String>();
-            addedRoads = new HashSet<>();
-            String searchText = getText().toLowerCase();
-
-            //Starting linear search through all the roads
-            for (int i = 0; i < edges.length; i++) {
-                String edgeName = edge.parent().name;
-                int edgeZip = edge.parent().zipCode;
-
-                if (edgeName.toLowerCase().startsWith(searchText)) {
-
-                    //Just add it when there's no other elements
-                    if (pop.getSubElements().length == 0) {
-                        pop.add(createMenuItem(edge, edgeName + " - " + edgeZip));
-                        //usedZips.add(edgeZip);
-                        addedRoads.add(edges[i].parent());
-                        //usedRoadNames.add(edgeName);
-
-                        //Only shows one option for each city
-                    } else if (!addedRoads.contains(edges[i].parent())) {
-                        pop.add(createMenuItem(edges[i], edgeName + " - " + edgeZip));
-                        //usedZips.add(edgeZip);
-                        addedRoads.add(edges[i].parent());
-                    }
-
-                    setPopMenu();
-                    //show up to 18 possible roads
-                    if (pop.getSubElements().length >= 18) {
-                        pop.setVisible(true);
-                        return;
-
-                    } else if (pop.getSubElements().length != 0) {
-                        pop.setVisible(true);
-
-                    }
-                }
-            }
-        }
-    }
-*/
     private void removeItems() {
         pop.removeAll();
         pop.setVisible(false);
-        //foundRoad = null;
+        
         revalidate();
         repaint();
     }
@@ -273,23 +211,16 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
     }
 
     @Override
-    public void startStream() {
-        
-    }
+    public void startStream() { }
 
     @Override
-    public void startStream(IProgressBar bar) {
-        //
-    }
+    public void startStream(IProgressBar bar) { }
 
     @Override
-    public void endStream() {
-
-    }
+    public void endStream() { }
 
     @Override
     public void add(Road obj) {
-            edgesList.add(obj);
-             
+            edgesList.add(obj);  
     }
 }
