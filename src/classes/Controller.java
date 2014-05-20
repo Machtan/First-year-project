@@ -221,22 +221,6 @@ public class Controller extends JFrame {
      * @param args
      */
     public static void main(String[] args) throws InterruptedException {
-<<<<<<< HEAD
-        Dimension viewSize = new Dimension(600,400);
-        OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
-
-        //Model model = NewLoader.loadData(NewLoader.osmdata);
-        Model model = NewLoader.loadData(NewLoader.krakdata);
-        Controller controller = new Controller(view, model); 
-        controller.setMinimumSize(new Dimension(800,600));
-
-        //controller.pack();
-        System.out.println("View size previs:  " + view.getSize());
-        controller.draw(controller.viewport.zoomTo(1));
-        controller.setVisible(true);
-        System.out.println("View size postvis: " + view.getSize());
-=======
         new DatasetChooser();
->>>>>>> 243921c9cf2850f53632ca7c21f92963040583aa
     }
 }

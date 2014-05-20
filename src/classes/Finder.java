@@ -17,7 +17,7 @@ public class Finder {
     private static final int startHeight = 100; // initial invariable for the heigth of a new rectangle.
     
     /**
-     * Function to calculate the smallest distance from a point P(pX, pY) to
+     * Function to calculate the smallest distance from a point P(pX, pY) to the
      * a line with ends at point A(aX, aY) and point B(bX, bY).
      * @param a = The starting point of the line
      * @param b = The ending point of the line
@@ -25,33 +25,31 @@ public class Finder {
      * @return The distance between the source position to the middle of the line
      */
     public static float pointToLineDistance(Point2D.Float a, Point2D.Float b, Point2D.Float source) {
-        // Vector c from a to source is made.
+        // Creates a vector from point a to point source.
         Point2D.Float c = new Point2D.Float(source.x - a.x, source.y - a.y);
-        // Vector ab from a to b is then made.
+        // Creates a vector from a to b.
         Point2D.Float ab = new Point2D.Float(b.x - a.x, b.y - a.y);
-        // The length of the ab vector is calculated with the use of pythagoras.
+        // Calculate the length of the vector ab.
         float length = (float) Math.sqrt(ab.x*ab.x + ab.y*ab.y);
-        // Creates a unit-vector with the values of ab.
+        // Create a unit vector of ab.
         Point2D.Float unit = new Point2D.Float(ab.x / length, ab.y / length);
-        // Calculates the dot product of c and the unit vector. Value is used to
-        // find where on the ab-vector the shortest distance from the source is 
-        // to, as it represents a length from the point a towards point b.
+        // calculate the length of the vector, moving from a towards b, and ending
+        // where the closest distance to point source will be.
         float dot = unit.x * c.x + unit.y * c.y;
-        
-        // if source is further away from point b than point a is.
+        // If source is further away from b than a is.
         if (dot < 0) {
             return (float) Math.sqrt((source.x - a.x) * (source.x - a.x) + (source.y - a.y) * (source.y - a.y));
-        } // if source is further away from point a than point b is.
-        else if (dot > length) {
+            // if source is further away from a then b is.
+        } else if (dot > length) {
             return (float) Math.sqrt((source.x - b.x) * (source.x - b.x) + (source.y - b.y) * (source.y - b.y));
-        } // if source is between point a and point b
-        else {
-            // Create position vector with same direction as ab with length
-            // corresponding to how far on ab the closest difference to source is.
+        } else {
+            // create a vector with the same degree as ab, that has the length 
+            // of point a to the point that is closest to point source
             Point2D.Float unitDot = new Point2D.Float(unit.x * dot, unit.y * dot);
-            // Create point combining the data of unitDot and point a.
+            // add the coordinates of point a to unitDot to get the coordinates
+            // of the point on line ab, which is closest to source
             Point2D.Float point = new Point2D.Float(a.x + unitDot.x, a.y + unitDot.y);
-            // Calculate distance from point to source point.
+            // Use Pythagoras to find distance from source to point
             return (float) Math.sqrt((source.x - point.x) * (source.x - point.x) + (source.y - point.y) * (source.y - point.y));
         }
     }
