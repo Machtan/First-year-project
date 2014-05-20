@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import krak.DataLine;
 
 /**
  * The Utils class <More docs goes here>
@@ -148,6 +147,7 @@ public class Utils {
         public static short getShort() { return line.getShort(); }
         public static boolean getBool() { return line.getBool(); }
         public static boolean hasNext() { return line.hasMore(); }
+        public static void discard() { line.discard(); }
     }
     
      /**

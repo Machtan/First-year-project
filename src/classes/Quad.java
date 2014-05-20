@@ -2,6 +2,7 @@ package classes;
 
 import interfaces.QuadNode;
 import interfaces.StreamedContainer;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -58,7 +59,7 @@ public class Quad <T extends QuadNode> {
             for (Quad subquad : subquads) {
                 if (node.collidesWith(subquad.area)) {
                     subquad.add(node);
-                    //break; // Make it duplicate-safe :)
+                    break;
                 }
             }
         }
@@ -73,6 +74,7 @@ public class Quad <T extends QuadNode> {
     protected void getIn(Rect area, StreamedContainer target) {
         for (Rect r: edgeCases.keySet()) { // Add edge cases    //1
             if (r.collidesWith(area)) {                         //2
+                //System.out.println("Edge case at "+r+" collides with "+area);
                 for (T node : edgeCases.get(r)) {               //3
                     if (node.collidesWith(area)) {              //4
                         target.add(node);
@@ -128,6 +130,7 @@ public class Quad <T extends QuadNode> {
                 for (Quad subquad : subquads) {
                     if (node.collidesWith(subquad.area)) {
                         subquad.add(node);
+                        //continue;
                     }
                 }
             }

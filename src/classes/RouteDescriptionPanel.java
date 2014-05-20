@@ -6,16 +6,15 @@ package classes;
 
 import java.awt.Dimension;
 import java.awt.Font;
-import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import java.lang.Math;
-import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Collections;
-import javax.swing.JFrame;
+import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
+import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
+import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED;
 
 /**
  *
@@ -45,28 +44,19 @@ public class RouteDescriptionPanel extends JPanel {
     private void initComponents() {
         descList = new JList<>(new String[]{"No route entered yet"});
         //descList.setSize(180, 500);
-        descList.setFont(new Font(Font.DIALOG, Font.BOLD, 10));
-        JScrollPane scrollP = new JScrollPane(descList);
+        descList.setFont(new Font("Lucida", Font.PLAIN, 12));
+        descList.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        JScrollPane scrollP = new JScrollPane(
+                descList, 
+                VERTICAL_SCROLLBAR_AS_NEEDED, 
+                HORIZONTAL_SCROLLBAR_NEVER
+        );
+        Dimension size = new Dimension(240, 400);
         //scrollP.setMaximumSize(new Dimension(180,400));
-        scrollP.setPreferredSize(new Dimension(180, 400));
-        scrollP.setSize(new Dimension(180, 400));
+        scrollP.setPreferredSize(size);
+        scrollP.setSize(size);
         add(scrollP);
-        this.setSize(new Dimension(180, 400));
-    }
-
-    private void addPart(String road, double length) {
-        length = Math.round(length);
-        String message;
-        if (length < 1000.0) {
-            //length = Double.parseDouble(new DecimalFormat("##,##").format(length));
-            message = road + " - " + length + "m";
-        } else {
-            //length = Double.parseDouble(new DecimalFormat("##,##").format(length));
-            message = road + " - " + length / 1000 + "km";
-        }
-        //model.add(model.size(), message);
-        model.addElement(message);
-        //System.out.println("Added: " + model.getElementAt(model.size() - 1));
+        this.setSize(size);
     }
 
     private double calAngle(Road.Edge first, Road.Edge second) {
@@ -75,37 +65,57 @@ public class RouteDescriptionPanel extends JPanel {
         System.out.println("Angles " + Math.toDegrees(angle1 - angle2));
         return Math.toDegrees(angle1 - angle2);
     }
+    
+    private String timeString(double totalTime) {
+        totalTime = Math.ceil(totalTime);
+        int hrs = (int)Math.floor(totalTime / 60);
+        int mins = (int)Math.floor(totalTime - hrs*60);
+        return ((hrs > 0)? hrs+" hrs ": " ") + ((mins > 0)? mins+" min": "");
+    }
+    
+    private String lengthString(double length) {
+        length = Math.round(length);
+        return ((length > 1000)?(length/1000) + " km": ((int)length)+" m");
+    }
 
     public void setRoute(Road.Edge[] route) {
         if (route.length == 0) {
             model.addElement("Please check a valid route");
         } else {
             model.clear();
-            model.add(model.size(), "Follow");
+            model.add(model.size(), "Start on "+route[0].parent().name);
 
             //double totalLength = 0;
             String wrongC = ""; // Any wrong char
             Road.Edge lastRoad = null;
             String last = wrongC;
+            String lastDesc = "";
             double length = 0;
+            double totalLength = 0;
+            double totalTime = 0;
             for (Road.Edge road : route) {
-                //totalLength += road.getLength();
+                totalLength += road.length();
+                totalTime += road.driveTime;
                 if (!road.parent().name.equals(last)) {
                     if (!last.equals(wrongC)) {
-                        addPart(last, length);
+                        model.addElement(lastDesc);
+                        model.addElement("Drive for "+lengthString(length));
+                        String turnDesc;
                         if (calAngle(lastRoad, road) < 90) {
-                            model.add(model.getSize(), "Turn left onto");
+                            turnDesc = "Turn left onto";
                         } else if (calAngle(lastRoad, road) > 90) {
-                            model.add(model.getSize(), "Turn right onto");
+                            turnDesc = "Turn right onto";
                         } else {
-                            model.add(model.getSize(), "Follow the road onto");
+                            turnDesc = "Follow the road onto";
                         }
+                        lastDesc = turnDesc+" "+road.parent().name;
                     }
                     length = road.length();
                     last = road.parent().name;
                     lastRoad = road;
                 } else if (last.equals("")) {
-                    addPart("Unknown road", road.length());
+                    model.addElement("Follow the unnamed road");
+                    model.addElement("Drive for "+lengthString(road.length()));
                     last = road.parent().name;
                     lastRoad = road;
                 } else {
@@ -113,11 +123,15 @@ public class RouteDescriptionPanel extends JPanel {
                     length += road.length();
                 }
             }
-            addPart(last, length); // Add the last part
+            model.addElement(lastDesc);
+            model.addElement("Drive for "+lengthString(length)); // Add the last part
+            model.addElement("Arrival");
+            model.addElement("Length: "+lengthString(totalLength)+", "+timeString(totalTime));
             //String totL;
             //addPart("Total length ", totalLength - route[route.length-1].getLength());
         }
         descList.setModel(model);
+        repaint();
     }
     /*
      public static void main(String[] args) {

@@ -7,6 +7,8 @@ package classes;
 
 import interfaces.IProgressBar;
 import interfaces.StreamedContainer;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,11 +16,9 @@ public class Graph implements StreamedContainer<Road>{
 
     private int V = 0; //Number of vertices/intersections
     private int E = 0; //Number of edges/road parts
-    private ArrayList<ArrayList<Road.Edge>> adj = new ArrayList<>();
-    private ArrayList<Road.Node> nodes          = new ArrayList<>();
-    private HashMap<Long, Integer> IDToIndex    = new HashMap<>();
-    private HashMap<Integer, Long> indexToID    = new HashMap<>();
-    private IProgressBar progbar                = null;
+    private HashMap<Long, ArrayList<Road.Edge>> adj = new HashMap<>();
+    private HashMap<Long, Road.Node> nodes;
+    private IProgressBar progbar                    = null;
 
     /**
      * Returns the number of vertices in the edge-weighted graph.
@@ -38,12 +38,20 @@ public class Graph implements StreamedContainer<Road>{
         return E;
     }
     
-    public Graph(Model model) {
+    public Graph(Model model, HashMap<Long, Road.Node> nodes) {
+        this.nodes = nodes;
+        for (Long id : nodes.keySet()) { // Create the 'adjacent' arrays
+            adj.put(id, new ArrayList<Road.Edge>());
+        }
         model.getAllRoads(this);
     }
     
-    public Graph(Model model, IProgressBar progbar) {
+    public Graph(Model model, HashMap<Long, Road.Node> nodes, IProgressBar progbar) {
         this.progbar = progbar;
+        this.nodes = nodes;
+        for (Long id : nodes.keySet()) { // Create the 'adjacent' arrays
+            adj.put(id, new ArrayList<Road.Edge>());
+        }
         model.getAllRoads(this);
     }
 
@@ -54,28 +62,22 @@ public class Graph implements StreamedContainer<Road>{
      * @param v the vertex
      * @throws java.lang.IndexOutOfBoundsException unless 0 <= v < V
      */
-    public Iterable<Road.Edge> adj(int v) {
-        if (v < 0 || v >= V()) {
-            throw new IndexOutOfBoundsException("vertex " + v + " is not between 0 and " + (V() - 1));
-        }
+    public Iterable<Road.Edge> adj(long v) {
         //  System.out.println("vertex " + v + " has " + adj[v].size() + " adjacent edges");
         return adj.get(v);
     }
 
-    public int other(Road.Edge part, int firstIndex) {
+    public long other(Road.Edge part, long firstIndex) {
         // System.out.println("Checking other index with indexes " + part.sourceID + " and " + part.targetID);
         // System.out.println("Road:" + part);
         //System.out.println("RoadPart: " + part.name);
         //System.out.println("SourceID: " + part.sourceID + "\n"
         //      + "FirstIDIndex: " + firstIDIndex);
         if (part != null) {
-            if (IDToIndex.get(part.p1.id) == firstIndex) {
-                if (!IDToIndex.containsKey(part.p2.id)) {
-                    throw new RuntimeException("The ID '"+part.p2.id+"' is not in the Index map!");
-                }
-                return IDToIndex.get(part.p2.id);
+            if (part.p1.id == firstIndex) {
+                return part.p2.id;
             } else {
-                return IDToIndex.get(part.p1.id);
+                return part.p1.id;
             }
         } else {
             throw new RuntimeException("Roadpart is null");
@@ -83,21 +85,12 @@ public class Graph implements StreamedContainer<Road>{
         }
     }
 
-    public long getIntersectionID(int index) {
-        return indexToID.get(index);
-    }
-
-    public int getIntersectionIndex(long ID) {
-        return IDToIndex.get(ID);
-    }
-
-    public Road.Node getIntersection(int index) {
+    public Road.Node getIntersection(long index) {
         return nodes.get(index);
     }
 
     @Override
     public void startStream() {
-        nodes = new ArrayList<>();
         System.out.println("Starting the graph population...");
     }
 
@@ -105,19 +98,6 @@ public class Graph implements StreamedContainer<Road>{
     public void startStream(IProgressBar bar) {
         progbar = bar;
         startStream();
-    }
-    
-    /**
-     * Adds a new node at the given index
-     * @param node The node to add
-     * @param index The index at which to add it
-     */
-    private void addNode(Road.Node node, int index) {
-        indexToID.put(index, node.id);
-        IDToIndex.put(node.id, index);
-        nodes.add(node);
-        adj.add(new ArrayList<Road.Edge>());
-        //System.out.println("Adding "+node+" at index "+index+"! ("+adj.size()+" adj)");
     }
 
     @Override
@@ -129,16 +109,10 @@ public class Graph implements StreamedContainer<Road>{
             last = edge;
             Road.Node node = edge.p1;
             Road.Node target = edge.p2;
-            if (!IDToIndex.containsKey(node.id)) {
-                addNode(node, i++);
-            }
-            if (!IDToIndex.containsKey(target.id)) {
-                addNode(target, i++);
-            }
             //System.out.println("i: "+i+", gotten index: "+IDToIndex.get(node.id));
-            adj.get(IDToIndex.get(node.id)).add(edge);
+            adj.get(node.id).add(edge);
             if (!obj.oneway) { // Krak is mostly bidirectional
-                adj.get(IDToIndex.get(target.id)).add(edge);
+                adj.get(target.id).add(edge);
             }
             
             E += 1;
@@ -151,5 +125,8 @@ public class Graph implements StreamedContainer<Road>{
     @Override
     public void endStream() {
         System.out.println("Graph populated!");
+        MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
+        System.out.printf("Heap memory usage: %d MB%n",
+                mxbean.getHeapMemoryUsage().getUsed() / (1000000));
     }
 }

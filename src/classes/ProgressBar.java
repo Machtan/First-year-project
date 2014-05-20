@@ -21,7 +21,6 @@ public class ProgressBar extends JFrame implements IProgressBar {
     public ProgressBar() {
         super();
         System.out.println("Creating progress bar");
-        setLocationRelativeTo(null);
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setUndecorated(true);
         statusLabel = new JLabel("No target set :)");
@@ -45,6 +44,7 @@ public class ProgressBar extends JFrame implements IProgressBar {
         //setPreferredSize(new Dimension(200, panel.getPreferredSize().height));
         
         pack();
+        setLocationRelativeTo(null);
         setVisible(true);
         paintComponents(getGraphics());
         System.out.println("Progress bar created!");
@@ -69,6 +69,8 @@ public class ProgressBar extends JFrame implements IProgressBar {
         progressBar.setMaximum((int) target);
         progressBar.setValue(0);
         statusLabel.setText(text);
+        pack();
+        setLocationRelativeTo(null);
         //repaint();
         progressBar.update(progressBar.getGraphics());
     }
@@ -84,7 +86,7 @@ public class ProgressBar extends JFrame implements IProgressBar {
                 progressBar.setValue(progressBar.getValue() + counter);
                 counter = 0;
                 //update(getGraphics()); // Too inconsistent :( (too 'slow' to show everything)
-                System.out.println("Updating progress, "+progressBar.getValue()+" / "+target);
+                //System.out.println("Updating progress, "+progressBar.getValue()+" / "+target);
             }
             if (done()) {
                 double time = (System.nanoTime()-t1) / 1e9;

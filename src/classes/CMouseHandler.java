@@ -129,7 +129,9 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
     private void findShortestPath() {
         if ((pathStart != null) && (pathEnd != null)) {
             System.out.println("Finding shortest path!...");
-            view.setPath(PathFinder.findPath(controller.graph, pathStart.id, pathEnd.id));
+            Road.Edge[] path = PathFinder.findPath(controller.graph, pathStart.id, pathEnd.id);
+            view.setPath(path);
+            controller.routePanel.setRoute(path);
         }
     }
     
