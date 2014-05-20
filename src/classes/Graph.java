@@ -62,15 +62,12 @@ public class Graph implements StreamedContainer<Road>{
      * @param v the vertex
      * @throws java.lang.IndexOutOfBoundsException unless 0 <= v < V
      */
-    public Iterable<Road.Edge> adj(int v) {
-        if (v < 0 || v >= V()) {
-            throw new IndexOutOfBoundsException("vertex " + v + " is not between 0 and " + (V() - 1));
-        }
+    public Iterable<Road.Edge> adj(long v) {
         //  System.out.println("vertex " + v + " has " + adj[v].size() + " adjacent edges");
         return adj.get(v);
     }
 
-    public long other(Road.Edge part, int firstIndex) {
+    public long other(Road.Edge part, long firstIndex) {
         // System.out.println("Checking other index with indexes " + part.sourceID + " and " + part.targetID);
         // System.out.println("Road:" + part);
         //System.out.println("RoadPart: " + part.name);

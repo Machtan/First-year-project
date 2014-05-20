@@ -45,6 +45,7 @@ public class Controller extends JFrame {
     private JTextField inputField;
     private JList adressList;
     private DefaultListModel listModel;
+    public final RouteDescriptionPanel routePanel;
     
     // Dynamic fields
     public final Viewport viewport;
@@ -57,7 +58,7 @@ public class Controller extends JFrame {
         defaultInstructions.addMapping(Color.red, RoadType.Highway);
         defaultInstructions.addMapping(Color.red, RoadType.HighwayExit);
         defaultInstructions.addMapping(new Color(255,170,100), RoadType.PrimeRoute);
-        defaultInstructions.addMapping(new Color(0,255,25,200), RoadType.Path);
+        defaultInstructions.addMapping(new Color(0,255,25), RoadType.Path);
         defaultInstructions.addMapping(Color.blue, RoadType.Ferry);
         defaultInstructions.addMapping(new Color(200,200,255), RoadType.Other);
     }
@@ -103,15 +104,16 @@ public class Controller extends JFrame {
         
         contentPanel.add(viewPanel);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
-                
-        //contentPanel.add(new RouteDescriptionPanel());
         
+
         
         JPanel westContent = new JPanel();
         westContent.setLayout(new SpringLayout());
         final RouteDescriptionPanel routeDesc = new RouteDescriptionPanel();
         final AutoCompleter fromField = new AutoCompleter(model);
         final AutoCompleter toField = new AutoCompleter(model);
+        
+        routePanel = new RouteDescriptionPanel();
         westContent.add(fromField);
         westContent.add(toField);
         westContent.add(new JButton(new AbstractAction("Search") {
@@ -130,6 +132,10 @@ public class Controller extends JFrame {
         westContent.add(routeDesc);
         SpringUtilities.makeCompactGrid(westContent, 4, 1, 0, 0, 1, 1);
         
+        westContent.add(routePanel);
+        SpringUtilities.makeCompactGrid(westContent, 1, 1, 0, 0, 1, 1);
+        //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
+        contentPanel.add(westContent, BorderLayout.WEST); 
         
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
         contentPanel.add(new RenderPanel(model.priorities, this), BorderLayout.NORTH);
@@ -212,21 +218,9 @@ public class Controller extends JFrame {
 
     /**
      * Entry point
-     *
      * @param args
      */
     public static void main(String[] args) throws InterruptedException {
-        Dimension viewSize = new Dimension(600,400);
-        OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
-
-        Model model = NewLoader.loadData(NewLoader.krakdata);
-        Controller controller = new Controller(view, model); 
-        controller.setMinimumSize(new Dimension(800,600));
-
-        //controller.pack();
-        System.out.println("View size previs:  " + view.getSize());
-        controller.draw(controller.viewport.zoomTo(1));
-        controller.setVisible(true);
-        System.out.println("View size postvis: " + view.getSize());
+        new DatasetChooser();
     }
 }

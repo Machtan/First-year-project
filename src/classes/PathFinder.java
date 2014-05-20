@@ -1,17 +1,36 @@
 package classes;
 
 import java.util.HashMap;
+import java.util.PriorityQueue;
 
 public class PathFinder {
 
-    private static HashMap<Integer, Road.Edge> edgeTo;
-    private static HashMap<Integer, Double> distTo;
-    private static IndexMinPQ<Double> pq;
+    private static HashMap<Long, Road.Edge> edgeTo;
+    private static HashMap<Long, Double> distTo;
+    private static PriorityQueue<QueueElement> pq;
 
     private static double h(Road.Node source, Road.Node target) { //s = start, t = target
         // System.out.println("Heuristic analysis: \n"
         //         + "Intersection source: " + source + ". Intersection target: " + target);
         return Math.sqrt(Math.pow(source.x - target.x, 2) + Math.pow(source.y - target.y, 2))/1000/130;
+    }
+    
+    private static class QueueElement implements Comparable<QueueElement> {
+        public final long id;
+        public double val;
+        public QueueElement(long id, double val) {
+            this.val = val;
+            this.id = id;
+        }
+
+        @Override
+        public int compareTo(QueueElement o) {
+            return Double.compare(val, o.val);
+        }
+        
+        public boolean equals(QueueElement other) {
+            return id == other.id;
+        }
     }
 
     public static Road.Edge[] findPath(Graph G, long sourceID, long targetID) {
@@ -19,23 +38,21 @@ public class PathFinder {
             throw new RuntimeException("Graph have not been instantitiated.");
         } else {
             //    System.out.println("Finding path");
-            int t = G.getIntersectionIndex(targetID);
             edgeTo = new HashMap<>();
             distTo = new HashMap<>();
-            int startIndex = G.getIntersectionIndex(sourceID);
-            distTo.put(startIndex, 0.0);
+            distTo.put(sourceID, 0.0);
 
-            pq = new IndexMinPQ(G.V());
-            pq.insert(startIndex, Double.POSITIVE_INFINITY);
+            pq = new PriorityQueue<>();
+            pq.offer(new QueueElement(sourceID, Double.POSITIVE_INFINITY));
             while (!pq.isEmpty()) {
-                int v = pq.delMin();
+                long v = pq.poll().id;
                 //System.out.println("Checking vertex "+v);
-                if (v == t) {
+                if (v == targetID) {
                     break;
                 }
                 for (Road.Edge r : G.adj(v)) {
                     //System.out.println("- (" + v + ") Relaxing part " + r);
-                    relax(G, r, v, t);
+                    relax(G, r, v, targetID);
                 }
             }
 
@@ -45,11 +62,11 @@ public class PathFinder {
             //   }
 
             HashMap<Integer, Road.Edge> path = new HashMap<>();
-            int current = G.getIntersectionIndex(targetID);
+            long current = targetID;
             int i = 0;
             // System.out.println("Building edgeTo");
             // System.out.println(edgeTo.toString());
-            while (current != startIndex) {
+            while (current != sourceID) {
                 Road.Edge currentRoad = edgeTo.get(current);
                 path.put(i++, currentRoad);
                 //System.out.println("Checking the other intersection than "+current+" of "+currentRoad);
@@ -65,10 +82,10 @@ public class PathFinder {
         }
     }
 
-    private static void relax(Graph G, Road.Edge r, int s, int t) {
+    private static void relax(Graph G, Road.Edge r, long s, long t) {
         //   System.out.println("Relaxing");
-        int v = s; // The starting vertice
-        int w = G.other(r, v); // w is the other vertice
+        long v = s; // The starting vertice
+        long w = G.other(r, v); // w is the other vertice
         //System.out.println("Relaxing edge between: "+v+ " and "+w);
         if (!distTo.containsKey(w)) {
             //    System.out.println("DistTo adds the new key with infinity:" + w);
@@ -78,17 +95,19 @@ public class PathFinder {
             distTo.put(w, distTo.get(v) + r.driveTime);
             edgeTo.put(w, r);
             //System.out.println("Updates the approximated weight and puts the road into edgeTo: "+r);
-            if (pq.contains(w)) {
+            QueueElement q = new QueueElement(w, 
+                    distTo.get(w) + h(G.getIntersection(w), G.getIntersection(t)));
+            if (pq.contains(q)) {
                 //      System.out.println("Decreasing");
-                pq.decreaseKey(w, distTo.get(w) + h(G.getIntersection(w), G.getIntersection(t)));
-            } else {
-                //     System.out.println("Inserting");
-                pq.insert(w, distTo.get(w) + h(G.getIntersection(w), G.getIntersection(t)));
-            }
+                pq.remove(q);
+            } 
+            pq.offer(q);
         }
     }
 
-    public static void main(String[] args) { /*
+    public static void main(String[] args) { 
+        
+        /*
          Intersection first = new Intersection("100,10,2");
          Intersection second = new Intersection("10,15,3");
          Intersection third = new Intersection("20,27,14");
