@@ -76,19 +76,7 @@ public class NewLoader {
     );
     
     public static HashMap<Long, Road.Node> loaded = new HashMap<>();
-    
-    /**
-     * Returns how fast once could ideally traverse between the given points
-     * @param p1 The point of origin
-     * @param p2 The point of destination
-     * @param speedLimit How fast you can move
-     * @return How many hours (in decimal) it takes to traverse between the points
-     */
-    public static float getDriveTime(Road.Node p1, Road.Node p2, short speedLimit) {
-        float dist = (float)Math.sqrt(Math.pow(p2.x-p1.x, 2)+Math.pow(p2.y-p1.y, 2));
-        return dist / ((float)speedLimit * 1000f);
-    }
-    
+        
     public static final char sepchar = '@';
     public static Road loadRoad(String line) {
         // Split the road into metadata, nodes and drive times
@@ -135,16 +123,15 @@ public class NewLoader {
         }
         Rect bounds = new Rect(minX, minY, maxX-minX, maxY-minY);
         
-        float[] driveTimes = new float[nodes.size()-1];
+        float[] driveTimes;
         if (drivetimestring.length() != 0) {
+            driveTimes = new float[nodes.size()-1];
             Utils.Tokenizer.setLine(drivetimestring);
             for (int i = 0; i < driveTimes.length; i++) {
                 driveTimes[i] = Utils.Tokenizer.getFloat();
             }
         } else {
-            for (int i = 0; i < driveTimes.length; i++) {
-                driveTimes[i] = getDriveTime(nodes.get(i), nodes.get(i+1), speedLimit);
-            }
+            driveTimes = new float[0];
         }
         
         return new Road(name, type, zip, speedLimit, oneway, 

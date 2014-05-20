@@ -36,6 +36,7 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
             return "["+id+": ("+x+", "+y+")]";
         }
     }
+    private static double speedConv = 1000/60;
     public class Edge {
         public final Node p1;
         public final Node p2;
@@ -52,8 +53,8 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
         }
         public Edge(Node p1, Node p2) {
             this.p1 = p1;
-            this.p2 = p2;
-            this.driveTime = (float)length() * Road.this.speedLimit;
+            this.p2 = p2; // 300m / (70km/h * 16.66)
+            this.driveTime = (float)(length() / (Road.this.speedLimit * speedConv)); // m / (km/h / h/min * m/km)
         }
         public Road parent() {
             return Road.this;
@@ -110,8 +111,13 @@ public class Road implements QuadNode, Iterable<Road.Edge> {
 
         @Override
         public Edge next() {
-            nextEdge = new Edge(Road.this.nodes[index], Road.this.nodes[index+1], 
+            if (Road.this.drivetimes.length > 0) {
+                nextEdge = new Edge(Road.this.nodes[index], Road.this.nodes[index+1], 
                 Road.this.drivetimes[index]);
+            } else {
+                nextEdge = new Edge(Road.this.nodes[index], Road.this.nodes[index+1]);
+            }
+            
             index++;
             return nextEdge;
         }
