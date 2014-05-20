@@ -29,8 +29,6 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
     private final OptimizedView view;
     private boolean isMarking = false;
     private boolean isDragging = false;
-    private Road.Node pathStart = null;
-    private Road.Node pathEnd = null;
     private HashMap<Integer, Boolean> isDown = new HashMap<>();;
     
     public CMouseHandler(Controller controller, OptimizedView target) {
@@ -127,9 +125,9 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
      * Attempts to calculate the shortest path between the start and end
      */
     private void findShortestPath() {
-        if ((pathStart != null) && (pathEnd != null)) {
+        if ((view.getPathStart() != null) && (view.getPathEnd() != null)) {
             System.out.println("Finding shortest path!...");
-            Road.Edge[] path = PathFinder.findPath(controller.graph, pathStart.id, pathEnd.id);
+            Road.Edge[] path = PathFinder.findPath(controller.graph, view.getPathStart().id, view.getPathEnd().id);
             view.setPath(path);
             controller.routePanel.setRoute(path);
         }
@@ -140,7 +138,7 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
      * @param start 
      */
     private void setPathStart(Road.Node start) {
-        pathStart = start;
+        controller.routePanel.setPathStart(start);
         view.setPathStart(start);
         findShortestPath();
     }
@@ -150,7 +148,7 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
      * @param end 
      */
     private void setPathEnd(Road.Node end) {
-        pathEnd = end;
+        controller.routePanel.setPathEnd(end);
         view.setPathEnd(end);
         findShortestPath();
     }

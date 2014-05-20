@@ -123,7 +123,7 @@ public class DatasetChooser extends JFrame {
                 Controller controller = new Controller(view, model); 
                 controller.setMinimumSize(new Dimension(900,600));
                 controller.setVisible(true);
-                controller.draw(controller.viewport.zoomTo(1));
+                //controller.draw(controller.viewport.zoomTo(1));
             }
         }).start();
     }

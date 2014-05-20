@@ -96,6 +96,14 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
         repaint();
     }
     
+    public Road.Node getPathStart() {
+        return fromNode;
+    }
+    
+    public Road.Node getPathEnd() {
+        return toNode;
+    }
+    
     /**
      * Sets the projection of p
      * @param p 

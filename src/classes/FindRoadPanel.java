@@ -54,7 +54,7 @@ public class FindRoadPanel extends JPanel implements MouseMotionListener, Receiv
      * @param p Where the mouse is
      */
     public void setNearestRoad(String name) {
-        String roadName = (name.equals(""))? "UNKNOWN": name;
+        String roadName = (name.equals(""))? "UKNOWN": name;
         roadLabel.setText(description + roadName);
         coordLabel.setText(String.format(coordFString, mapX, mapY));
     }

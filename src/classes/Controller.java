@@ -2,50 +2,32 @@
 package classes;
 
 import enums.RoadType;
-import external.SpringUtilities;
 import interfaces.StreamedContainer;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.HashSet;
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 
 /**
- * The Controller class faciliates everythign between parts of the program
+ * The Controller class faciliates everything between parts of the program
  *
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 10-Mar-2014
  */
 public class Controller extends JFrame {
 
-    private static PathFinder SP;
     private final OptimizedView view;
     private final Model model;
     public final double wperh = 450403.8604700001 / 352136.5527900001; // map ratio
     public ArrayList<RoadType> prioritized;
     public final Graph graph;
-    private FindAsYouSearchPanel searchStuff;
-    private JTextField inputField;
-    private JList adressList;
-    private DefaultListModel listModel;
-    public final RouteDescriptionPanel routePanel;
+    public final RoutePanel routePanel;
     
     // Dynamic fields
     public final Viewport viewport;
@@ -69,7 +51,7 @@ public class Controller extends JFrame {
      * @param view The view to manage
      * @param model The model to manage
      */
-    public Controller(OptimizedView view, Model model) {
+    public Controller(final OptimizedView view, Model model) {
         super();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setTitle("First-year Project - Visualization of Denmark");
@@ -104,43 +86,13 @@ public class Controller extends JFrame {
         
         contentPanel.add(viewPanel);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
-        
 
-        
-        JPanel westContent = new JPanel();
-        westContent.setLayout(new SpringLayout());
-        final RouteDescriptionPanel routeDesc = new RouteDescriptionPanel();
-        final AutoCompleter fromField = new AutoCompleter(model);
-        final AutoCompleter toField = new AutoCompleter(model);
-        
-        routePanel = new RouteDescriptionPanel();
-        westContent.add(fromField);
-        westContent.add(toField);
-        westContent.add(new JButton(new AbstractAction("Search") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //Make shortest path search
-                String prevRoadName = "";
-                if (toField.getRoad() == null || fromField.getRoad() == null) {
-                    JOptionPane.showMessageDialog(contentPanel, "Please choose two roads", "Information", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    Road.Edge[] result = SP.findPath(graph, fromField.getRoad().nodes[1].id, toField.getRoad().nodes[1].id);
-                    routeDesc.setRoute(result);
-                }
-            }
-        }));
-        westContent.add(routeDesc);
-        SpringUtilities.makeCompactGrid(westContent, 4, 1, 0, 0, 1, 1);
-        
-        westContent.add(routePanel);
-        SpringUtilities.makeCompactGrid(westContent, 1, 1, 0, 0, 1, 1);
-        //Panel for when we want to add both FindAsYouSearchPanel and RouteDesc
-        contentPanel.add(westContent, BorderLayout.WEST); 
+        routePanel = new RoutePanel(model, view, graph, this);
+        contentPanel.add(routePanel, BorderLayout.WEST); 
         
         contentPanel.add(new FindRoadPanel(this, view), BorderLayout.SOUTH);
         contentPanel.add(new RenderPanel(model.priorities, this), BorderLayout.NORTH);
         contentPanel.add(new ZoomButtonsGUI(this), BorderLayout.EAST);
-        contentPanel.add(westContent, BorderLayout.WEST);
         contentPanel.add(viewPanel);
         
 
@@ -221,22 +173,6 @@ public class Controller extends JFrame {
      * @param args
      */
     public static void main(String[] args) throws InterruptedException {
-<<<<<<< HEAD
-        Dimension viewSize = new Dimension(600,400);
-        OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
-
-        //Model model = NewLoader.loadData(NewLoader.osmdata);
-        Model model = NewLoader.loadData(NewLoader.krakdata);
-        Controller controller = new Controller(view, model); 
-        controller.setMinimumSize(new Dimension(800,600));
-
-        //controller.pack();
-        System.out.println("View size previs:  " + view.getSize());
-        controller.draw(controller.viewport.zoomTo(1));
-        controller.setVisible(true);
-        System.out.println("View size postvis: " + view.getSize());
-=======
         new DatasetChooser();
->>>>>>> 243921c9cf2850f53632ca7c21f92963040583aa
     }
 }

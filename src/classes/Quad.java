@@ -72,32 +72,32 @@ public class Quad <T extends QuadNode> {
      * @param target The streamed container to add roads to
      */
     protected void getIn(Rect area, StreamedContainer target) {
-        for (Rect r: edgeCases.keySet()) { // Add edge cases    //1
-            if (r.collidesWith(area)) {                         //2
+        for (Rect r: edgeCases.keySet()) { // Add edge cases
+            if (r.collidesWith(area)) {
                 //System.out.println("Edge case at "+r+" collides with "+area);
-                for (T node : edgeCases.get(r)) {               //3
-                    if (node.collidesWith(area)) {              //4
+                for (T node : edgeCases.get(r)) {
+                    if (node.collidesWith(area)) {
                         target.add(node);
                     }
                 }
             }
         }
-        if (bottom) {                                           //5
-            if (area.contains(this.area)) {                     //6
-                for(T node : nodeList) {                        //7
+        if (bottom) {
+            if (area.contains(this.area)) {
+                for(T node : nodeList) {
                     target.add(node);
                 }
                 
-            } else {                                            
-                for (T node : nodeList) {                       //8
-                    if (node.collidesWith(area)) {              //9
+            } else {
+                for (T node : nodeList) {
+                    if (node.collidesWith(area)) {
                         target.add(node);
                     }
                 }
             }
         } else {
-            for (Quad subquad : subquads) {                     //10
-                if (subquad.area.collidesWith(area)) {          //11
+            for (Quad subquad : subquads) {
+                if (subquad.area.collidesWith(area)) {
                     subquad.getIn(area, target);
                 }
             }

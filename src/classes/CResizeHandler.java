@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.event.WindowStateListener;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -16,7 +17,7 @@ import javax.swing.Timer;
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 24-Mar-2014
  */
-public class CResizeHandler implements ComponentListener, ActionListener, WindowStateListener {
+public class CResizeHandler implements ComponentListener, ActionListener, WindowStateListener, WindowListener {
     private final Timer resizeTimer;
     private Dimension prevSize;
     private Dimension startResizeSize; // The size when a resize is started
@@ -36,6 +37,7 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
         this.view = view;
         view.addComponentListener(this);
         controller.addWindowStateListener(this);
+        controller.addWindowListener(this);
         resizeTimer = new Timer(resizeDelay, this);
         resizeTimer.setRepeats(false);
         prevSize = view.getSize(); // prepare for scaling
@@ -86,4 +88,27 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
             prevSize = view.getSize();
         } 
     }
+
+    @Override
+    public void windowOpened(WindowEvent e) {
+        controller.draw(controller.viewport.zoomTo(1));
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e) {}
+
+    @Override
+    public void windowClosed(WindowEvent e) {}
+
+    @Override
+    public void windowIconified(WindowEvent e) {}
+
+    @Override
+    public void windowDeiconified(WindowEvent e) { }
+
+    @Override
+    public void windowActivated(WindowEvent e) {}
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {}
 }

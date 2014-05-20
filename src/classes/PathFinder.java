@@ -1,6 +1,5 @@
 package classes;
 
-import enums.RoadType;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 
@@ -13,7 +12,7 @@ public class PathFinder {
     private static double h(Road.Node source, Road.Node target) { //s = start, t = target
         // System.out.println("Heuristic analysis: \n"
         //         + "Intersection source: " + source + ". Intersection target: " + target);
-        return Math.sqrt(Math.pow(source.x - target.x, 2) + Math.pow(source.y - target.y, 2)) / 1000 / 130;
+        return Math.sqrt(Math.pow(source.x - target.x, 2) + Math.pow(source.y - target.y, 2))/1000/130;
     }
     
     private static class QueueElement implements Comparable<QueueElement> {
@@ -184,15 +183,35 @@ public class PathFinder {
         controller.draw(controller.viewport.zoomTo(1));
         controller.setVisible(true);
         System.out.println("View size postvis: " + view.getSize());
->>>>>>> 243921c9cf2850f53632ca7c21f92963040583aa
         
-        
-        Model m = NewLoader.loadData(NewLoader.krakdata);
-        Graph g = new Graph(m);
-        Road.Edge[] result = findPath(g, 1, 20);
-        for(Road.Edge road : result) {
-            System.out.println(road.parent().name);
-        }
         */
+        
+        }
     }
-}
+
+    /*
+     System.out.println("The path found from " + RoadPartArray[0].name + " to " + RoadPartArray[RoadPartArray.length-1].name + " has been found. \n"
+     + "Directions are: ");
+     String prevRoadName = "";
+     Boolean firstRoad = true;
+     for (RoadPart road : RoadPartArray) {
+     if (!road.name.equals(prevRoadName)) {
+     if (road.name.length() == 0) {
+     if (!firstRoad) {
+     System.out.println("to Unknown Road Name ");
+     } else {
+     System.out.println("Starting from Unknown Road Name");
+     }
+     } else {
+     prevRoadName = road.name;
+     if (!firstRoad) {
+     System.out.println("to " + road.name);
+     } else {
+     System.out.println("Starting from " + road.name);
+     }
+     }
+     }
+     firstRoad = false;
+     }
+     */
+

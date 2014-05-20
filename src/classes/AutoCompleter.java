@@ -29,7 +29,6 @@ import javax.swing.event.DocumentListener;
  */
 public class AutoCompleter extends JTextField implements StreamedContainer<Road> {
 
-    private JTextField inputField; //Text Field for searching capabilities
     private static final int searchDelay = 200; //Milliseconds
     private Timer typeTimer;
     private Road.Edge[] edges;
@@ -41,15 +40,18 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
     private HashSet<Integer> usedZips;
     private HashSet<String> addedRoads;
     private ArrayList<Road> edgesList = new ArrayList<>();
+    private final boolean startPointField;
+    private final OptimizedView view;
     //private HashMap<String, Integer> addrMap;
     //private HashSet<String> usedRoadNames;
 
-    public AutoCompleter(Model model) {
+    public AutoCompleter(Model model, OptimizedView view, boolean startPointField) {
         model.getAllRoads(this);
         //edges = roads;
-        inputField = this;
-        inputField.setMaximumSize(new Dimension(180, 22));
-        inputField.setPreferredSize(inputField.getMaximumSize());
+        this.startPointField = startPointField;
+        this.view = view;
+        setMaximumSize(new Dimension(180, 22));
+        setPreferredSize(getMaximumSize());
         pop = new JPopupMenu();
         pop.setVisible(false);
         pop.setFocusable(false);
@@ -63,7 +65,7 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
         typeTimer = new Timer(searchDelay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                startSearch(edgesList);
+                startSearch();
             }
         });
         typeTimer.setRepeats(false);
@@ -73,10 +75,10 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
     private void addListeners() {
 
         //add a focus listener to the textfield
-        inputField.addFocusListener(new FocusListener() {
+        addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
-                inputField.setText(""); //Sets the text to nothing if focus is gained
+                setText(""); //Sets the text to nothing if focus is gained
                 removeItems();
             }
 
@@ -87,7 +89,7 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
         });
 
         //Add a listener to check if something is written
-        inputField.getDocument().addDocumentListener(new DocumentListener() {
+        getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 removeItems();
@@ -116,15 +118,15 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
     }
 
     private void setPopMenu() {
-        inputField.setComponentPopupMenu(pop);
-        pop.show(inputField, 0, 0 + inputField.getHeight());
+        setComponentPopupMenu(pop);
+        pop.show(this, 0, 0 + getHeight());
         pop.setFocusable(false);
         pop.setVisible(false);
         resizePopMenu();
     }
 
     private void resizePopMenu() {
-        pop.setPreferredSize(new Dimension(inputField.getWidth(), inputField.getHeight() * pop.getSubElements().length));
+        pop.setPreferredSize(new Dimension(getWidth(), getHeight() * pop.getSubElements().length));
     }
 
     private MenuItem createMenuItem(Road r, String text) {
@@ -133,34 +135,40 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
         MenuItem item = new MenuItem(r, text);
         item.setFont(new Font(Font.DIALOG, Font.BOLD, 10));
         addMenuListener(item);
-        item.setPreferredSize(new Dimension(inputField.getWidth(), inputField.getHeight()));
+        item.setPreferredSize(new Dimension(getWidth(), getHeight()));
         return item;
     }
-
+    
     private void addMenuListener(final MenuItem item) {
         item.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 foundRoad = item.roadPart;
-                inputField.setText(item.getText());
+                if (startPointField) {
+                    view.setPathStart(foundRoad.nodes[0]);
+                } else {
+                    view.setPathEnd(foundRoad.nodes[0]);
+                }
+                
+                setText(item.getText());
                 removeItems();
             }
         });
     }
     
-     private void startSearch(ArrayList<Road> edges2) {
-        edges2 = edgesList;
-        if (inputField.getText().length() >= 3) {
+     private void startSearch() {
+        
+        if (getText().length() >= 3) {
             //removeItems();
             System.out.println("Starting search");
 
             usedZips = new HashSet<Integer>();
             //usedRoadNames = new HashSet<String>();
             addedRoads = new HashSet<>();
-            String searchText = inputField.getText().toLowerCase();
-
+            String searchText = getText().toLowerCase();
+            
             //Starting linear search through all the roads
-            for (Road edge : edges2) {
+            for (Road edge : edgesList) {
                 String edgeName = edge.name;
                 int edgeZip = edge.zipCode;
 
@@ -202,14 +210,14 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
     //Searches through the list
     private void startSearch(ArrayList<Road.Edge> edge) {
         edge = edgesList;
-        if (inputField.getText().length() >= 3) {
+        if (getText().length() >= 3) {
             //removeItems();
             System.out.println("Starting search");
 
             //usedZips = new HashSet<Integer>();
             //usedRoadNames = new HashSet<String>();
             addedRoads = new HashSet<>();
-            String searchText = inputField.getText().toLowerCase();
+            String searchText = getText().toLowerCase();
 
             //Starting linear search through all the roads
             for (int i = 0; i < edges.length; i++) {
@@ -251,12 +259,17 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
         pop.removeAll();
         pop.setVisible(false);
         //foundRoad = null;
-        inputField.revalidate();
-        inputField.repaint();
+        revalidate();
+        repaint();
     }
 
     public Road getRoad() {
         return foundRoad;
+    }
+    
+    public void setRoad(Road road) {
+        foundRoad = road;
+        setText(road.name+" - "+road.zipCode);
     }
 
     @Override
