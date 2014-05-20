@@ -52,14 +52,14 @@ public class ZoomButtonsGUI extends JPanel {
         super();
         panel = new JPanel(new SpringLayout());
         
-        String zoomTip = "You can also zoom in by clicking '+' on your keyboard.";
+        String zoomTip = "Zooms in on the map";
         addButton(loadImage("/resources/images/zoomIn.png"), zoomTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
                 controller.draw(controller.viewport.zoomBy(0.2f));
             }
         });
-        String zoomOutTip = "You can also zoom out by clicking '-' on your keyboard";
+        String zoomOutTip = "Zooms out";
         addButton(loadImage("/resources/images/zoomOut.png"), zoomOutTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
