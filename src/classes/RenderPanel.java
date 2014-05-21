@@ -61,7 +61,7 @@ public class RenderPanel extends JPanel {
          * the view
          */
         private void refresh() {
-            System.out.println("Changing the color from the Render panel");
+            //System.out.println("Changing the color from the Render panel");
             controller.redraw();
         }
         

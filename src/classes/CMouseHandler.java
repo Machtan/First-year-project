@@ -126,7 +126,7 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
      */
     private void findShortestPath() {
         if ((view.getPathStart() != null) && (view.getPathEnd() != null)) {
-            System.out.println("Finding shortest path!...");
+           // System.out.println("Finding shortest path!...");
             Road.Edge[] path = PathFinder.findPath(controller.graph, view.getPathStart().id, view.getPathEnd().id);
             view.setPath(path);
             controller.routePanel.setRoute(path);
@@ -199,7 +199,7 @@ public class CMouseHandler implements MouseListener, MouseMotionListener {
                     float rX = markRect.x;
                     float rY = markRect.y;
                     if (rHeight < 15) { // Default zoom-ish
-                        System.out.println("Using default zoom");
+                       // System.out.println("Using default zoom");
                         rHeight = 120;
                         rWidth = rHeight*port.ratio();
                         rX = markRect.x - (rWidth - (markRect.width))/2;

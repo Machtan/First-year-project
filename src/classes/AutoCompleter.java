@@ -82,7 +82,7 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
 
             @Override
             public void focusLost(FocusEvent e) {
-                System.out.println("Im losing focus!!!");
+                //System.out.println("Im losing focus!!!");
             }
         });
 
@@ -158,7 +158,6 @@ public class AutoCompleter extends JTextField implements StreamedContainer<Road>
             
             HashSet<String> usedRoads = new HashSet<>();
             String searchText = getText().toLowerCase();
-            
             //Starting linear search through all the roads
             for (Road edge : edgesList) {
                 String edgeName = edge.name;

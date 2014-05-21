@@ -40,7 +40,7 @@ public class AddressValidator {
             throw new FileNotFoundException("Cannot read path: "+filepath);
         } 
 
-        System.out.printf("Initalizing validator with %s road names...\n", roadnames.size());
+        //System.out.printf("Initalizing validator with %s road names...\n", roadnames.size());
         roadsLoaded = true;
     }
     

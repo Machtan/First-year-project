@@ -43,7 +43,7 @@ public class ZoomButtonsGUI extends JPanel {
             ImageIcon image = new ImageIcon(ImageIO.read(getClass().getResource(filepath)));
             return image;
         } catch (IOException ex) {
-            System.out.println("Couldn't load images from filepath: "+filepath);
+            //System.out.println("Couldn't load images from filepath: "+filepath);
         }
         return null;
     }

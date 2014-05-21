@@ -97,7 +97,7 @@ public class DatasetChooser extends JFrame {
         chooseButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("The action '"+actionName+"' was chosen!");
+                //System.out.println("The action '"+actionName+"' was chosen!");
                 startProgram(file);
             }
         });
@@ -117,13 +117,13 @@ public class DatasetChooser extends JFrame {
         new Thread(new Runnable() {
             public void run() {
                 Model model = NewLoader.loadData(file);
-                System.out.println("Starting the program");
+               // System.out.println("Starting the program");
                 Dimension viewSize = new Dimension(600,400);
                 OptimizedView view = new OptimizedView(viewSize, Controller.defaultInstructions);
                 Controller controller = new Controller(view, model); 
                 controller.setMinimumSize(new Dimension(900,600));
                 controller.setVisible(true);
-                //controller.draw(controller.viewport.zoomTo(1));
+               // controller.draw(controller.viewport.zoomTo(1));
             }
         }).start();
     }

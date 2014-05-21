@@ -20,7 +20,7 @@ public class ProgressBar extends JFrame implements IProgressBar {
 
     public ProgressBar() {
         super();
-        System.out.println("Creating progress bar");
+       // System.out.println("Creating progress bar");
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setUndecorated(true);
         statusLabel = new JLabel("No target set :)");
@@ -47,7 +47,7 @@ public class ProgressBar extends JFrame implements IProgressBar {
         setLocationRelativeTo(null);
         setVisible(true);
         paintComponents(getGraphics());
-        System.out.println("Progress bar created!");
+       // System.out.println("Progress bar created!");
     }
     
     //Check whether or not the loading is complete
@@ -61,7 +61,7 @@ public class ProgressBar extends JFrame implements IProgressBar {
      * @param target The target amount
      */
     public void setTarget(String text, long target) {
-        System.out.println("Progress: '"+text+"' ("+target+")");
+        // System.out.println("Progress: '"+text+"' ("+target+")");
         t1 = System.nanoTime();
         minAdd = (int)Math.ceil(target*updateAmount);
         counter = 0;
@@ -90,7 +90,7 @@ public class ProgressBar extends JFrame implements IProgressBar {
             }
             if (done()) {
                 double time = (System.nanoTime()-t1) / 1e9;
-                System.out.println("[Progress]: Finished '"+statusLabel.getText()+"' in "+time+"s!");
+                // System.out.println("[Progress]: Finished '"+statusLabel.getText()+"' in "+time+"s!");
             }
         } else {
             throw new RuntimeException("Update ("+addition+") attempted while already finished!");

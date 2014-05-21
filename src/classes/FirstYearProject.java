@@ -35,8 +35,8 @@ public class FirstYearProject {
         for (String testAddress : addresses) {
             try {
                 String[] parts = AddressParsing.parseAddress(testAddress);
-                System.out.println("== Parsed '"+testAddress+"' ==");
-                System.out.println(Utils.joinStrings(parts, "#"));
+                //System.out.println("== Parsed '"+testAddress+"' ==");
+                //System.out.println(Utils.joinStrings(parts, "#"));
             } catch (NoMatchException | IllegalCharacterException ex) {
                 System.out.println(ex);
             }

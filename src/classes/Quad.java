@@ -73,7 +73,7 @@ public class Quad <T extends QuadNode> {
      */
     protected void getIn(Rect area, StreamedContainer target) {
         for (Rect r: edgeCases.keySet()) { // Add edge cases
-            //System.out.println("Edge case at "+r+" collides with "+area);
+           // System.out.println("Edge case at "+r+" collides with "+area);
             for (T node : edgeCases.get(r)) {
                 if (node.collidesWith(area)) {
                     target.add(node);

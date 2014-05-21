@@ -67,7 +67,7 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
     public void actionPerformed(ActionEvent e) { // Once the user has finished redrawing
         // Only redraw if it is needed, plx
         if (view.getHeight() != startResizeSize.height) {
-            System.out.println("Redrawing after resizing...");
+            //System.out.println("Redrawing after resizing...");
             controller.redraw();
         }
     }
@@ -83,7 +83,7 @@ public class CResizeHandler implements ComponentListener, ActionListener, Window
     public void windowStateChanged(WindowEvent e) {
         if (e.getNewState() == 6 || e.getNewState() == 0) { // Maximize window on windows
             String msg = "Window "+ ((e.getNewState() == 6)? "maximized!": "restored!");
-            System.out.println(msg);
+            //System.out.println(msg);
             controller.redraw();
             prevSize = view.getSize();
         } 

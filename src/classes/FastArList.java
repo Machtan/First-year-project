@@ -114,9 +114,9 @@ public class FastArList<T> implements Iterable<T>{
         list.add(3);
         list.addAll(new Integer[]{4, 5, 6});
         Integer[] ins = list.toArray(new Integer[5]);
-        System.out.println("ints: "+ins);
+        //System.out.println("ints: "+ins);
         for (Integer i : ins) {
-            System.out.println("- "+i);
+            //System.out.println("- "+i);
         }
         /*int[] ints = new int[list.size()];
         Object[] arr = list.toArray();

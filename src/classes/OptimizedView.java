@@ -81,7 +81,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
      * @param start The node to start at
      */
     public void setPathStart(Road.Node start) {
-        System.out.println("Set the path starting point to "+start);
+        //System.out.println("Set the path starting point to "+start);
         fromNode = start;
         repaint();
     }
@@ -92,7 +92,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
      * @param end The node to end at
      */
     public void setPathEnd(Road.Node end) {
-        System.out.println("Set the path ending point to "+end);
+        //System.out.println("Set the path ending point to "+end);
         toNode = end;
         repaint();
     }
@@ -110,7 +110,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
      * @param p 
      */
     public void setProjection(Projection p) {
-        System.out.println("Setting the projection to "+p);
+        //System.out.println("Setting the projection to "+p);
         activeProjection = p;
     }
     
@@ -282,14 +282,14 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
             g.dispose();
             
         } else {
-            System.out.println("No image set yet, so nothing to draw...");
+           // System.out.println("No image set yet, so nothing to draw...");
         }
     } 
     
     private IProgressBar progbar = null;
     @Override
     public void startStream() {
-        System.out.println("Starting View paint routine...");
+        // System.out.println("Starting View paint routine...");
         activeGraphics = image.createGraphics();
         activeGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
     }
@@ -351,7 +351,7 @@ public class OptimizedView extends JPanel implements StreamedContainer<Road> {
 
     @Override
     public void endStream() {
-        System.out.println("Painting finished");
+        // System.out.println("Painting finished");
         repaint();
         progbar = null;
     }

@@ -156,12 +156,12 @@ public class Viewport {
         refit();
         int height = target.getHeight();
         Rect a = activeRect;
-        System.out.println("Widening with window size "+target.getSize());
+        //System.out.println("Widening with window size "+target.getSize());
         Rect targetArea = new Rect(target.getWidth()-deltaWidth, 0, deltaWidth, height);
         Rect sourceArea = new Rect(a.right()-getLength(deltaWidth), a.y, getLength(deltaWidth), a.height);      
         //refit(); // Fit to the new width
         Projection proj = new Projection(sourceArea, targetArea);
-        System.out.println("-> "+proj);
+        //System.out.println("-> "+proj);
         return proj;
     }
     

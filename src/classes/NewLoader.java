@@ -163,19 +163,19 @@ public class NewLoader {
 
         
         MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
-        System.out.printf("Heap memory usage: %d MB%n",
-                mxbean.getHeapMemoryUsage().getUsed() / (1000000));
+        //System.out.printf("Heap memory usage: %d MB%n",
+          //      mxbean.getHeapMemoryUsage().getUsed() / (1000000));
         progbar.close();
         return model;
     }
     
     public static void main(String[] args) {
-        System.out.println("Loading model...");
+        //System.out.println("Loading model...");
         long t1 = System.nanoTime();
         Model model = loadData(krakdata);
         double delta = (System.nanoTime()-t1)/1e9;
-        System.out.println("Loaded!");
-        System.out.println("The loading took "+delta+" seconds!");
+        //System.out.println("Loaded!");
+        //System.out.println("The loading took "+delta+" seconds!");
     }
     
 }

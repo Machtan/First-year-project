@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -44,7 +45,7 @@ public class Model implements StreamedContainer<Road> {
      */
     public void getRoads(StreamedContainer<Road> target, Viewport.Projection p) {
         if (p.equals(Viewport.Projection.Empty)) { 
-            System.out.println("Model received an empty projection, passing...");
+            //System.out.println("Model received an empty projection, passing...");
             target.startStream();
             target.endStream();
         } else {
@@ -73,7 +74,7 @@ public class Model implements StreamedContainer<Road> {
     @Override
     public void startStream() {
         // Find the bounding area of the intersections
-        System.out.println("Populating the Quad Tree...");
+       // System.out.println("Populating the Quad Tree...");
         for (RoadType type : RoadType.values()) {
             trees.put(type, new QuadTree(bounds, (short)400, (short)30));
         }
@@ -81,7 +82,7 @@ public class Model implements StreamedContainer<Road> {
 
     @Override
     public void endStream() {
-        System.out.println("Finished populating the Quad Tree!");
+        // System.out.println("Finished populating the Quad Tree!");
         progbar = null;
     }
 

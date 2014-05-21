@@ -151,11 +151,11 @@ public class Controller extends JFrame {
      */
     public void redraw() {
         long t1 = System.nanoTime();
-        System.out.println("Executing a full redraw of the View");
-        System.out.println("The projection is "+viewport.getProjection());
+       // System.out.println("Executing a full redraw of the View");
+        //System.out.println("The projection is "+viewport.getProjection());
         view.renewImage(viewport.getProjection());
         model.getRoads(view, viewport.getProjection());
-        System.out.println("- Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec) -");
+        //System.out.println("- Finished! ("+(System.nanoTime()-t1)/1000000000.0+" sec) -");
     }
     
     /**

@@ -96,7 +96,7 @@ public class Graph implements StreamedContainer<Road>{
 
     @Override
     public void startStream() {
-        System.out.println("Starting the graph population...");
+        //System.out.println("Starting the graph population...");
     }
 
     @Override
@@ -129,9 +129,9 @@ public class Graph implements StreamedContainer<Road>{
 
     @Override
     public void endStream() {
-        System.out.println("Graph populated!");
+        //System.out.println("Graph populated!");
         MemoryMXBean mxbean = ManagementFactory.getMemoryMXBean();
-        System.out.printf("Heap memory usage: %d MB%n",
-                mxbean.getHeapMemoryUsage().getUsed() / (1000000));
+        //System.out.printf("Heap memory usage: %d MB%n",
+                // mxbean.getHeapMemoryUsage().getUsed() / (1000000));
     }
 }
