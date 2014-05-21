@@ -135,39 +135,3 @@ public class RouteDescriptionPanel extends JPanel {
         repaint();
     }
 }
-/*public static void main(String[] args) {
-            
- Road.Node firstStart = new Road.Node(1, 2, 1);
- Road.Node firstEnd = new Road.Node(2, 4, 4);
- Road.Node secondStart = new Road.Node(3, 2, 7);
- Road.Node secondEnd = new Road.Node(4, 5, 3);
-            
- Road.Node[] firstNodes = new Road.Node[]{firstStart, firstEnd};
- Road.Node[] secondNodes = new Road.Node[]{secondStart, secondEnd};
- Road road = new Road("first", RoadType.PrimeRoute, (short)2600, (short)80, false, firstNodes, new float[]{1}, new Rect(firstStart.x, firstEnd.y, firstEnd.x-firstStart.x, firstEnd.y-firstStart.y));
-            
- }
- /*
- public static void main(String[] args) {
- ArrayList<RoadPart> testRoads = new ArrayList<>();
- Intersection i1 = new Intersection("0,0,0");
- for (int i = 0; i < 10; i++) {
- int j = 0;
- for (String name : new String[]{"Kildevej", "Rodevej", "Pærevej"}) {
- RoadPart road = new RoadPart("0,0,0," + name + ",0,0,0,0,,,,,0,0,0,80," + i * 3 + ",0,,,");
- Intersection i2 = new Intersection("1,0," + i * 3 + j);
- road.setPoints(i1, i2);
- testRoads.add(road);
- j++;
- System.out.println(road.driveTime * (road.speedLimit / 3.6));
- }
- }
- RoadPart[] roads = testRoads.toArray(new RoadPart[0]);
-
- RouteDescriptionPanel routePanel = new RouteDescriptionPanel();
- routePanel.setRoute(roads);
- JFrame frame = new JFrame();
- frame.add(routePanel);
- frame.pack();
- frame.setVisible(true);
- }*/
