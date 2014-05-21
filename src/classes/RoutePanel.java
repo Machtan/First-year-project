@@ -33,7 +33,7 @@ public class RoutePanel extends JPanel implements Receiver<Road>{
         add(fromField);
         add(toField);
         final JPanel panel = this;
-        add(new JButton(new AbstractAction("Search") {
+        add(new JButton(new AbstractAction("Find Route") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //Make shortest path search

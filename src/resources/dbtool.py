@@ -2,6 +2,7 @@
 # Created by Jabok @ May 12th 2014
 import sqlite3, os
 from roads import Road, Inter
+from projection_helper import merc_x, merc_y
 """
 c.execute('''CREATE TABLE stocks
              (date text, trans text, symbol text, qty real, price real)''')
@@ -107,7 +108,10 @@ class RoadDB:
             final = Road(*road_args)
             nodes = []
             for node in final.nodes:
-                nodes.append(interdb.get(node))
+                inter = interdb.get(node)
+                inter.x = merc_x(float(inter.x))
+                inter.y = merc_y(float(inter.y))
+                nodes.append(inter)
             final.nodes = nodes
             yield final
     

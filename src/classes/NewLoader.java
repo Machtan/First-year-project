@@ -17,7 +17,8 @@ y: [-20.071433 : 28.0741667]
 */
 
 /**
- * The NewLoader class <More docs goes here>
+ * The NewLoader class loads roads from a file into a model. The 'new' part is
+ * due to this being the second data format used in the project.
  * @author Jakob Lautrup Nysom (jaln@itu.dk)
  * @version 15-May-2014
  */
@@ -32,17 +33,6 @@ public class NewLoader {
                 6402050.98297f - 6049914.43018f), "utf-8"
     );
    
-    /*public static Datafile osmdata = new Datafile("resources/new_osm_roads.txt", 
-            1452532, "Loading new OSM roads...");
-    
-    public static Rect OSMBounds = new Rect(
-            52.691433f, 
-            -20.071433f,
-            62.0079024f - 52.691433f, 
-            28.0741667f - (-20.071433f)
-    );*/
-    //[x: 314455.05500143045 : 588445.5270339495] [y: 6086420.049592097 : 6231795.69263988]
-    //'maxY': 7567986.8759869505, 'maxX': 1410980.5570572452, 'minY': 7312234.822616017, 'minX': 927436.897410232}
     public static Datafile osmtestfile = new Datafile("resources/converted_test_roads.txt", 
             1000, "Loading OSM test roads", 
             new Rect(
@@ -52,7 +42,6 @@ public class NewLoader {
                 7567986.8759869505f - 7312234.822616017f), "utf-8"
     );
     
-    //[x: 271984.88412645145 : 415199.71181185555] [y: 921203.957443526 : 1401614.2412508868]
     public static Datafile osmtesttwo = new Datafile("resources/converted_test_roads.txt",
         1000, "Testing roads",
         new Rect(
@@ -62,9 +51,6 @@ public class NewLoader {
             1401614.2412508868f - 921203.957443526f), "utf-8"
     );
     
-    //[x: 150955.1544851401 : 695916.7463075386] [y: 5838350.401229404 : 6877073.128247903]
-    //'minX': -2234341.7010513074, 'minY': 6892115.032515525, 'maxX': 3125201.9414894776, 'maxY': 8823248.457253834
-    // Full(broken) datafile: 1452532
     public static Datafile osmdata = new Datafile("resources/osm_roads.txt",
         527924, "Loading OSM roads",
         new Rect(

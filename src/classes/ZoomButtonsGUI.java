@@ -52,14 +52,14 @@ public class ZoomButtonsGUI extends JPanel {
         super();
         panel = new JPanel(new SpringLayout());
         
-        String zoomTip = "Zooms in on the map";
+        String zoomTip = "Zooms closer to the map";
         addButton(loadImage("/resources/images/zoomIn.png"), zoomTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
                 controller.draw(controller.viewport.zoomBy(0.2f));
             }
         });
-        String zoomOutTip = "Zooms out";
+        String zoomOutTip = "Zooms further from the map";
         addButton(loadImage("/resources/images/zoomOut.png"), zoomOutTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -67,7 +67,7 @@ public class ZoomButtonsGUI extends JPanel {
             }
             
         });
-        String resetTip = "Zooms back out to the whole map";
+        String resetTip = "Zooms back to showing whole map";
         addButton(loadImage("/resources/images/reset.png"), resetTip, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
